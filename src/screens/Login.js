@@ -10,7 +10,7 @@ import {Button} from 'react-native-paper';
 import {useNavigation} from '@react-navigation/native';
 import IPAddress from '../../IPAddress';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import SessionServiceListner from '../Services/SessionServiceListner';
+import SessionServiceListner from './Services/SessionServiceListner';
 
 const Login = () => {
   const navigation = useNavigation();

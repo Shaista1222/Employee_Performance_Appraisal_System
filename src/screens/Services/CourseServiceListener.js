@@ -1,4 +1,4 @@
-import IPAddress from '../../IPAddress';
+import IPAddress from '../../../IPAddress';
 
 const CourseServiceListener = {
   getCourses: async() => {

@@ -8,8 +8,8 @@ import {
   Alert,
 } from 'react-native';
 import {RadioButton} from 'react-native-paper';
-import QuestionaireServiceListner from '../../Services/QuestionaireServiceListner';
-import {postStudentEvaluation} from '../../Services/EvaluationServiceListener'; // Import your postStudentEvaluation function
+import QuestionaireServiceListner from '../Services/QuestionaireServiceListner';
+import {postStudentEvaluation} from '../Services/EvaluationServiceListener'; // Import your postStudentEvaluation function
 
 
 const Evaluate = ({route}) => {

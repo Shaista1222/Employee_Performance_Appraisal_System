@@ -8,7 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import CourseServiceListener from '../../Services/CourseServiceListener';
+import CourseServiceListener from '../Services/CourseServiceListener';
 
 const StudentCourse = ({navigation}) => {
   const [studentCourseList, setStudentCourseList] = useState([]);

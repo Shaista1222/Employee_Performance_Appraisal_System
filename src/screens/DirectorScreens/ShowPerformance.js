@@ -4,6 +4,7 @@ import {VictoryPie} from 'victory-native';
 import Svg from 'react-native-svg';
 
 const showPerformance = () => {
+  // const { employeeDetailsList } = this.props;
   // Define the data for the pie chart
   const data = [
     {x: 'Project', y: 30},

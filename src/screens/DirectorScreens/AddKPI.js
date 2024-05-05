@@ -9,11 +9,15 @@ import {
 } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import SessionServiceListner from '../Services/SessionServiceListner';
+import DepartmentService from '../Services/DepartmentService';
+import DesignationService from '../Services/DesignationService';
+import EmployeeService from '../Services/EmployeeService';
 const AddKPI = () => {
-  const [session, setSession] = useState([]);
-  const [employeeType, setEmployeeType] = useState([]);
-  const [designation, setDesignation] = useState([]);
-  const [department, setDepartment] = useState([]);
+  const [session, setSessionList] = useState([]);
+  const [employeeType, setEmployeeTypeList] = useState([]);
+  const [designation, setDesignationList] = useState([]);
+  const [department, setDepartmentList] = useState([]);
   const [employee, setEmployee] = useState('');
   const [subKpi, setSubKpi] = useState('');
   const [weightage, setWeightage] = useState('');
@@ -23,7 +27,7 @@ const AddKPI = () => {
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        const sessionService = new SessionService();
+        const sessionService = new SessionServiceListner();
         const sessions = await sessionService.getSessions();
         setSessionList(sessions);
       } catch (error) {
@@ -82,7 +86,7 @@ const AddKPI = () => {
         <TextInput style={styles.input}  placeholderTextColor="gray" placeholder="Enter Title" />
         <Picker
           selectedValue={session}
-          setSession={(itemValue, itemIndex) => setSession(itemValue)}
+          setSession={(itemValue, itemIndex) => setSessionList(itemValue)}
           style={styles.picker}
           dropdownIconColor="black"
           dropdownIconComponent={() => (
@@ -93,7 +97,7 @@ const AddKPI = () => {
         </Picker>
         <Picker
           selectedValue={employeeType}
-          onValueChange={(itemValue, itemIndex) => setEmployeeType(itemValue)}
+          onValueChange={(itemValue, itemIndex) => setEmployeeTypeList(itemValue)}
           style={styles.picker}
           dropdownIconColor="black"
           dropdownIconComponent={() => (
@@ -104,7 +108,7 @@ const AddKPI = () => {
         </Picker>
         <Picker
           selectedValue={designation}
-          onValueChange={(itemValue, itemIndex) => setDesignation(itemValue)}
+          onValueChange={(itemValue, itemIndex) => setDesignationList(itemValue)}
           style={styles.picker}
           dropdownIconColor="black"
           dropdownIconComponent={() => (
@@ -115,7 +119,7 @@ const AddKPI = () => {
         </Picker>
         <Picker
           selectedValue={department}
-          onValueChange={(itemValue, itemIndex) => setDepartment(itemValue)}
+          onValueChange={(itemValue, itemIndex) => setDepartmentList(itemValue)}
           style={styles.picker}
           dropdownIconColor="black"
           dropdownIconComponent={() => (

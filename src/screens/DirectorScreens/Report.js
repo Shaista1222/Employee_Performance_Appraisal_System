@@ -1,14 +1,49 @@
-import React from 'react';
-import {View, Text, StyleSheet, TextInput, ScrollView} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  FlatList,
+} from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import EmployeeService from '../Services/EmployeeService';
+const Report = ({navigation}) => {
+  const [employeeDetailsScoreList, setEmployeeDetailsScoreList] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredData, setFilteredData] = useState([]);
+  useEffect(() => {
+    loadData();
+  }, []);
 
-const Report = () => {
+  const loadData = () => {
+    EmployeeService.getEmployeesWithKpiScores()
+      .then(employeeDetails => setEmployeeDetailsScoreList(employeeDetails))
+      .catch(error => console.error(error));
+  };
+  const handleItemClick = employeeDetailsScore => {
+    // Pass employee data to PerformanceFragment
+    // You need to implement replaceFragment function in your navigation logic
+    // This example assumes you are using react-navigation
+    navigation.navigate('Performance', {id: employeeDetailsScore.employee.id});
+    Alert.alert('Successfully');
+  };
+  const handleSearch = query => {
+    setSearchQuery(query);
+    const filtered = employeeDetailsScoreList.filter(item =>
+      item.employee.name.toLowerCase().includes(query.toLowerCase()),
+    );
+    setFilteredData(filtered);
+  };
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Report</Text>
-        <Ionicons name="arrow-forward-circle" size={25} color='white' />
+        <Ionicons name="arrow-forward-circle" size={25} color="white" />
       </View>
       <View
         style={{
@@ -16,25 +51,43 @@ const Report = () => {
           paddingTop: 10,
           flexDirection: 'row',
           // marginRight: 19,
-          backgroundColor:"#EEEEEE"
+          backgroundColor: '#EEEEEE',
         }}>
-        <TextInput placeholderTextColor='gray' placeholder="Search" style={styles.searchInput} />
-        <Ionicons name="search-circle" size={40} color='#02367B' style={{paddingBottom:10}}/>
+        <TextInput
+          placeholderTextColor="gray"
+          placeholder="Search"
+          style={styles.searchInput}
+          value={searchQuery}
+          onChangeText={handleSearch}
+        />
+        <Ionicons
+          name="search-circle"
+          size={40}
+          color="#02367B"
+          style={{paddingBottom: 10}}
+        />
       </View>
       <View style={styles.listItemHeader}>
         <Text style={{color: 'white', fontWeight: 'bold'}}>Rank</Text>
         <Text style={{color: 'white', fontWeight: 'bold'}}>Name</Text>
         <Text style={{color: 'white', fontWeight: 'bold'}}>Average</Text>
       </View>
-      <ScrollView style={styles.scrollView}>
-        {/* List of rankings */}
-        <View style={styles.listItem}>
-          <Text style={styles.rank}>#1</Text>
-          <Text style={styles.name}>Sadaf Gul</Text>
-          <Text style={styles.average}>86%</Text>
-        </View>
-        {/* ... Repeat for each item ... */}
-      </ScrollView>
+
+      <FlatList
+        data={employeeDetailsScoreList}
+        renderItem={({item, index}) => (
+          <ScrollView style={styles.scrollView}>
+            <TouchableOpacity
+              style={styles.listItem}
+              onPress={item => handleItemClick(item)}>
+              <Text style={styles.rank}>#{index + 1}</Text>
+              <Text style={styles.name}>{item.employee.name}</Text>
+              <Text style={styles.average}>{item.totalScore}%</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        )}
+        keyExtractor={item => item.employee.id.toString()}
+      />
     </View>
   );
 };
@@ -105,3 +158,5 @@ const styles = StyleSheet.create({
   },
 });
 export default Report;
+/* setEmployeeDetailsScoreList(employeeDetails);
+console.log(employeeDetailsScoreList.name.toString()); */

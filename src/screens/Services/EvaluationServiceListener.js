@@ -1,4 +1,4 @@
-import IPAddress from "../../IPAddress";
+import IPAddress from "../../../IPAddress";
 
 export const isEvaluated = async (studentId, teacherId, courseId, sessionId, evaluationType) => {
   try {

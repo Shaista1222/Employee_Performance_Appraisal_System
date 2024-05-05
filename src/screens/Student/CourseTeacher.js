@@ -1,9 +1,12 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, FlatList} from 'react-native';
-import CourseServiceListener from '../../Services/CourseServiceListener';
+import CourseServiceListener from '../Services/CourseServiceListener';
+
 const CourseTeacher = ({route, navigation}) => {
   const {studentID, sessionID, courseID} = route.params;
   const [TeacherCourseList, setTeacherCourseList] = useState([]);
+  const [fragmentContainer, setFragmentContainer] = useState(0);
+
   const handleTeacherClick = (teacherId, courseId) => {
     navigation.navigate('EvaluateTeacher', {
       teacherId: teacherId,
@@ -35,6 +38,29 @@ const CourseTeacher = ({route, navigation}) => {
       Alert.alert('Error', 'Failed to fetch courses. Please try again later.');
     }
   };
+  const evaluateTeacher = teacherId => {
+    EvaluationService.IsEvaluated(
+      studentID,
+      teacherId,
+      courseID,
+      sessionID,
+      'Confidential',
+      result => {
+        if (result) {
+          ToastAndroid.show(
+            'You have already evaluated this teacher',
+            ToastAndroid.SHORT,
+          );
+        } else {
+          // Replace with appropriate navigation method to navigate to EvaluationQuestionnaire screen
+          navigation.navigate('EvaluationQuestionnaire', {teacherId, courseID});
+        }
+      },
+      errorMessage => {
+        ToastAndroid.show(errorMessage.toString(), ToastAndroid.SHORT);
+      },
+    );
+  };
   return (
     <>
       <View style={styles.title}>
@@ -46,7 +72,7 @@ const CourseTeacher = ({route, navigation}) => {
           keyExtractor={item => item.id.toString()}
           renderItem={({item}) => (
             <TouchableOpacity
-            style={styles.onClick}
+              style={styles.onClick}
               onPress={() => handleTeacherClick(item.teacherId)}>
               <Text style={styles.courseList}>{item.name}</Text>
             </TouchableOpacity>
@@ -87,7 +113,7 @@ const styles = StyleSheet.create({
     padding: 7,
     fontSize: 20,
     fontFamily: 'sans-serif',
-    width:'100%'    
+    width: '100%',
   },
 });
 

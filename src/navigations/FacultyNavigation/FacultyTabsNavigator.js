@@ -6,7 +6,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontIcon from 'react-native-vector-icons/FontAwesome5';
 import MatCommunity from 'react-native-vector-icons/MaterialCommunityIcons';
 import Report from '../../screens/DirectorScreens/Report';
-import Task from '../../screens/DirectorScreens/Task';
+import Task from '../../screens/DirectorScreens/Tasks';
 import OptionsModal from './OptionsModal'; // Import OptionsModal
 import {COLORS} from '../../theme/theme';
 import Evaluator from '../../screens/DirectorScreens/Evaluator';

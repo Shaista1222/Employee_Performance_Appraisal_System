@@ -1,5 +1,5 @@
 import { Alert } from 'react-native';
-import IPAddress from '../../IPAddress';
+import IPAddress from '../../../IPAddress';
 
 const QuestionaireServiceListner = {
   getConfidentialQuestions: async () => {
