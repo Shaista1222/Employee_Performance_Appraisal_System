@@ -2,7 +2,7 @@ import IPAddress from '../../../IPAddress';
 
 const CourseServiceListener = {
   getCourses: async() => {
-    return fetch(`http://${IPAddress}/api/Course/GetCourses`)
+    return fetch(`${IPAddress}/Course/GetCourses`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch courses');
@@ -11,7 +11,7 @@ const CourseServiceListener = {
       });
   },
   getTeacherCourses: async(teacherID) => {
-    return fetch(`http://${IPAddress}/api/Course/GetTeacherCourses?teacherID=${teacherID}`)
+    return fetch(`${IPAddress}/Course/GetTeacherCourses?teacherID=${teacherID}`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch teacher courses');
@@ -20,7 +20,7 @@ const CourseServiceListener = {
       });
   },
   getStudentCourses: async(studentID, sessionID) => {
-    return fetch(`http://${IPAddress}/api/Course/GetStudentCourses?studentID=${studentID}&sessionID=${sessionID}`)
+    return fetch(`${IPAddress}/Course/GetStudentCourses?studentID=${studentID}&sessionID=${sessionID}`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch student courses');
@@ -29,7 +29,7 @@ const CourseServiceListener = {
       });
   },
   getCourseTeachers: async(studentID, courseID, sessionID) => {
-    return fetch(`http://${IPAddress}/api/Course/GetCourseTeachers?studentID=${studentID}&courseID=${courseID}&sessionID=${sessionID}`)
+    return fetch(`${IPAddress}/Course/GetCourseTeachers?studentID=${studentID}&courseID=${courseID}&sessionID=${sessionID}`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch course teachers');

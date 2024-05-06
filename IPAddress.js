@@ -1,1 +1,1 @@
-export default IPAddress='192.168.0.106'
+export default IPAddress='http://192.168.0.106/api'

@@ -5,7 +5,7 @@ import IPAddress from '../../../IPAddress';
   
     fetchEmployees: async (endpoint) => {
       try {
-        const response = await fetch(`http://${IPAddress}/api/Employee/${endpoint}`);
+        const response = await fetch(`${IPAddress}/Employee/${endpoint}`);
         if (!response.ok) {
           throw new Error('Failed to fetch employees');
         }

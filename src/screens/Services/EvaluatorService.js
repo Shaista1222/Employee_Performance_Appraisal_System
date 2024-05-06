@@ -3,7 +3,7 @@ export default class EvaluatorService {
 
     async getEvaluatees(evaluatorID, sessionID) {
       try {
-        const response = await fetch(`http://${IPAddress}/api/Evaluator/evaluatees?evaluatorID=${evaluatorID}&sessionID=${sessionID}`);
+        const response = await fetch(`${IPAddress}/Evaluator/evaluatees?evaluatorID=${evaluatorID}&sessionID=${sessionID}`);
         if (!response.ok) {
           throw new Error('Failed to fetch evaluatees');
         }

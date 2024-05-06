@@ -3,7 +3,7 @@ import IPAddress from '../../../IPAddress';
 const TaskService = {
   fetchTasks: async (endpoint) => {
     try {
-      const response = await fetch(`http://${IPAddress}/api/Task/${endpoint}`);
+      const response = await fetch(`${IPAddress}/Task/${endpoint}`);
       if (!response.ok) {
         throw new Error('Failed to fetch tasks');
       }
@@ -33,7 +33,7 @@ const TaskService = {
 
   postTask: async function(task) {
     try {
-      const response = await fetch(`http://${IPAddress}/api/Task/PostTask`, {
+      const response = await fetch(`${IPAddress}/Task/PostTask`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -54,7 +54,7 @@ const TaskService = {
   postRoleBasedTask: async function(taskWithRole) {
     try {
       const response = await fetch(
-       ` http://${IPAddress}/api/Task/roleBasedTasks`,
+       ` ${IPAddress}/Task/roleBasedTasks`,
         {
           method: 'POST',
           headers: {

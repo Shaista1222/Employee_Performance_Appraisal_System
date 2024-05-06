@@ -5,7 +5,7 @@ export default class DesignationService {
   async fetchDesignations(endpoint) {
     try {
       const response = await fetch(
-        `http://${IPAddress}/api/Designation/${endpoint}`,
+        `${IPAddress}/Designation/${endpoint}`,
       );
       if (!response.ok) {
         throw new Error('Failed to fetch designations');

@@ -5,7 +5,7 @@ const QuestionaireServiceListner = {
   getConfidentialQuestions: async () => {
     try {
       const response = await fetch(
-        `http://${IPAddress}/api/Questionnaire/GetConfidentialQuestions`,
+        `${IPAddress}/Questionnaire/GetConfidentialQuestions`,
       );
       if (!response.ok) {
         Alert.alert('Failed to fetch confidential questions');
@@ -18,7 +18,7 @@ const QuestionaireServiceListner = {
   getOptionsWeightages: async () => {
     try {
       const response = await fetch(
-        `http://${IPAddress}/api/Questionnaire/GetOptionsWeightages`,
+        `${IPAddress}/Questionnaire/GetOptionsWeightages`,
       );
       if (!response.ok) {
         Alert.alert('Failed to fetch confidential questions');
@@ -31,7 +31,7 @@ const QuestionaireServiceListner = {
   getStudentQuestions: async () => {
     try {
       const response = await fetch(
-        `http://${IPAddress}/api/Questionnaire/GetStudentQuestions`,
+        `${IPAddress}/Questionnaire/GetStudentQuestions`,
       );
       if (!response.ok) {
         Alert.alert('Failed to fetch confidential questions');
@@ -44,7 +44,7 @@ const QuestionaireServiceListner = {
   getQuestionnaireTypes: async () => {
     try {
       const response = await fetch(
-        `http://${IPAddress}/api/Questionnaire/GetQuestionnaireTypes`,
+        `${IPAddress}/Questionnaire/GetQuestionnaireTypes`,
       );
       if (!response.ok) {
         Alert.alert('Failed to fetch questionnaire types');
@@ -58,7 +58,7 @@ const QuestionaireServiceListner = {
   getQuestionnaireByType: async questionnaireTypeId => {
     try {
       const response = await fetch(
-        `http://${IPAddress}/api/Questionnaire/GetQuestionnaireByType?questionnaireTypeId=${questionnaireTypeId}`,
+        `${IPAddress}/Questionnaire/GetQuestionnaireByType?questionnaireTypeId=${questionnaireTypeId}`,
       );
       if (!response.ok) {
         Alert.alert('Failed to fetch questionnaire by type');

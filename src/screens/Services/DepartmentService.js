@@ -5,7 +5,7 @@ export default class DepartmentService {
 
     async fetchDepartments(endpoint) {
       try {
-        const response = await fetch(`http://${IPAddress}/api/Department/${endpoint}`);
+        const response = await fetch(`${IPAddress}/Department/${endpoint}`);
         if (!response.ok) {
           throw new Error('Failed to fetch departments');
         }

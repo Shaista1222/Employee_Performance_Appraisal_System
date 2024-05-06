@@ -5,7 +5,7 @@ const SessionServiceListner = {
   getCurrentSession: async () => {
     try {
       const response = await fetch(
-        `http://${IPAddress}/api/Session/GetCurrentSession`,
+        `${IPAddress}/Session/GetCurrentSession`,
       );
       if (!response.ok) {
         throw new Error('Failed to fetch session');
@@ -17,7 +17,7 @@ const SessionServiceListner = {
   },
   getSessions: async () => {
     try {
-      const response = await fetch(`http://${IPAddress}/api/Session//GetSessions`);
+      const response = await fetch(`${IPAddress}/Session//GetSessions`);
       if (!response.ok) {
         throw new Error('Failed to fetch sessions');
       }

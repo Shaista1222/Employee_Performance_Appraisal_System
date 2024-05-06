@@ -3,7 +3,7 @@ import IPAddress from '../../../IPAddress';
 export default class KpiService {
   async getKpis() {
     try {
-      const response = await fetch(`http://${IPAddress}/api/KPI/kpis`);
+      const response = await fetch(`${IPAddress}/KPI/kpis`);
       if (!response.ok) {
         throw new Error('Failed to fetch KPIs');
       }
@@ -17,7 +17,7 @@ export default class KpiService {
 
   async postKpi(kpiData) {
     try {
-      const response = await fetch(`http://${IPAddress}/api/KPI/kpis`, {
+      const response = await fetch(`${IPAddress}/KPI/kpis`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

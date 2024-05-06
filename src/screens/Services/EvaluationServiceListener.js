@@ -2,7 +2,7 @@ import IPAddress from "../../../IPAddress";
 
 export const isEvaluated = async (studentId, teacherId, courseId, sessionId, evaluationType) => {
   try {
-    const response = await fetch(`http://${IPAddress}/api/Evaluation/isEvaluated?studentId=${studentId}&teacherId=${teacherId}&courseId=${courseId}&sessionId=${sessionId}&evaluationType=${evaluationType}`);
+    const response = await fetch(`${IPAddress}/Evaluation/isEvaluated?studentId=${studentId}&teacherId=${teacherId}&courseId=${courseId}&sessionId=${sessionId}&evaluationType=${evaluationType}`);
     
     if (!response.ok) {
       throw new Error('Network response was not ok');
@@ -19,7 +19,7 @@ export const isEvaluated = async (studentId, teacherId, courseId, sessionId, eva
 
 export const postStudentEvaluation = async (studentEvaluations) => {
   try {
-    const response = await fetch(`http://${IPAddress}/api/Evaluation/PostStudentEvaluation`, {
+    const response = await fetch(`${IPAddress}/Evaluation/PostStudentEvaluation`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
