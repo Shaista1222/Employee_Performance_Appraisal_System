@@ -24,7 +24,7 @@ const Stack = createStackNavigator();
 const App = () => {
   return (
 
-    <ConfidentialEvaluation/>
+    <Task/>
   //  /* /* /* /* /* /* /*  {/* <NavigationContainer>
   //   <Stack.Navigator screenOptions={{ headerShown: false }}>
   //     <Stack.Screen name="Login" component={Login} />

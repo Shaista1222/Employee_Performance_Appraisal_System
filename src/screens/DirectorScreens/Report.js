@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -12,50 +12,54 @@ import {
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import EmployeeService from '../Services/EmployeeService';
-const Report = ({navigation}) => {
+import EmployeeDetailsScoreAdapter from '../Adapter/EmployeeDetailsScoreAdapter'; // Adjust the path as per your project structure
+import PerformanceFragment from '../PerformanceFragment'; // Adjust the path as per your project structure
+
+const Report = () => {
   const [employeeDetailsScoreList, setEmployeeDetailsScoreList] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredData, setFilteredData] = useState([]);
+  const [
+    filteredEmployeeDetailsScoreList,
+    setFilteredEmployeeDetailsScoreList,
+  ] = useState([]);
+
   useEffect(() => {
-    loadData();
+    const fetchData = async () => {
+      try {
+        const data = await EmployeeService.getEmployeesWithKpiScores();
+        setEmployeeDetailsScoreList(data);
+        setFilteredEmployeeDetailsScoreList(data); // Initialize filtered list with the full list
+      } catch (error) {
+        Alert.alert(error.message);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const loadData = () => {
-    EmployeeService.getEmployeesWithKpiScores()
-      .then(employeeDetails => setEmployeeDetailsScoreList(employeeDetails))
-      .catch(error => console.error(error));
+  const handleListItemClick = employeeDetailsScore => {
+    // Handle list item click here
+    Alert.alert('Enter employee');
   };
-  const handleItemClick = employeeDetailsScore => {
-    // Pass employee data to PerformanceFragment
-    // You need to implement replaceFragment function in your navigation logic
-    // This example assumes you are using react-navigation
-    navigation.navigate('Performance', {id: employeeDetailsScore.employee.id});
-    Alert.alert('Successfully');
-  };
+
   const handleSearch = query => {
     setSearchQuery(query);
-    const filtered = employeeDetailsScoreList.filter(item =>
-      item.employee.name.toLowerCase().includes(query.toLowerCase()),
+    const filteredList = employeeDetailsScoreList.filter(employee =>
+      employee.employee.name.toLowerCase().includes(query.toLowerCase()),
     );
-    setFilteredData(filtered);
+    setFilteredEmployeeDetailsScoreList(filteredList);
   };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Report</Text>
-        <Ionicons name="arrow-forward-circle" size={25} color="white" />
+        {/* <Ionicons name="arrow-forward-circle" size={25} color="white" /> */}
       </View>
-      <View
-        style={{
-          alignItems: 'center',
-          paddingTop: 10,
-          flexDirection: 'row',
-          // marginRight: 19,
-          backgroundColor: '#EEEEEE',
-        }}>
+      <View style={styles.searchContainer}>
         <TextInput
-          placeholderTextColor="gray"
           placeholder="Search"
+          placeholderTextColor="black"
           style={styles.searchInput}
           value={searchQuery}
           onChangeText={handleSearch}
@@ -72,21 +76,18 @@ const Report = ({navigation}) => {
         <Text style={{color: 'white', fontWeight: 'bold'}}>Name</Text>
         <Text style={{color: 'white', fontWeight: 'bold'}}>Average</Text>
       </View>
-
       <FlatList
-        data={employeeDetailsScoreList}
+        data={filteredEmployeeDetailsScoreList}
         renderItem={({item, index}) => (
           <ScrollView style={styles.scrollView}>
-            <TouchableOpacity
-              style={styles.listItem}
-              onPress={item => handleItemClick(item)}>
-              <Text style={styles.rank}>#{index + 1}</Text>
-              <Text style={styles.name}>{item.employee.name}</Text>
-              <Text style={styles.average}>{item.totalScore}%</Text>
-            </TouchableOpacity>
+            <EmployeeDetailsScoreAdapter
+              employeeDetailsScore={item}
+              index={index}
+              onPress={() => handleListItemClick(item)}
+            />
           </ScrollView>
         )}
-        keyExtractor={item => item.employee.id.toString()}
+        keyExtractor={(item, index) => index.toString()}
       />
     </View>
   );
@@ -101,15 +102,22 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     backgroundColor: '#6360DC',
     alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingLeft: 12,
-    paddingRight: 12,
+    // flexDirection: 'row',
+    // justifyContent: 'space-between',
+    // paddingLeft: 12,
+    // paddingRight: 12,
   },
   headerText: {
     fontSize: 24,
     color: '#fff',
     marginBottom: 10,
+    alignItems: 'center',
+  },
+  searchContainer: {
+    alignItems: 'center',
+    paddingTop: 10,
+    flexDirection: 'row',
+    backgroundColor: '#EEEEEE',
   },
   searchInput: {
     height: 40,
@@ -120,6 +128,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginLeft: 24,
     borderColor: 'purple',
+    color: 'black',
+    fontSize: 19,
   },
   scrollView: {
     backgroundColor: '#f3f3f3',
@@ -133,30 +143,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
-  listItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  rank: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.dark,
-  },
-  name: {
-    fontSize: 16,
-    color: Colors.dark,
-  },
-  average: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.dark,
-  },
 });
+
 export default Report;
-/* setEmployeeDetailsScoreList(employeeDetails);
-console.log(employeeDetailsScoreList.name.toString()); */
