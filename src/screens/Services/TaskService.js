@@ -20,15 +20,15 @@ const TaskService = {
   },
   
   getPendingTasks: async function() {
-    return await this.fetchTasks('pendingTasks');
+    return await this.fetchTasks('GetPendingTasks');
   },
 
   getCompletedTasks: async function() {
-    return await this.fetchTasks('completedTasks');
+    return await this.fetchTasks('GetCompletedTasks');
   },
   
   getEmployeeTasks: async function(employeeId) {
-    return await this.fetchTasks(`employeeTasks/${employeeId}`);
+    return await this.fetchTasks(`GetEmployeeTasks/${employeeId}`);
   },
 
   postTask: async function(task) {
@@ -54,7 +54,7 @@ const TaskService = {
   postRoleBasedTask: async function(taskWithRole) {
     try {
       const response = await fetch(
-       ` ${IPAddress}/Task/roleBasedTasks`,
+       ` ${IPAddress}/Task/PostRoleBasedTask`,
         {
           method: 'POST',
           headers: {

@@ -19,7 +19,7 @@ export default class DesignationService {
   }
 
   async getDesignations() {
-    return this.fetchDesignations('designations');
+    return this.fetchDesignations('GetDesignations');
   }
 
   populateDesignationSpinner(designationList, setItems) {

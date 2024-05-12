@@ -16,7 +16,7 @@ export default class DepartmentService {
     }
   
     async getDepartments() {
-      return this.fetchDepartments('departments');
+      return this.fetchDepartments('GetDepartments');
     }
   
     populateDepartmentSpinner(departmentList, setItems) {

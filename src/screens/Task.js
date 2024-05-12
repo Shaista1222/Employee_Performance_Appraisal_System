@@ -9,118 +9,175 @@ import {
   Button,
   StyleSheet,
   useWindowDimensions,
+  FlatList,
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import {TabView, SceneMap} from 'react-native-tab-view';
 import TaskAdapter from './Adapter/TaskAdapter';
 import TaskService from './Services/TaskService';
 import {Button as PaperButton} from 'react-native-paper';
+import DepartmentService from './Services/DepartmentService';
+import EmployeeService from './Services/EmployeeService';
+import DesignationService from './Services/DesignationService';
+import Designation from './models/Designation';
 
 const Task = () => {
   const layout = useWindowDimensions();
-  const [tasks, setTasks] = useState([]);
-  const [tabIndex, setTabIndex] = useState(0);
+  // const [tasks, setTasks] = useState([]);
+  // const [tabIndex, setTabIndex] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
+  // const [taskDescription, setTaskDescription] = useState('');
+  // const [taskWeightage, setTaskWeightage] = useState('');
+  const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+  const [taskList, setTaskList] = useState([]);
+  const [employeeList, setEmployeeList] = useState([]);
+  const [employeeTypeList, setEmployeeTypeList] = useState([]);
+  const [designationList, setDesignationList] = useState([]);
+  const [departmentList, setDepartmentList] = useState([]);
   const [dueDate, setDueDate] = useState(new Date());
   const [taskDescription, setTaskDescription] = useState('');
-  const [taskWeightage, setTaskWeightage] = useState('');
+  const [weightage, setWeightage] = useState('');
 
+  // useEffect(() => {
+  //   loadTasksForSelectedTab(tabIndex);
+  // }, [tabIndex]);
   useEffect(() => {
-    loadTasksForSelectedTab(tabIndex);
-  }, [tabIndex]);
+    // Fetch tasks and employee data on component mount
+    fetchTasks();
+    fetchEmployees();
+    fetchEmployeeTypes();
+    fetchDesignations();
+    fetchDepartments();
+    loadTasksForSelectedTab();
+  }, []);
 
-  const loadTasksForSelectedTab = index => {
-    switch (index) {
-      case 0:
-        TaskService.getTasks()
-          .then(tasks => setTasks(tasks))
-          .catch(error => console.error(error));
-        break;
-      case 1:
-        TaskService.getPendingTasks()
-          .then(tasks => setTasks(tasks))
-          .catch(error => console.error(error));
-        break;
-      case 2:
-        TaskService.getCompletedTasks()
-          .then(tasks => setTasks(tasks))
-          .catch(error => console.error(error));
-        break;
-      default:
-        break;
+  const fetchTasks = async () => {
+    try {
+      
+    } catch (error) {
+      Alert.alert('Error', error.message);
     }
   };
 
-  const renderScene = ({route}) => {
-    switch (route.key) {
-      case 'tab1':
-        return <TaskAdapter tasks={tasks} />;
-      case 'tab2':
-        return <TaskAdapter tasks={tasks} />;
-      case 'tab3':
-        return <TaskAdapter tasks={tasks} />;
-      default:
-        return null;
+  const fetchEmployees = async () => {
+    try {
+      EmployeeService.getEmployees()
+      .then(employees => setEmployeeList(employees))
+      .catch(error => console.error(error));
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
+  const fetchEmployeeTypes = async () => {
+    try {
+      EmployeeService.getEmployeeTypes()
+      .then(employeeTypes => setEmployeeTypeList(employeeTypes))
+      .catch(error => console.error(error));
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
+
+  const fetchDesignations = async () => {
+    try {
+      DesignationService.getDesignation()
+      .then(Designation => setDesignationList(Designation))
+      .catch(error => console.error(error));
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      DepartmentService.getDepartments()
+      .then(departments => setDepartmentList(departments))
+      .catch(error => console.error(error));
+      // setTaskList(tasks);
+    } catch (error) {
+      Alert.alert('Error', error.message);
     }
   };
 
   const handleTabChange = index => {
-    setTabIndex(index);
+    setSelectedTabIndex(index);
+    loadTasksForSelectedTab(index);
+  };
+  const loadTasksForSelectedTab = index => {
+    switch (index) {
+      case 0:
+        TaskService.getTasks()
+          .then((tasks) =>{setTaskList(tasks)
+          console.log(tasks);
+          }) 
+          .catch(error => console.error(error));
+        break;
+      case 1:
+        TaskService.getPendingTasks()
+          .then(tasks => setTaskList(tasks))
+          .catch(error => console.error(error));
+        break;
+      case 2:
+        TaskService.getCompletedTasks()
+          .then(tasks => setTaskList(tasks))
+          .catch(error => console.error(error));
+        break;
+      default:
+        break;
+    }
+  };
+
+  const renderScene = ({ route }) => {
+    switch (route.key) {
+      case 'tab1':
+      case 'tab2':
+      case 'tab3':
+        return (
+          <View style={styles.scrollView}>
+            <FlatList
+              data={taskList}
+              renderItem={({ item }) => item ? <TaskAdapter task={item} /> : null}
+              keyExtractor={(item) => (item && item.id) ? item.id.toString() : ''}
+            />
+          </View>
+        );
+      default:
+        return null;
+    }
+  };
+  
+  
+  const renderTaskItem = ({item}) => {
+    return (
+      <TouchableOpacity onPress={() => handleTaskItemClick(item)}>
+        <View>{/* Render task item */}</View>
+      </TouchableOpacity>
+    );
+  };
+  const handleTaskItemClick = task => {
+    // Handle task item click
+    Alert.alert('Task Clicked', `Task ID: ${task.id}`);
+  };
+
+  const handleDueDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || dueDate;
+    setDueDate(currentDate);
   };
 
   const handleAddTask = () => {
-    setModalVisible(true);
+    // Implement logic to add task
+    Alert.alert('Add Task', 'Add task functionality');
   };
-
-  const handleDateTimePickerConfirm = selectedDate => {
-    setDueDate(selectedDate);
-    setModalVisible(false); // Hide modal when date is confirmed
-  };
-
-  const handleSaveTask = () => {
-    // Implement logic to save task
-    setModalVisible(false);
-  };
-
-  /* const renderTaskList = tasks => {
-    return tasks.map((taskWithEmployees, index) => {
-      const task = taskWithEmployees.task;
-      const assignedTo = taskWithEmployees.assignedTo;
-      const assignedBy = taskWithEmployees.assignedBy;
-
-      return (
-        <View key={index} style={styles.card}>
-          <Text style={styles.boldText}>Task:</Text>
-          <Text style={styles.text}>{task.taskDescription || ''}</Text>
-          <Text style={styles.boldText}>Due:</Text>
-          <Text style={styles.text}>
-            {task.dueDate ? task.dueDate.toString() : ''}
-          </Text>
-          <Text style={styles.boldText}>Weightage:</Text>
-          <Text style={styles.text}>
-            {task.weightage ? task.weightage.toString() : ''}
-          </Text>
-          <Text style={styles.boldText}>Assigned To:</Text>
-          <Text style={styles.text}>{assignedTo ? assignedTo.name : ''}</Text>
-          <Text style={styles.boldText}>Assigned By:</Text>
-          <Text style={styles.text}>{assignedBy ? assignedBy.name : ''}</Text>
-          <View style={styles.row}>
-            <TextInput style={styles.input} placeholder="Enter Score" />
-            <Button title="OK" onPress={() => {}} />
-          </View>
-        </View>
-      );
-    });
-  }; */
 
   return (
-    <View style={styles.container}>
+    <View style={{flex: 1}}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Task</Text>
       </View>
+
       <TabView
         navigationState={{
-          index: tabIndex,
+          index: selectedTabIndex,
           routes: [
             {key: 'tab1', title: 'All'},
             {key: 'tab2', title: 'Pending'},
@@ -132,9 +189,6 @@ const Task = () => {
         initialLayout={{width: layout.width}}
         style={styles.tabLayout}
       />
-
-      <ScrollView style={styles.scrollView}>{TaskAdapter(tasks)}</ScrollView>
-
       <Modal
         animationType="slide"
         transparent={true}
@@ -150,16 +204,16 @@ const Task = () => {
             <TextInput
               style={styles.input}
               placeholder="Task Weightage"
-              onChangeText={text => setTaskWeightage(text)}
+              onChangeText={text => setWeightage(text)}
             />
             <DateTimePickerModal
               isVisible={modalVisible}
               mode="datetime"
               date={dueDate}
-              onConfirm={handleDateTimePickerConfirm}
+              onConfirm={handleDueDateChange}
               onCancel={() => setModalVisible(false)}
             />
-            <PaperButton mode="contained" onPress={handleSaveTask}>
+            <PaperButton mode="contained" onPress={handleAddTask}>
               Save Task
             </PaperButton>
             <PaperButton onPress={() => setModalVisible(false)}>
@@ -179,7 +233,8 @@ const Task = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f4f4f4',
+    backgroundColor: '#D3D3D3',
+    
   },
   tabLayout: {
     flex: 1,

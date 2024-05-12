@@ -1,45 +1,98 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  TextInput,
+} from 'react-native';
 
-export default function TaskItem({task}) {
+const TaskAdapter = ({task, onOkButtonPress}) => {
   if (!task) {
-    return null;
+    return;
   }
   return (
     <View style={styles.container}>
-      <Text style={styles.taskDescription}>{task.task.task_description}</Text>
-      <Text style={styles.dueDate}>
-        Due: {new Date(task.task.due_date).toGMTString()}
-      </Text>
-      <Text style={styles.assignedTo}>TO: {task.assigned_to.name}</Text>
-      <Text style={styles.weightage}>Weightage: {task.task.weightage}</Text>
-      <Text style={styles.assignedBy}>By: {task.assigned_by.name}</Text>
+      <Text style={styles.highlightedTest}>Task: </Text>
+      <Text style={styles.simpleText}>{task.task_description}</Text>
+      <View style={styles.dueDate}>
+        <Text style={styles.highlightedTest}>Due: </Text>
+        <Text style={styles.simpleText}>
+          {new Date(task.due_date).toGMTString()}
+        </Text>
+        <Text style={styles.highlightedTest}>To: </Text>
+        <Text style={styles.simpleText}>{task.assigned_to.name}</Text>
+      </View>
+      <View style={styles.dueDate}>
+        <Text style={styles.highlightedTest}>Weightage: </Text>
+        <Text style={styles.simpleText}>{task.weightage}</Text>
+        <Text style={styles.highlightedTest}>By: </Text>
+        <Text style={styles.simpleText}>{task.assigned_by.name}</Text>
+      </View>
+      <View style={styles.scoreContainer}>
+        <TextInput style={styles.scoreInput} placeholder="Enter Score" />
+        <TouchableOpacity
+          style={styles.btn}
+          onPress={() => onOkButtonPress(task)}>
+          <Text style={{color: 'black', fontSize: 20}}>Ok</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    marginVertical: 5,
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  highlightedTest: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: 'black',
+  },
+  simpleText: {
+    color: 'black',
+    fontSize: 17,
   },
   taskDescription: {
-    fontSize: 16,
-    marginBottom: 5,
+    flex: 1,
+    color: 'black',
+    fontSize: 15,
   },
   dueDate: {
-    color: '#888',
-    marginBottom: 5,
+    flex: 2,
+    color: 'black',
+    flexDirection: 'row',
+    paddingRight: 12,
+    fontSize: 17,
+    // justifyContent:'space-between'
   },
-  assignedTo: {
-    marginBottom: 5,
+  scoreInput: {
+    flex: 2,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    paddingHorizontal: 5,
+    color: 'black',
   },
-  weightage: {
-    marginBottom: 5,
+  scoreContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    color: 'black',
+    marginTop: 12,
   },
-  assignedBy: {
-    color: '#888',
+  btn: {
+    backgroundColor: '#D3D3D3',
+    width: 56,
+    height: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
+
+export default TaskAdapter;
