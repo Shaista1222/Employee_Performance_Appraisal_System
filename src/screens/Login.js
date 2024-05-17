@@ -10,7 +10,7 @@ import {Button} from 'react-native-paper';
 import {useNavigation} from '@react-navigation/native';
 import IPAddress from '../../IPAddress';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import SessionServiceListner from './Services/SessionServiceListner';
+import SessionServiceListner from './Services/SessionService';
 
 const Login = () => {
   const navigation = useNavigation();
@@ -21,7 +21,7 @@ const Login = () => {
   const loginToEmployee = async (emailOrAridNo, password) => {
     try {
       const response = await fetch(
-        `http://${IPAddress}/api/Login/Login?emailOrAridNo=${emailOrAridNo}&password=${password}`,
+        `${IPAddress}/Login/Login?emailOrAridNo=${emailOrAridNo}&password=${password}`,
       );
       const user = await response.json();
 
@@ -75,7 +75,7 @@ const Login = () => {
   const loginStudent = async (emailOrAridNo, password) => {
     try {
       const response = await fetch(
-        `http://${IPAddress}/api/Login/Login?emailOrAridNo=${emailOrAridNo}&password=${password}`,
+        `${IPAddress}/Login/Login?emailOrAridNo=${emailOrAridNo}&password=${password}`,
       );
       if (!response.ok) {
         Alert.alert(

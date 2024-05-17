@@ -1,7 +1,7 @@
 import IPAddress from '../../../IPAddress';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const SessionServiceListner = {
+const SessionService = {
   getCurrentSession: async () => {
     try {
       const response = await fetch(
@@ -37,4 +37,4 @@ const SessionServiceListner = {
 };
 
 
-export default SessionServiceListner;
+export default SessionService;

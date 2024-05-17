@@ -8,40 +8,50 @@ import {
 } from 'react-native';
 
 const TaskAdapter = ({task, onOkButtonPress}) => {
-  if (!task) {
-    return;
-  }
+  // if (!task) {
+  //   return;
+  // }
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.highlightedTest}>Task: </Text>
-      <Text style={styles.simpleText}>{task.task_description}</Text>
-      <View style={styles.dueDate}>
-        <Text style={styles.highlightedTest}>Due: </Text>
-        <Text style={styles.simpleText}>
-          {new Date(task.due_date).toGMTString()}
-        </Text>
-        <Text style={styles.highlightedTest}>To: </Text>
-        <Text style={styles.simpleText}>{task.assigned_to.name}</Text>
-      </View>
-      <View style={styles.dueDate}>
-        <Text style={styles.highlightedTest}>Weightage: </Text>
-        <Text style={styles.simpleText}>{task.weightage}</Text>
-        <Text style={styles.highlightedTest}>By: </Text>
-        <Text style={styles.simpleText}>{task.assigned_by.name}</Text>
-      </View>
-      <View style={styles.scoreContainer}>
-        <TextInput style={styles.scoreInput} placeholder="Enter Score" />
-        <TouchableOpacity
-          style={styles.btn}
-          onPress={() => onOkButtonPress(task)}>
-          <Text style={{color: 'black', fontSize: 20}}>Ok</Text>
-        </TouchableOpacity>
+    <View style={styles.conta}>
+      <View style={styles.container}>
+        <Text style={styles.highlightedTest}>Task: </Text>
+        <Text style={styles.simpleText}>{task.task.task_description}</Text>
+        <View style={styles.dueDate}>
+          <Text style={styles.highlightedTest}>Due: </Text>
+          <Text style={styles.simpleText}>
+            {new Date(task.task.due_date).toGMTString()}
+          </Text>
+        </View>
+          <View style={styles.dueDate}>
+            <Text style={styles.highlightedTest}>To: </Text>
+            <Text style={styles.simpleText}>{task.assigned_to.name}</Text>
+          </View>
+        <View style={styles.dueDate}>
+          <Text style={styles.highlightedTest}>Weightage: </Text>
+          <Text style={styles.simpleText}>{task.task.weightage}</Text>
+          <View style={styles.portionSpacing}>
+            <Text style={styles.highlightedTest}>By: </Text>
+            <Text style={styles.simpleText}>{task.assigned_by.name}</Text>
+          </View>
+        </View>
+        <View style={styles.scoreContainer}>
+          <TextInput style={styles.scoreInput} placeholder="Enter Score" />
+          <TouchableOpacity
+            style={styles.btn}
+            onPress={() => onOkButtonPress(task)}>
+            <Text style={{color: 'black', fontSize: 20}}>Ok</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  conta: {
+    backgroundColor: 'white',
+  },
   container: {
     padding: 10,
     borderWidth: 1,
@@ -49,6 +59,14 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     flex: 1,
     backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   highlightedTest: {
     fontSize: 17,
@@ -65,18 +83,22 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   dueDate: {
-    flex: 2,
+    // flex: 2,
     color: 'black',
     flexDirection: 'row',
-    paddingRight: 12,
     fontSize: 17,
-    // justifyContent:'space-between'
+    paddingTop:6
+  },
+  portionSpacing: {
+    paddingLeft: 20,
+    flexDirection: 'row',
+    flex: 2,
   },
   scoreInput: {
     flex: 2,
     borderWidth: 1,
     borderColor: '#ccc',
-    paddingHorizontal: 5,
+    paddingHorizontal: 3,
     color: 'black',
   },
   scoreContainer: {

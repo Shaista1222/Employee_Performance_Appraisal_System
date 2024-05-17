@@ -1,29 +1,35 @@
-// import React from 'react';
-// import { View, Picker, StyleSheet } from 'react-native';
-// import CommonData from './CommonData'; // Import your CommonData file
+import React from 'react';
+import { View, Text, Spinner } from 'react-native';
+import { CommonData } from './CommonData';
 
-// const AddIndividualKpiFragment = () => {
-//     return (
-//         <View style={styles.container}>
-//             <Picker style={styles.picker}>
-//                 {/* Render employee names here */}
-//                 {CommonData.generateNames().map((name, index) => (
-//                     <Picker.Item key={index} label={name} value={name} />
-//                 ))}
-//             </Picker>
-//         </View>
-//     );
-// };
+const AddIndividualKpiFragment = () => {
+    const [names, setNames] = React.useState([]);
+    const [isLoading, setIsLoading] = React.useState(true);
 
-// const styles = StyleSheet.create({
-//     container: {
-//         flex: 1,
-//         justifyContent: 'center',
-//         alignItems: 'center',
-//     },
-//     picker: {
-//         width: '80%',
-//     },
-// });
+    React.useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const commonData = new CommonData();
+                const generatedNames = await commonData.generateNames();
+                setNames(generatedNames);
+                setIsLoading(false);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+        fetchData();
+    }, []);
 
-// export default AddIndividualKpiFragment;
+    if (isLoading) {
+        return <Spinner />;
+    }
+
+    return (
+        <View>
+            <Text>Individual KPI Fragment</Text>
+            {/* Render your spinner here with data from state */}
+        </View>
+    );
+};
+
+export default AddIndividualKpiFragment;

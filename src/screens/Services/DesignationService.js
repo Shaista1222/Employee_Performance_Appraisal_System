@@ -1,7 +1,7 @@
 import {Alert} from 'react-native';
 import IPAddress from '../../../IPAddress';
 
-export default class DesignationService {
+export default DesignationService= {
   async fetchDesignations(endpoint) {
     try {
       const response = await fetch(
@@ -16,11 +16,10 @@ export default class DesignationService {
         `Something went wrong while fetching designations: ${error.message}`,
       );
     }
-  }
-
+  },
   async getDesignations() {
     return this.fetchDesignations('GetDesignations');
-  }
+  },
 
   populateDesignationSpinner(designationList, setItems) {
     if (designationList && designationList.length > 0) {

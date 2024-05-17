@@ -1,9 +1,9 @@
 import { Alert } from "react-native";
 import IPAddress from "../../../IPAddress";
 
-export default class DepartmentService {
+ const DepartmentService = {
 
-    async fetchDepartments(endpoint) {
+     fetchDepartments:async(endpoint) =>{
       try {
         const response = await fetch(`${IPAddress}/Department/${endpoint}`);
         if (!response.ok) {
@@ -13,19 +13,19 @@ export default class DepartmentService {
       } catch (error) {
         throw new Error(`Something went wrong while fetching departments: ${error.message}`);
       }
-    }
+    },
   
-    async getDepartments() {
+     getDepartments:async function() {
       return this.fetchDepartments('GetDepartments');
     }
   
-    populateDepartmentSpinner(departmentList, setItems) {
-      if (departmentList && departmentList.length > 0) {
-        const names = departmentList.map(department => department.name);
-        setItems(names);
-      } else {
-        Alert.alert('Department list is empty', ToastAndroid.LONG);
-      }
-    }
+    // populateDepartmentSpinner(departmentList, setItems)=> {
+    //   if (departmentList && departmentList.length > 0) {
+    //     const names = departmentList.map(department => department.name);
+    //     setItems(names);
+    //   } else {
+    //     Alert.alert('Department list is empty', ToastAndroid.LONG);
+    //   }
+    // }
   }
-  
+  export default DepartmentService;

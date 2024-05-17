@@ -11,6 +11,7 @@ import OptionsModal from './OptionsModal'; // Import OptionsModal
 import {COLORS} from '../../theme/theme';
 import Evaluator from '../../screens/DirectorScreens/Evaluator';
 import OptionWeightage from '../../screens/DirectorScreens/OptionWeightage';
+import Scores from '../../screens/Scores';
 
 const Tab = createBottomTabNavigator();
 
@@ -88,8 +89,8 @@ const DirectorTabsNavigator = () => {
           }}
         />
         <Tab.Screen
-          name="Evaluators"
-          component={Evaluator}
+          name="Scores"
+          component={Scores}
           options={{
             tabBarIcon: ({focused}) => (
               <View style={styles.tabIconContainer}>

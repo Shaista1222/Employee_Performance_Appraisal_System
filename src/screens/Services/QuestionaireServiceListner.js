@@ -2,6 +2,36 @@ import { Alert } from 'react-native';
 import IPAddress from '../../../IPAddress';
 
 const QuestionaireServiceListner = {
+  async postQuestion(question) {
+    try {
+      const response = await fetch(`${IPAddress}/Questionnaire/postQuestion`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(question),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to post question');
+      }
+      return await response.json();
+    } catch (error) {
+      throw new Error(error.message || 'Failed to post question');
+    }
+  },
+
+  async getEvaluationQuestionnaire(questionnaireType) {
+    try {
+      const response = await fetch(`${IPAddress}/Questionnaire/questionnaire/${questionnaireType}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch questionnaire');
+      }
+      return await response.json();
+    } catch (error) {
+      throw new Error(error.message || 'Failed to fetch questionnaire');
+    }
+  },
+
   getConfidentialQuestions: async () => {
     try {
       const response = await fetch(
@@ -68,6 +98,9 @@ const QuestionaireServiceListner = {
       Alert.alert(error.message);
     }
   },
+  getQuestionnairTypeTitles(questionnaireTypeList) {
+    return questionnaireTypeList.map(type => type.name);
+  }
 };
 
 export default QuestionaireServiceListner;

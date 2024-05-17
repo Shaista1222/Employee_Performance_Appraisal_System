@@ -1,35 +1,107 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
-import {VictoryPie} from 'victory-native';
-import Svg from 'react-native-svg';
+import {View, StyleSheet, Dimensions,Text} from 'react-native';
+import {BarChart, PieChart} from 'react-native-chart-kit';
 
-const showPerformance = () => {
-  // const { employeeDetailsList } = this.props;
-  // Define the data for the pie chart
-  const data = [
-    {x: 'Project', y: 30},
-    {x: 'Administrative', y: 20},
-    {x: 'Academic', y: 25},
-    {x: 'Punctuality', y: 25},
+const screenWidth = Dimensions.get('window').width;
+const chartConfig = {
+  backgroundColor: 'gray',
+  backgroundGradientFrom: '#ffffff',
+  backgroundGradientTo: '#ffffff',
+  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+  labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+  strokeWidth: 2,
+  barPercentage: 0.5,
+  useShadowColorFromDataset: false,
+  decimalPlaces: 2,
+  style: {
+    borderRadius: 16,
+  },
+};
+
+export const BarChartComponent = () => {
+  const barChartData = {
+    labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+    datasets: [
+      {
+        data: [20, 45, 28, 80, 99, 43],
+      },
+    ],
+  };
+
+  return (
+    <View style={styles.container}>
+      <BarChart
+        data={barChartData}
+        width={screenWidth}
+        height={390}
+        yAxisLabel="$"
+        chartConfig={chartConfig}
+        verticalLabelRotation={30}
+      />
+    </View>
+  );
+};
+
+export const PieChartComponent = () => {
+  const pieChartData = [
+    {
+      name: 'Seoul',
+      population: 21500000,
+      color: 'rgba(131, 167, 234, 1)',
+      legendFontColor: '#7F7F7F',
+      legendFontSize: 15,
+    },
+    {
+      name: 'Toronto',
+      population: 2800000,
+      color: '#F00',
+      legendFontColor: '#7F7F7F',
+      legendFontSize: 15,
+    },
+    {
+      name: 'Beijing',
+      population: 527612,
+      color: 'red',
+      legendFontColor: '#7F7F7F',
+      legendFontSize: 15,
+    },
+    {
+      name: 'New York',
+      population: 8538000,
+      color: '#ffffff',
+      legendFontColor: '#7F7F7F',
+      legendFontSize: 15,
+    },
+    {
+      name: 'Moscow',
+      population: 11920000,
+      color: 'rgb(0, 0, 255)',
+      legendFontColor: '#7F7F7F',
+      legendFontSize: 15,
+    },
   ];
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>KPI</Text>
-      {/* You can add dropdown or other UI elements here */}
-      <Svg style={styles.chartContainer}>
-        <VictoryPie
-          data={data}
-          colorScale={['green', 'orange', 'brown', 'purple']}
-          innerRadius={70} // Adjust as needed for the cutout
-          labelRadius={({innerRadius}) => innerRadius + 15} // Adjust label position
-          style={{
-            labels: {fill: 'white', fontSize: 16, fontWeight: 'bold'},
-          }}
-        />
-      </Svg>
-      <Text style={styles.label}>Description Label</Text>
-      {/* Add buttons or other UI elements */}
+     <PieChart
+        data={pieChartData}
+        width={screenWidth}
+        height={230}
+        chartConfig={chartConfig}
+        accessor={'population'}
+        backgroundColor={'transparent'}
+        absolute
+      />
+      <View style={styles.legendContainer}>
+        {pieChartData.map((data, index) => (
+          <View key={index} style={styles.legendItem}>
+            <View style={[styles.legendColor, {backgroundColor: data.color}]} />
+            <Text style={styles.legendText}>
+              {data.name}: {data.population}
+            </Text>
+          </View>
+        ))}
+      </View>
     </View>
   );
 };
@@ -37,100 +109,30 @@ const showPerformance = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    // justifyContent: 'center',
+    // alignItems: 'center',
+    paddingTop: 50,
+    flexDirection: 'column',
+  },
+  legendContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'center',
+    marginTop: 10,
+  },
+  legendItem: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 50, // Adjust to fit your design
+    marginRight: 10,
   },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
+  legendColor: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 5,
   },
-  chartContainer: {
-    height: 300, // Adjust based on your design
-    width: 300, // Adjust based on your design
-  },
-  label: {
-    fontSize: 18,
-    margin: 10,
+  legendText: {
+    fontSize: 14,
+    color:'black',
   },
 });
-
-export default showPerformance; // Exporting the PieChart component
-
-// import React from 'react';
-// import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
-// import {PieChart} from 'react-native-chart-kit';
-// import Color from 'color';
-// const chartConfig = {
-//   backgroundGradientFrom: '#1E2923',
-//   backgroundGradientFromOpacity: 0,
-//   backgroundGradientTo: '#08130D',
-//   backgroundGradientToOpacity: 0.5,
-//   color: (opacity = 1) => Color('purple').alpha(opacity).rgb().string(),
-//   strokeWidth: 2,
-//   barPercentage: 0.5,
-//   useShadowColorFromDataset: false, // optional
-// };
-
-// const data = [
-//   {
-//     name: 'Punctuality',
-//     population: 25,
-//     color: 'purple',
-//     legendFontColor: '#7F7F7F',
-//     legendFontSize: 15,
-//   },
-//   {
-//     name: 'Project',
-//     population: 30,
-//     color: 'green',
-//     legendFontColor: '#7F7F7F',
-//     legendFontSize: 15,
-//   },
-//   {
-//     name: 'Administrative',
-//     population: 20,
-//     color: 'brown',
-//     legendFontColor: '#7F7F7F',
-//     legendFontSize: 15,
-//   },
-//   {
-//     name: 'Academic',
-//     population: 25,
-//     color: 'orange',
-//     legendFontColor: '#7F7F7F',
-//     legendFontSize: 15,
-//   },
-// ];
-
-// const ShowKPI = () => {
-  
-//   return (
-//     <View style={styles.container}>
-//       <PieChart
-//         data={data}
-//         width={350}
-//         height={220}
-//         chartConfig={chartConfig}
-//         accessor={'population'}
-//         backgroundColor={'transparent'}
-//         paddingLeft={'15'}
-//         center={[0, 0]}
-//         innerRadius={70}
-//         absolute
-//       />
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     justifyContent: 'center',
-//     alignContent: 'center',
-//     marginTop: 190,
-//   },
-  
-// });
-
-// export default ShowKPI;

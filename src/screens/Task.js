@@ -12,22 +12,18 @@ import {
   FlatList,
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import {TabView, SceneMap} from 'react-native-tab-view';
+import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
 import TaskAdapter from './Adapter/TaskAdapter';
 import TaskService from './Services/TaskService';
 import {Button as PaperButton} from 'react-native-paper';
 import DepartmentService from './Services/DepartmentService';
 import EmployeeService from './Services/EmployeeService';
 import DesignationService from './Services/DesignationService';
-import Designation from './models/Designation';
+import AssignTask from './DirectorScreens/AssignTask';
 
 const Task = () => {
   const layout = useWindowDimensions();
-  // const [tasks, setTasks] = useState([]);
-  // const [tabIndex, setTabIndex] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
-  // const [taskDescription, setTaskDescription] = useState('');
-  // const [taskWeightage, setTaskWeightage] = useState('');
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [taskList, setTaskList] = useState([]);
   const [employeeList, setEmployeeList] = useState([]);
@@ -42,7 +38,6 @@ const Task = () => {
   //   loadTasksForSelectedTab(tabIndex);
   // }, [tabIndex]);
   useEffect(() => {
-    // Fetch tasks and employee data on component mount
     fetchTasks();
     fetchEmployees();
     fetchEmployeeTypes();
@@ -53,7 +48,6 @@ const Task = () => {
 
   const fetchTasks = async () => {
     try {
-      
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -62,8 +56,8 @@ const Task = () => {
   const fetchEmployees = async () => {
     try {
       EmployeeService.getEmployees()
-      .then(employees => setEmployeeList(employees))
-      .catch(error => console.error(error));
+        .then(employees => setEmployeeList(employees))
+        .catch(error => console.error(error));
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -71,8 +65,8 @@ const Task = () => {
   const fetchEmployeeTypes = async () => {
     try {
       EmployeeService.getEmployeeTypes()
-      .then(employeeTypes => setEmployeeTypeList(employeeTypes))
-      .catch(error => console.error(error));
+        .then(employeeTypes => setEmployeeTypeList(employeeTypes))
+        .catch(error => console.error(error));
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -81,8 +75,8 @@ const Task = () => {
   const fetchDesignations = async () => {
     try {
       DesignationService.getDesignation()
-      .then(Designation => setDesignationList(Designation))
-      .catch(error => console.error(error));
+        .then(Designation => setDesignationList(Designation))
+        .catch(error => console.error(error));
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -91,8 +85,8 @@ const Task = () => {
   const fetchDepartments = async () => {
     try {
       DepartmentService.getDepartments()
-      .then(departments => setDepartmentList(departments))
-      .catch(error => console.error(error));
+        .then(departments => setDepartmentList(departments))
+        .catch(error => console.error(error));
       // setTaskList(tasks);
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -107,9 +101,10 @@ const Task = () => {
     switch (index) {
       case 0:
         TaskService.getTasks()
-          .then((tasks) =>{setTaskList(tasks)
-          console.log(tasks);
-          }) 
+          .then(tasks => {
+            setTaskList(tasks);
+            console.log(tasks);
+          })
           .catch(error => console.error(error));
         break;
       case 1:
@@ -127,7 +122,7 @@ const Task = () => {
     }
   };
 
-  const renderScene = ({ route }) => {
+  const renderScene = ({route}) => {
     switch (route.key) {
       case 'tab1':
       case 'tab2':
@@ -136,8 +131,8 @@ const Task = () => {
           <View style={styles.scrollView}>
             <FlatList
               data={taskList}
-              renderItem={({ item }) => item ? <TaskAdapter task={item} /> : null}
-              keyExtractor={(item) => (item && item.id) ? item.id.toString() : ''}
+              renderItem={({item}) => <TaskAdapter task={item} />}
+              keyExtractor={item => (item && item.id ? item.id.toString() : '')}
             />
           </View>
         );
@@ -145,8 +140,7 @@ const Task = () => {
         return null;
     }
   };
-  
-  
+
   const renderTaskItem = ({item}) => {
     return (
       <TouchableOpacity onPress={() => handleTaskItemClick(item)}>
@@ -165,8 +159,7 @@ const Task = () => {
   };
 
   const handleAddTask = () => {
-    // Implement logic to add task
-    Alert.alert('Add Task', 'Add task functionality');
+    setModalVisible(true);
   };
 
   return (
@@ -186,46 +179,23 @@ const Task = () => {
         }}
         renderScene={renderScene}
         onIndexChange={handleTabChange}
-        initialLayout={{width: layout.width}}
         style={styles.tabLayout}
+        scrollEnabled={true}
+        initialLayout={{width: layout.width}}
+        renderTabBar={props => (
+          <TabBar
+            activeColor={'black'} // Set active tab text color
+            inactiveColor={'gray'}
+            {...props}
+            scrollEnabled={true} // Enable scroll for TabBar
+            style={styles.tabBar}
+          />
+        )}
       />
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <TextInput
-              style={styles.input}
-              placeholder="Task Description"
-              onChangeText={text => setTaskDescription(text)}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Task Weightage"
-              onChangeText={text => setWeightage(text)}
-            />
-            <DateTimePickerModal
-              isVisible={modalVisible}
-              mode="datetime"
-              date={dueDate}
-              onConfirm={handleDueDateChange}
-              onCancel={() => setModalVisible(false)}
-            />
-            <PaperButton mode="contained" onPress={handleAddTask}>
-              Save Task
-            </PaperButton>
-            <PaperButton onPress={() => setModalVisible(false)}>
-              Cancel
-            </PaperButton>
-          </View>
-        </View>
-      </Modal>
-
       <TouchableOpacity style={styles.fab} onPress={handleAddTask}>
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
+      <AssignTask visible={modalVisible} onClose={() => setModalVisible(false)} />
     </View>
   );
 };
@@ -234,25 +204,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#D3D3D3',
-    
   },
   tabLayout: {
     flex: 1,
     // backgroundColor: '#f4f4f4',
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    color: 'black',
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    elevation: 5,
-    color: 'black',
-  },
+  }, 
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -341,6 +297,9 @@ const styles = StyleSheet.create({
   fabText: {
     fontSize: 24,
     color: '#FFFFFF',
+  },
+  tabBar: {
+    backgroundColor: '#FFFFFF',
   },
 });
 

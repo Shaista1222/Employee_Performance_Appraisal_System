@@ -1,9 +1,8 @@
 import IPAddress from '../../../IPAddress';
-export default EmployeeQuestionScoreService= {
-  
+export default EvaluationScores= {
     async getEmployeeQuestionScore(employeeID, sessionID, evaluationTypeID) {
         try {
-            const response = await fetch(`${IPAddress}/EmployeeQuestionsScore/GetEmployeeQuestionsScore?employeeID=${employeeID}&sessionID=${sessionID}`)
+            const response = await fetch(`${IPAddress}/EvaluationScores/GetQuestionsScoresByEvaluationId?employeeID=${employeeID}&sessionID=${sessionID}&evaluationTypeId=${evaluationTypeID}`)
             if (response.ok) {
                 const data = await response.json();
                 return data;
@@ -15,5 +14,3 @@ export default EmployeeQuestionScoreService= {
         }
     }
 }
-
-

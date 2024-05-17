@@ -7,11 +7,12 @@ import {
   Modal,
   TextInput,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {Picker} from '@react-native-picker/picker';
 import {Menu, MenuItem} from 'react-native-material-menu';
 import {Button} from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import QuestionaireServiceListner from '../Services/QuestionaireServiceListner';
 const questions = [
   {
     id: '1',
@@ -75,17 +76,17 @@ export const QuestionItem = ({question}) => {
         ref={setMenuRef}
         button={
           <TouchableOpacity onPress={showMenu}>
-           
-              <MaterialCommunityIcons
-                name="dots-vertical"
-                color="blue"
-                size={24}
-                onPress={showMenu}
-              />
-            
+            <MaterialCommunityIcons
+              name="dots-vertical"
+              color="blue"
+              size={24}
+              onPress={showMenu}
+            />
           </TouchableOpacity>
         }>
-        <MenuItem onPress={updateItem}>Update</MenuItem>
+        <MenuItem style={{color: 'black'}} onPress={updateItem}>
+          Update
+        </MenuItem>
         <MenuItem onPress={deleteItem}>Delete</MenuItem>
       </Menu>
     </View>
@@ -134,6 +135,48 @@ export const AddQuestion = ({visible, onClose}) => {
 const Questionaire = () => {
   const [Evaluation, setEvaluation] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
+  const [questionsList, setQuestionsList] = useState([]);
+  const [questionnaireTypes, setQuestionnaireTypes] = useState([]);
+  const [questionnaireTypeId, setQuestionnaireTypeId] = useState('');
+  useEffect(() => {
+    const fetchQuestionnaire = async () => {
+      try {
+        const data = await QuestionaireServiceListner.getQuestionnaireTypes();
+        setQuestionnaireTypes(data);
+      } catch (error) {
+        Alert.alert(error.message);
+      }
+    };
+    const fetchQuestionnaireByType = async (
+      questionnaireTypeId
+    ) => {
+      try {
+        const data = await QuestionaireServiceListner.getQuestionnaireByType(
+          questionnaireTypeId,
+        );
+        setQuestionsList(data);
+      } catch (error) {
+        Alert.alert(error.message);
+      }
+    };
+    fetchEvaluationScore(questionnaireTypeId);
+    fetchQuestionnaire();
+    // fetchSession();
+  }, []);
+  useEffect(() => {
+    if (Evaluation !== null) {
+      setQuestionnaireTypeId(Evaluation);
+      console.log(Evaluation);
+    }
+  }, [Evaluation]);
+
+  // useEffect(() => {
+  //   if (selectedSession !== null) {
+  //     setSessionId(selectedSession);
+  //     console.log(selectedSession);
+  //   }
+  // }, [selectedSession]);
+
   return (
     <>
       <View style={styles.title}>
@@ -146,7 +189,14 @@ const Questionaire = () => {
           style={{color: 'black'}}
           dropdownIconColor="black"
           mode="dropdown">
-          <Picker.Item label="Questionnaire Type" value="PeerEvaluation" />
+          {questionnaireTypes.map((questionnaireType, index) => (
+            <Picker.Item
+              key={index}
+              label={questionnaireType.name}
+              value={questionnaireType.id}
+            />
+          ))}
+          <Picker.Item label="Questionnaire Type" value="--" />
         </Picker>
         <TouchableOpacity
           style={styles.button}
@@ -157,11 +207,11 @@ const Questionaire = () => {
           visible={modalVisible}
           onClose={() => setModalVisible(false)}
         />
-        <FlatList
-          data={questions}
+        {/* <FlatList
+          data={questionsList}
           keyExtractor={item => item.id}
           renderItem={({item}) => <QuestionItem question={item} />}
-        />
+        /> */}
       </View>
     </>
   );

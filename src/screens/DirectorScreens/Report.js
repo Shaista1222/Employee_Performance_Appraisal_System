@@ -12,10 +12,9 @@ import {
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import EmployeeService from '../Services/EmployeeService';
-import EmployeeDetailsScoreAdapter from '../Adapter/EmployeeDetailsScoreAdapter'; // Adjust the path as per your project structure
-import PerformanceFragment from '../PerformanceFragment'; // Adjust the path as per your project structure
+import EmployeeDetailsScoreAdapter from '../Adapter/EmployeeDetailsScoreAdapter';
 
-const Report = () => {
+const Report = ({navigation}) => {
   const [employeeDetailsScoreList, setEmployeeDetailsScoreList] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [
@@ -28,7 +27,7 @@ const Report = () => {
       try {
         const data = await EmployeeService.getEmployeesWithKpiScores();
         setEmployeeDetailsScoreList(data);
-        setFilteredEmployeeDetailsScoreList(data); // Initialize filtered list with the full list
+        setFilteredEmployeeDetailsScoreList(data); 
       } catch (error) {
         Alert.alert(error.message);
       }
@@ -37,10 +36,11 @@ const Report = () => {
     fetchData();
   }, []);
 
-  const handleListItemClick = employeeDetailsScore => {
-    // Handle list item click here
-    Alert.alert('Enter employee');
+  // const handleListItemClick = employeeDetailsScore => {
+  const handleListItemClick = () => {
+    navigation.navigate('Performance');
   };
+  // };
 
   const handleSearch = query => {
     setSearchQuery(query);
@@ -83,7 +83,7 @@ const Report = () => {
             <EmployeeDetailsScoreAdapter
               employeeDetailsScore={item}
               index={index}
-              onPress={() => handleListItemClick(item)}
+              onPress={handleListItemClick}
             />
           </ScrollView>
         )}

@@ -1,7 +1,9 @@
 import React from 'react';
 import {View, Modal, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import MatIcon from 'react-native-vector-icons/MaterialIcons';
+import {useNavigation} from '@react-navigation/native';
 const OptionsModal = ({visible, onClose}) => {
+  const navigation = useNavigation();
   return (
     <Modal
       animationType="fade"
@@ -11,7 +13,11 @@ const OptionsModal = ({visible, onClose}) => {
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
           {/* Add your options here */}
-          <TouchableOpacity style={styles.button} onPress={() => {}}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              // navigation.navigate('DirectorMain', {screen: 'DirectorMain'});
+            }}>
             <Text style={styles.buttonText}>Option 1</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={() => {}}>
@@ -22,11 +28,7 @@ const OptionsModal = ({visible, onClose}) => {
           </TouchableOpacity>
           <TouchableOpacity onPress={onClose}>
             <Text style={styles.closeText}>
-              <MatIcon
-                name="keyboard-arrow-down"
-                size={25}
-                color='white'
-              />
+              <MatIcon name="keyboard-arrow-down" size={25} color="white" />
             </Text>
           </TouchableOpacity>
         </View>
@@ -62,10 +64,10 @@ const styles = StyleSheet.create({
     padding: 2,
     width: 70,
   },
-  buttonText:{
+  buttonText: {
     color: 'black',
     fontSize: 18,
-  }
+  },
 });
 
 export default OptionsModal;

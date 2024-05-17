@@ -1,53 +1,41 @@
 import React, { useEffect, useState } from 'react';
-import { View, Alert } from 'react-native';
-import { Spinner } from 'native-base'; // Assuming you're using native-base for spinners
-import SessionServiceListner from '../Services/SessionServiceListner';
-import DesignationService from '../Services/DesignationService';
-import DepartmentService from '../Services/DepartmentService';
-import EmployeeService from '../Services/EmployeeService';
+import { View, Text, Spinner } from 'react-native';
+import { DepartmentService } from '../Services/DepartmentService';
+import { DesignationService } from '../Services/DesignationService';
+import { EmployeeService } from '../Services/EmployeeService';
 
 const AddGroupKpi = () => {
-    const [sessionList, setSessionList] = useState([]);
     const [designationList, setDesignationList] = useState([]);
     const [departmentList, setDepartmentList] = useState([]);
     const [employeeTypeList, setEmployeeTypeList] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // Simulating service calls
-        const getSessionData = async () => {
-            SessionServiceListner.getSessions()
-            .then(sessions => setSessionList(sessions))
-            .catch(error => console.error(error));
+        const fetchData = async () => {
+            try {
+                const designationData = await DesignationService.getDesignations();
+                const departmentData = await DepartmentService.getDepartments();
+                const employeeTypeData = await EmployeeService.getEmployeeTypes();
+
+                setDesignationList(designationData);
+                setDepartmentList(departmentData);
+                setEmployeeTypeList(employeeTypeData);
+                setIsLoading(false);
+            } catch (error) {
+                console.error(error);
+            }
         };
-
-            const getDesignationData = async () => {
-                DesignationService.getDesignationData()
-                .then(designationList => setDesignationList(designationList))
-                .catch(error => console.error(error));
-            };
-
-       
-            const getDepartmentData = async () => {
-                DepartmentService.getDepartmentData()
-                .then(departmentList => setDepartmentList(departmentList))
-                .catch(error => console.error(error));
-            };
-        
-            const getEmployeeTypeData = async () => {
-                EmployeeService.getEmployeeTypes()
-                .then(employeeTypeList => setEmployeeTypeList(employeeTypeList))
-                .catch(error => console.error(error));
-            };
-
-        getSessionData();
-        getDesignationData();
-        getDepartmentData();
-        getEmployeeTypeData();
+        fetchData();
     }, []);
+
+    if (isLoading) {
+        return <Spinner />;
+    }
 
     return (
         <View>
-            {/* Render your spinners here */}
+            <Text>Group KPI Fragment</Text>
+            {/* Render your spinners here with data from state */}
         </View>
     );
 };
