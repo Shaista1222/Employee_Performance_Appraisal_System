@@ -41,3 +41,21 @@ const CourseServiceListener = {
 };
 
 export default CourseServiceListener;
+
+/*
+getStudentCourses: async (studentID, sessionID) => {
+    try {
+        const response = await fetch(`${IPAddress}/Course/GetStudentCourses?studentID=${studentID}&sessionID=${sessionID}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch student courses');
+        }
+        const data = await response.json();
+        await AsyncStorage.setItem('student', JSON.stringify(data));
+        return data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+
+*/ 

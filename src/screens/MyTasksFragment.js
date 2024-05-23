@@ -1,43 +1,76 @@
-// import React, { useEffect, useState } from 'react';
-// import { View, Text, FlatList, ToastAndroid } from 'react-native';
-// import { TaskService } from './TaskService'; // Import your TaskService if available
-// import { MyTasksListItem } from './MyTasksListItem'; // Import your MyTasksListItem if available
+// components/MyTasksFragment.js
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, StyleSheet, Alert } from 'react-native';
+import MyTasksAdapter from './Adapter/MyTasksAdapter';
+import TaskService from './Services/TaskService';
 
-// const MyTasksFragment = () => {
-//     const [taskWithEmployeesList, setTaskWithEmployeesList] = useState([]);
-//     const employeeID = 1;
+const MyTasksFragment = () => {
+  const [taskWithEmployeesList, setTaskWithEmployeesList] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-//     useEffect(() => {
-//         const fetchEmployeeTasks = async () => {
-//             try {
-//                 const tasksWithEmployees = await TaskService.getEmployeeTasks(employeeID);
-//                 setTaskWithEmployeesList(tasksWithEmployees);
-//             } catch (error) {
-//                 ToastAndroid.show(error.message, ToastAndroid.SHORT);
-//             }
-//         };
+  useEffect(() => {
+    const fetchTasks = async employeeID => {
+      try {
+        const tasks = await TaskService.getEmployeeTasks(employeeID);
+        if (tasks.length === 0) {
+          Alert.alert('No tasks found');
+        } else {
+          setTaskWithEmployeesList(tasks);
+          console.log(tasks)
+        }
+      } catch (error) {
+        Alert.alert('Error', error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-//         fetchEmployeeTasks();
+    fetchTasks(7);
+  }, []);
 
-//         // Cleanup function
-//         return () => {
-//             // Perform any cleanup if needed
-//         };
-//     }, []);
+  return (
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Tasks</Text>
+      </View>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <Text>Loading...</Text>
+        </View>
+      ) : (
+        <View style={styles.container}>
+          <FlatList
+            data={taskWithEmployeesList}
+            keyExtractor={(item) => (item.id ? item.id.toString() : Math.random().toString())}
+            renderItem={({ item }) => <MyTasksAdapter tasks={[item]} />}
+          />
+        </View>
+      )}
+    </View>
+  );
+};
 
-//     const renderTaskItem = ({ item }) => (
-//         <MyTasksListItem task={item} />
-//     );
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  header: {
+    paddingTop: 10,
+    backgroundColor: '#6360DC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerText: {
+    fontSize: 24,
+    color: '#fff',
+    marginBottom: 10,
+  },
+});
 
-//     return (
-//         <View>
-//             <FlatList
-//                 data={taskWithEmployeesList}
-//                 renderItem={renderTaskItem}
-//                 keyExtractor={(item) => item.id.toString()}
-//             />
-//         </View>
-//     );
-// };
-
-// export default MyTasksFragment;
+export default MyTasksFragment;

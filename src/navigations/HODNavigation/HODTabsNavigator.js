@@ -10,7 +10,7 @@ import Task from '../../screens/DirectorScreens/Tasks';
 import OptionsModal from './OptionsModal'; // Import OptionsModal
 import {COLORS} from '../../theme/theme';
 import Evaluator from '../../screens/DirectorScreens/Evaluator';
-import OptionWeightage from '../../screens/DirectorScreens/OptionWeightage';
+import OptionWeightage from '../../screens/DirectorScreens/OptionsWeightage';
 
 const Tab = createBottomTabNavigator();
 

@@ -4,13 +4,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const SessionService = {
   getCurrentSession: async () => {
     try {
-      const response = await fetch(
-        `${IPAddress}/Session/GetCurrentSession`,
-      );
+      const response = await fetch(`${IPAddress}/Session/GetCurrentSession`);
       if (!response.ok) {
-        throw new Error('Failed to fetch session');
+        throw new Error('Failed to fetch student courses');
       }
-      return response;
+      const data = await response.json();
+      await AsyncStorage.setItem('sessionId', JSON.stringify(data));
+      return data;
     } catch (error) {
       throw new Error('Failed to fetch session');
     }
@@ -25,8 +25,8 @@ const SessionService = {
     } catch (error) {
       throw new Error('Something went wrong while fetching sessions');
     }
-  }
- /*  populateSpinner(sessionList, spinner){
+  },
+  /*  populateSpinner(sessionList, spinner){
     if (sessionList && sessionList.length > 0) {
       const titles = sessionList.map(session => session.title);
       spinner.setItems(titles);
@@ -35,6 +35,5 @@ const SessionService = {
     }
   } */
 };
-
 
 export default SessionService;

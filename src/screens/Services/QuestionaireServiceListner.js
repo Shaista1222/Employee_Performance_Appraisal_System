@@ -2,7 +2,7 @@ import { Alert } from 'react-native';
 import IPAddress from '../../../IPAddress';
 
 const QuestionaireServiceListner = {
-  async postQuestion(question) {
+   postQuestion:async(question)=> {
     try {
       const response = await fetch(`${IPAddress}/Questionnaire/postQuestion`, {
         method: 'POST',
@@ -20,7 +20,7 @@ const QuestionaireServiceListner = {
     }
   },
 
-  async getEvaluationQuestionnaire(questionnaireType) {
+   getEvaluationQuestionnaire:async(questionnaireType)=> {
     try {
       const response = await fetch(`${IPAddress}/Questionnaire/questionnaire/${questionnaireType}`);
       if (!response.ok) {
@@ -58,13 +58,41 @@ const QuestionaireServiceListner = {
       throw new Error(error.message);
     }
   },
+  putOptionsWeightage: async (optionWeightageList) => {
+    // try {
+    //   const response = await fetch(`${IPAddress}/Questionnaire/`, {
+    //     method: 'PUT',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify(optionWeightageList),
+    //   });
+    //   if (!response.ok) throw new Error('Failed to update options weightage');
+    //   return await response.json();
+    // } catch (error) {
+    //   throw new Error(`Error updating options weightage: ${error.message}`);
+    // }
+  },
   getStudentQuestions: async () => {
     try {
       const response = await fetch(
         `${IPAddress}/Questionnaire/GetStudentQuestions`,
       );
       if (!response.ok) {
-        Alert.alert('Failed to fetch confidential questions');
+        Alert.alert('Failed to fetch Student questions');
+      }
+      return await response.json();
+    } catch (error) {
+      Alert.alert(error.message);
+    }
+  },
+  getPeerQuestions: async () => {
+    try {
+      const response = await fetch(
+        `${IPAddress}/Questionnaire/GetPeerQuestions`,
+      );
+      if (!response.ok) {
+        Alert.alert('Failed to fetch peer questions');
       }
       return await response.json();
     } catch (error) {
@@ -85,10 +113,10 @@ const QuestionaireServiceListner = {
     }
   },
 
-  getQuestionnaireByType: async questionnaireTypeId => {
+  getQuestionnaireByType: async questionnaireType => {
     try {
       const response = await fetch(
-        `${IPAddress}/Questionnaire/GetQuestionnaireByType?questionnaireTypeId=${questionnaireTypeId}`,
+        `${IPAddress}/Questionnaire/GetQuestionnaireByType?questionnaireType=${questionnaireType}`,
       );
       if (!response.ok) {
         Alert.alert('Failed to fetch questionnaire by type');
@@ -98,6 +126,7 @@ const QuestionaireServiceListner = {
       Alert.alert(error.message);
     }
   },
+
   getQuestionnairTypeTitles(questionnaireTypeList) {
     return questionnaireTypeList.map(type => type.name);
   }

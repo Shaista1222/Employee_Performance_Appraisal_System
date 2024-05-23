@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,73 +10,88 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CourseServiceListener from '../Services/CourseServiceListener';
 
-const StudentCourse = ({navigation}) => {
+const StudentCourse = ({ navigation }) => {
   const [studentCourseList, setStudentCourseList] = useState([]);
   const [studentUser, setStudentUser] = useState(null);
   const [currentSessionData, setCurrentSessionData] = useState(null);
 
   useEffect(() => {
+    const retrieveStudentData = async () => {
+      try {
+        const sessionData = await AsyncStorage.getItem('sessionId');
+        const user = await AsyncStorage.getItem('userObject');
+        if (sessionData && user) {
+          const parsedSessionData = JSON.parse(sessionData);
+          const parsedUser = JSON.parse(user);
+          // console.log('Parsed Session Data:', parsedSessionData);
+          // console.log('Parsed User:', parsedUser);
+          
+          setCurrentSessionData(parsedSessionData);
+          setStudentUser(parsedUser);
+        } else {
+          Alert.alert('Error', 'Student session or ID not found');
+        }
+      } catch (error) {
+        Alert.alert('Error', error.message);
+        console.error('Error retrieving student data:', error);
+      }
+    };
+
     retrieveStudentData();
   }, []);
 
-  const retrieveStudentData = async () => {
-    try {
-      const sessionData = JSON.parse(await AsyncStorage.getItem('session'));
-      const user = JSON.parse(await AsyncStorage.getItem('studentUser'));
-      console.log(user, sessionData); // Check if you're getting the expected data here
-      if (sessionData && user) {
-        setCurrentSessionData(sessionData);
-        setStudentUser(user);
-        fetchStudentCourses(user.id, sessionData.id);
-      } else {
-        Alert.alert('Error', 'Student session or ID not found in AsyncStorage');
-      }
-    } catch (error) {
-      Alert.alert('Error', error.message);
+  useEffect(() => {
+    if (studentUser && currentSessionData) {
+      fetchStudentCourses(studentUser.id, currentSessionData);
     }
-  };
+  }, [studentUser, currentSessionData]);
 
   const fetchStudentCourses = async (studentID, sessionID) => {
     try {
-      const courses = await CourseServiceListener.getStudentCourses(
-        studentID,
-        sessionID,
-      );
-      console.log('Fetched courses:', courses); // Check if courses are fetched correctly
+      const courses = await CourseServiceListener.getStudentCourses(studentID, sessionID);
       if (courses && courses.length > 0) {
-        setStudentCourseList(courses); // Update studentCourseList only if courses are not empty
+        setStudentCourseList(courses);
       } else {
         console.log('No courses found for the student.');
       }
     } catch (error) {
-      console.error('Error fetching courses:', error); // Log any errors that occur during fetching
+      console.error('Error fetching courses:', error);
       Alert.alert('Error', 'Failed to fetch courses. Please try again later.');
     }
   };
 
-  const handleCoursePress = courseID => {
+  const handleCoursePress = (courseID) => {
     navigation.navigate('CourseTeacher', {
       studentID: studentUser.id,
-      sessionID: currentSessionData.id,
-      courseID: courseID, // Make sure to include the courseID parameter
+      sessionID: currentSessionData,
+      courseID: courseID,
     });
   };
-
-  console.log('Rendering with studentCourseList:', studentCourseList); // Check if studentCourseList is populated
 
   return (
     <>
       <View style={styles.title}>
         <Text style={styles.titleText}>Course</Text>
       </View>
+      <View style={{ backgroundColor: 'brown' }}>
+        {studentUser && (
+          <>
+            <Text style={styles.student}>{studentUser.name}</Text>
+            <Text style={styles.student}>{studentUser.arid_no}</Text>
+            <Text style={styles.student}>{studentUser.discipline}-{studentUser.section}</Text>
+          </>
+        )}
+      </View>
+
       <View style={styles.container}>
         <FlatList
           data={studentCourseList}
-          keyExtractor={item => item.id.toString()} // Ensure id is converted to string
-          renderItem={({item}) => (
+          keyExtractor={(item) => item.id.toString()} // Ensure id is converted to string
+          renderItem={({ item }) => (
             <TouchableOpacity
               style={styles.onClick}
-              onPress={() => handleCoursePress(item.id)}>
+              onPress={() => handleCoursePress(item.id)}
+            >
               <Text style={styles.courseList}>
                 {item.course_code} - {item.title}
               </Text>
@@ -91,10 +106,12 @@ const StudentCourse = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 250,
+    marginTop: 150,
     backgroundColor: '#f5f5f5',
+  },
+  student: {
+    fontSize: 20,
+    color: '#fff',
   },
   title: {
     paddingTop: 10,
@@ -113,7 +130,6 @@ const styles = StyleSheet.create({
     padding: 7,
     fontSize: 20,
     fontFamily: 'sans-serif',
-    // width:'100%'
   },
   onClick: {
     marginTop: 2,

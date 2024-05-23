@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, FlatList} from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, FlatList, Alert} from 'react-native';
 import CourseServiceListener from '../Services/CourseServiceListener';
 
 const CourseTeacher = ({route, navigation}) => {
@@ -47,9 +47,8 @@ const CourseTeacher = ({route, navigation}) => {
       'Confidential',
       result => {
         if (result) {
-          ToastAndroid.show(
+          Alert(
             'You have already evaluated this teacher',
-            ToastAndroid.SHORT,
           );
         } else {
           // Replace with appropriate navigation method to navigate to EvaluationQuestionnaire screen
@@ -57,7 +56,7 @@ const CourseTeacher = ({route, navigation}) => {
         }
       },
       errorMessage => {
-        ToastAndroid.show(errorMessage.toString(), ToastAndroid.SHORT);
+        Alert(errorMessage.toString());
       },
     );
   };
@@ -86,10 +85,11 @@ const CourseTeacher = ({route, navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     marginTop: 250,
     backgroundColor: '#f5f5f5',
+  }, student: {
+    fontSize: 20,
+    color: '#fff',
   },
   onClick: {
     marginTop: 2,
@@ -113,7 +113,8 @@ const styles = StyleSheet.create({
     padding: 7,
     fontSize: 20,
     fontFamily: 'sans-serif',
-    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

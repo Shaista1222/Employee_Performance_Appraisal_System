@@ -1,44 +1,56 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, {useState} from 'react';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { Picker } from '@react-native-picker/picker';
+import {Picker} from '@react-native-picker/picker';
 
-const Evaluation = () => {
+const Evaluation = ({navigation}) => {
   const [selectedSession, setSelectedSession] = useState('spring-2024');
 
-  // Handler for setting peer evaluation
   const setPeerEvaluation = () => {
-    // Your code to set peer evaluation
+    navigation.navigate('PeerEvaluation');
   };
-
-  // Handler for setting confidential evaluation
   const setConfidentialEvaluation = () => {
-    // Your code to set confidential evaluation
+    navigation.navigate('ConfidentialEvaluation');
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.dropdownContainer}>
-        <Picker
-          selectedValue={selectedSession}
-          onValueChange={(itemValue, itemIndex) => setSelectedSession(itemValue)}
-          style={styles.picker}
-        >
-          <Picker.Item label="Spring-2024" value="spring-2024" />
-          {/* Add other sessions here */}
-        </Picker>
-        <MaterialCommunityIcons name="chevron-down" size={24} />
+    <>
+      <View style={styles.title}>
+        <Text style={styles.titleText}>Evaluation</Text>
       </View>
+      <View style={styles.container}>
+        {/* <View style={styles.dropdownContainer}> */}
+        <View style={styles.showPerformance}>
+          <Picker
+            selectedValue={selectedSession}
+            onValueChange={(itemValue, itemIndex) =>
+              setSelectedSession(itemValue)
+            }
+            style={styles.picker}
+            dropdownIconColor="black"
+            dropdownIconComponent={() => (
+              <MaterialCommunityIcons
+                name="caret-down"
+                size={18}
+                color="black"
+              />
+            )}
+            mode="dropdown">
+            <Picker.Item label="Spring" value="spring" />
+          </Picker>
+        </View>
 
-      <TouchableOpacity style={styles.button} onPress={setPeerEvaluation}>
-        <Text>SET PEER EVALUATION</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={setPeerEvaluation}>
+          <Text style={{color: 'black'}}>SET PEER EVALUATION</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} onPress={setConfidentialEvaluation}>
-        <Text>SET CONFIDENTIAL EVALUATION</Text>
-      </TouchableOpacity>
- {/* Your code for displaying the Peer and Confidential times goes here */}
- </View>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={setConfidentialEvaluation}>
+          <Text style={{color: 'black'}}>SET CONFIDENTIAL EVALUATION</Text>
+        </TouchableOpacity>
+      </View>
+    </>
   );
 };
 
@@ -47,18 +59,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  dropdownContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'gray',
-    borderRadius: 5,
-    padding: 10,
+    backgroundColor: 'white',
   },
   picker: {
     flex: 1,
+    color: 'black',
   },
   button: {
     marginTop: 20,
@@ -66,8 +71,27 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'gray',
     borderRadius: 5,
+    color: 'black',
   },
-  // Add other styles as needed
+  showPerformance: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: 'gray',
+    width: '80%',
+  },
+  title: {
+    paddingTop: 10,
+    backgroundColor: '#6360DC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleText: {
+    fontSize: 24,
+    color: '#fff',
+    marginBottom: 10,
+  },
 });
 
-export default Evaluation;
+export default Evaluation;

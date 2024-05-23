@@ -3,7 +3,6 @@ import {View, Text, Spinner, StyleSheet} from 'react-native';
 import SessionService from './Services/SessionService';
 import EmployeeService from './Services/EmployeeService';
 import {Picker} from '@react-native-picker/picker';
-import EmployeeQuestionScoreService from './Services/EmployeeQuestionScoreService';
 import {FlatList} from 'react-native-gesture-handler';
 import EvaluatonScores from './Services/EvaluatonScores';
 export default function Scores() {
@@ -13,7 +12,6 @@ export default function Scores() {
   const [selectedEmployee, setSelectedEmployee] = useState([]);
   const [evaluationScoreList, setEvaluationScoreList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState('');
   const [employeeId, setEmployeeId] = useState('');
   const [sessionId, setSessionId] = useState('');
 

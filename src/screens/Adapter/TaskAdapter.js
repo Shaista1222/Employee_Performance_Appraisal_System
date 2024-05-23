@@ -5,65 +5,69 @@ import {
   TouchableOpacity,
   StyleSheet,
   TextInput,
+  Alert,
+  FlatList,
 } from 'react-native';
 
-const TaskAdapter = ({task, onOkButtonPress}) => {
-  // if (!task) {
-  //   return;
-  // }
-
-  return (
-    <View style={styles.conta}>
+const TaskAdapter = ({tasks, onOkButtonPress}) => {
+  const renderItem = ({item}) => (
+    <View style={{backgroundColor: 'white'}}>
       <View style={styles.container}>
         <Text style={styles.highlightedTest}>Task: </Text>
-        <Text style={styles.simpleText}>{task.task.task_description}</Text>
+        <Text style={styles.simpleText}>{item.task.task_description}</Text>
         <View style={styles.dueDate}>
           <Text style={styles.highlightedTest}>Due: </Text>
           <Text style={styles.simpleText}>
-            {new Date(task.task.due_date).toGMTString()}
+            {new Date(item.task.due_date).toGMTString()}
           </Text>
         </View>
-          <View style={styles.dueDate}>
-            <Text style={styles.highlightedTest}>To: </Text>
-            <Text style={styles.simpleText}>{task.assigned_to.name}</Text>
-          </View>
+        <View style={styles.dueDate}>
+          <Text style={styles.highlightedTest}>To: </Text>
+          <Text style={styles.simpleText}>{item.assigned_to.name}</Text>
+        </View>
         <View style={styles.dueDate}>
           <Text style={styles.highlightedTest}>Weightage: </Text>
-          <Text style={styles.simpleText}>{task.task.weightage}</Text>
+          <Text style={styles.simpleText}>{item.task.weightage}</Text>
           <View style={styles.portionSpacing}>
             <Text style={styles.highlightedTest}>By: </Text>
-            <Text style={styles.simpleText}>{task.assigned_by.name}</Text>
+            <Text style={styles.simpleText}>{item.assigned_by.name}</Text>
           </View>
         </View>
         <View style={styles.scoreContainer}>
-          <TextInput style={styles.scoreInput} placeholder="Enter Score" />
+          <TextInput
+            style={styles.scoreInput}
+            placeholder="Enter Score"
+            keyboardType="numeric"
+            onChangeText={text => (item.task.score = parseInt(text))}
+          />
           <TouchableOpacity
             style={styles.btn}
-            onPress={() => onOkButtonPress(task)}>
+            onPress={() => onOkButtonPress(item)}>
             <Text style={{color: 'black', fontSize: 20}}>Ok</Text>
           </TouchableOpacity>
         </View>
       </View>
     </View>
   );
+
+  return (
+    <FlatList
+      data={tasks}
+      renderItem={renderItem}
+      keyExtractor={(item, index) => index.toString()}
+    />
+  );
 };
 
 const styles = StyleSheet.create({
-  conta: {
-    backgroundColor: 'white',
-  },
   container: {
     padding: 10,
     borderWidth: 1,
     borderColor: '#ccc',
     marginVertical: 5,
-    flex: 1,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
@@ -77,17 +81,10 @@ const styles = StyleSheet.create({
     color: 'black',
     fontSize: 17,
   },
-  taskDescription: {
-    flex: 1,
-    color: 'black',
-    fontSize: 15,
-  },
   dueDate: {
-    // flex: 2,
-    color: 'black',
     flexDirection: 'row',
     fontSize: 17,
-    paddingTop:6
+    paddingTop: 6,
   },
   portionSpacing: {
     paddingLeft: 20,

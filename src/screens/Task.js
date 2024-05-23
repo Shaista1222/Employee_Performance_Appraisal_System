@@ -121,24 +121,32 @@ const Task = () => {
         break;
     }
   };
-
-  const renderScene = ({route}) => {
+  const handleOkButtonPress = async (task) => {
+    try {
+      await TaskService.putTask(task.task);
+      Alert.alert('Success', `Task ${task.task.task_description} updated successfully!`);
+      loadTasksForSelectedTab(selectedTabIndex);
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
+  const renderScene = ({ route }) => {
     switch (route.key) {
       case 'tab1':
       case 'tab2':
       case 'tab3':
         return (
           <View style={styles.scrollView}>
-            <FlatList
-              data={taskList}
-              renderItem={({item}) => <TaskAdapter task={item} />}
-              keyExtractor={item => (item && item.id ? item.id.toString() : '')}
-            />
+            <TaskAdapter tasks={taskList} onOkButtonPress={handleOkButtonPress} />
           </View>
         );
       default:
         return null;
     }
+  };
+
+  const handleAddTask = () => {
+    setModalVisible(true);
   };
 
   const renderTaskItem = ({item}) => {
@@ -158,12 +166,8 @@ const Task = () => {
     setDueDate(currentDate);
   };
 
-  const handleAddTask = () => {
-    setModalVisible(true);
-  };
-
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Task</Text>
       </View>
@@ -172,22 +176,20 @@ const Task = () => {
         navigationState={{
           index: selectedTabIndex,
           routes: [
-            {key: 'tab1', title: 'All'},
-            {key: 'tab2', title: 'Pending'},
-            {key: 'tab3', title: 'Complete'},
+            { key: 'tab1', title: 'All' },
+            { key: 'tab2', title: 'Pending' },
+            { key: 'tab3', title: 'Complete' },
           ],
         }}
         renderScene={renderScene}
         onIndexChange={handleTabChange}
-        style={styles.tabLayout}
-        scrollEnabled={true}
-        initialLayout={{width: layout.width}}
-        renderTabBar={props => (
+        initialLayout={{ width: layout.width }}
+        renderTabBar={(props) => (
           <TabBar
-            activeColor={'black'} // Set active tab text color
-            inactiveColor={'gray'}
+            activeColor="black"
+            inactiveColor="gray"
             {...props}
-            scrollEnabled={true} // Enable scroll for TabBar
+            scrollEnabled
             style={styles.tabBar}
           />
         )}

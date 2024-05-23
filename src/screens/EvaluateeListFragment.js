@@ -1,60 +1,135 @@
-// import React, { useEffect, useState } from 'react';
-// import { View, Text, ListView, ToastAndroid } from 'react-native';
-// import { EvaluationQuestionnaireFragment } from './EvaluationQuestionnaireFragment'; // Import your EvaluationQuestionnaireFragment if available
-// import { EvaluatorService } from '../network/services/EvaluatorService'; // Import your EvaluatorService if available
-// import { replaceFragment } from '../helper/FragmentUtils'; // Import your FragmentUtils if available
-// import { SharedPreferencesManager } from '../helper/SharedPreferencesManager'; // Import your SharedPreferencesManager if available
+import React, {useState, useEffect} from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from 'react-native';
+import EvaluatorService from './Services/EvaluatorService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+const EvaluateeListFragment = ({navigation}) => {
+  const [evaluateeList, setEvaluateeList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [employeeUser, setEmployeeUser] = useState(null);
+  const [currentSessionData, setCurrentSessionData] = useState(null);
 
-// const EvaluateeListFragment = ({ fragmentContainerId }) => {
-//     const [evaluateeList, setEvaluateeList] = useState([]);
-//     const [evaluateeNames, setEvaluateeNames] = useState([]);
-//     const [evaluatorID, setEvaluatorID] = useState(null);
-//     const [sessionID, setSessionID] = useState(null);
-//     const [evaluationType, setEvaluationType] = useState(null);
+  useEffect(() => {
+    const retrieveEmployeeData = async () => {
+      try {
+        const sessionData = await AsyncStorage.getItem('sessionId');
+        const user = await AsyncStorage.getItem('employee');
 
-//     const evaluatorService = new EvaluatorService(); // Instantiate your EvaluatorService
-//     const sharedPreferencesManager = new SharedPreferencesManager(); // Instantiate your SharedPreferencesManager
+        console.log('Session Data from AsyncStorage:', sessionData);
+        console.log('Employee Data from AsyncStorage:', user);
 
-//     useEffect(() => {
-//         // Retrieve evaluatorID, sessionID, and evaluationType from SharedPreferencesManager
-//         const employeeUserObject = sharedPreferencesManager.getEmployeeUserObject();
-//         setEvaluatorID(employeeUserObject.employee.id);
-//         setSessionID(sharedPreferencesManager.getSessionId());
-//         setEvaluationType(employeeUserObject.employeeType.title);
+        if (sessionData && user) {
+          const parsedSessionData = JSON.parse(sessionData);
+          const parsedUser = JSON.parse(user);
 
-//         // Fetch evaluatees from the service
-//         evaluatorService.getEvaluatees(
-//             evaluatorID,
-//             sessionID,
-//             (evaluatees) => {
-//                 setEvaluateeList(evaluatees);
-//                 setEvaluateeNames(evaluatees.map(e => e.name));
-//             },
-//             (errorMessage) => {
-//                 ToastAndroid.show(errorMessage, ToastAndroid.SHORT);
-//             }
-//         );
-//     }, []); // Empty dependency array to ensure this runs only once
+          console.log('Parsed Session Data:', parsedSessionData);
+          console.log('Parsed User:', parsedUser);
 
-//     const handleItemPress = (position) => {
-//         const selectedEmployee = evaluateeList[position];
-//         const evaluateeID = selectedEmployee.id;
+          setCurrentSessionData(parsedSessionData);
+          setEmployeeUser(parsedUser);
+        } else {
+          Alert.alert('Error', 'Session or employee data not found');
+        }
+      } catch (error) {
+        Alert.alert('Error', error.message);
+        console.error('Error retrieving data:', error);
+      }
+    };
+    retrieveEmployeeData();
+  }, []);
 
-//         // Navigate to the EvaluationQuestionnaireFragment
-//         // Pass necessary props like evaluateeID, sessionID, evaluationType, and fragmentContainerId
-//         // Implement the navigation logic according to your React Navigation setup
-//     };
+  useEffect(() => {
+    if (employeeUser && currentSessionData) {
+      fetchEvaluatees(employeeUser.id, currentSessionData); // Ensure you pass the session ID instead of the whole object
+    }
+  }, [employeeUser, currentSessionData]);
 
-//     return (
-//         <View>
-//             <ListView
-//                 dataSource={evaluateeNames}
-//                 renderRow={(rowData, sectionID, rowID) => (
-//                     <Text onPress={() => handleItemPress(rowID)}>{rowData}</Text>
-//                 )}
-//             />
-//         </View>
-//     );
-// };
+  const fetchEvaluatees = async (evaluatorID, sessionID) => {
+    try {
+      const data = await EvaluatorService.getEvaluatees(
+       evaluatorID,sessionID
+      );
+      setEvaluateeList(data);
+      setLoading(false);
+      console.log(data);
+    } catch (error) {
+      Alert.alert(error.message);
+    }
+  };
 
-// export default EvaluateeListFragment;
+  const handleItemPress = evaluateeID => {
+    navigation.navigate('EvaluationQuestionnaire', {evaluateeID});
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={{color: 'black'}}>Loading...</Text>
+      </View>
+    );
+  }
+
+  return (
+    <>
+      <View style={styles.title}>
+        <Text style={styles.titleText}>Evaluate</Text>
+      </View>
+      <View style={styles.container}>
+        <FlatList
+          data={evaluateeList}
+          renderItem={({item}) => (
+            <TouchableOpacity onPress={() => handleItemPress(item.id)}>
+              <View style={styles.item}>
+                <Text style={styles.itemText}>{item.name}</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+          keyExtractor={item => item.id.toString()}
+        />
+      </View>
+    </>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    padding: 20,
+  },
+  title: {
+    paddingTop: 10,
+    backgroundColor: '#6360DC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleText: {
+    fontSize: 24,
+    color: '#fff',
+    marginBottom: 10,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  item: {
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  itemText: {
+    fontSize: 18,
+    color: 'black',
+  },
+});
+
+export default EvaluateeListFragment;
+
+// http://192.168.0.106/api/Evaluator/GetEvaluatees?evaluatorID=4&sessionID=11

@@ -5,24 +5,22 @@ import {useTabMenu} from '../../context/TabContext';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontIcon from 'react-native-vector-icons/FontAwesome5';
 import MatCommunity from 'react-native-vector-icons/MaterialCommunityIcons';
-import Report from '../../screens/DirectorScreens/Report';
-import Task from '../../screens/Task';
-import OptionsModal from './OptionsModal'; // Import OptionsModal
 import {COLORS} from '../../theme/theme';
-import Evaluator from '../../screens/DirectorScreens/Evaluator';
-import OptionWeightage from '../../screens/DirectorScreens/OptionsWeightage';
-import Scores from '../../screens/Scores';
-import EvaluateeListFragment from '../../screens/EvaluateeListFragment';
+import AddEmployee from '../../screens/AdminScreens/AddEmployee';
+import AssignCourses from '../../screens/AdminScreens/AssignCourses';
+import AddClassHeldReport from '../../screens/AdminScreens/AddClassHeldReport';
+import StudentEvaluationSetting from '../../screens/AdminScreens/StudentEvaluationSetting';
+import EmployeeList from '../../screens/AdminScreens/EmployeeList';
 
 const Tab = createBottomTabNavigator();
 
-const DirectorTabsNavigator = () => {
-  const [modalVisible, setModalVisible] = useState(false);
+const AdminTabsNavigator = () => {
+  // const [modalVisible, setModalVisible] = useState(false);
   const {opened, toggleOpened} = useTabMenu();
 
-  const toggleModal = () => {
-    setModalVisible(!modalVisible);
-  };
+  // const toggleModal = () => {
+  //   setModalVisible(!modalVisible);
+  // };
 
   return (
     <View style={{flex: 1}}>
@@ -34,8 +32,8 @@ const DirectorTabsNavigator = () => {
           tabBarStyle: styles.tabBar,
         }}>
         <Tab.Screen
-          name="Task"
-          component={Task}
+          name="AddEmployee"
+          component={EmployeeList}
           options={{
             tabBarIcon: ({focused}) => (
               <View style={styles.tabIconContainer}>
@@ -52,8 +50,8 @@ const DirectorTabsNavigator = () => {
           }}
         />
         <Tab.Screen
-          name="Report"
-          component={Report}
+          name="AssignCourses"
+          component={AssignCourses}
           options={{
             tabBarIcon: ({focused}) => (
               <View style={styles.tabIconContainer}>
@@ -70,28 +68,8 @@ const DirectorTabsNavigator = () => {
           }}
         />
         <Tab.Screen
-          name="Settings"
-          component={() => null} // Render an empty component for the plus button
-          options={{
-            tabBarButton: ({focused}) => (
-              <TouchableOpacity
-                style={[styles.tabIconContainer, focused && styles.focusedTab]}
-                onPress={() => toggleModal()}>
-                <FontIcon
-                  name="plus"
-                  size={25}
-                  color={focused ? COLORS.primary : COLORS.dark}
-                />
-              </TouchableOpacity>
-            ),
-          }}
-          listeners={{
-            tabPress: e => opened && e.preventDefault(),
-          }}
-        />
-        <Tab.Screen
-          name="Scores"
-          component={EvaluateeListFragment}
+          name="Class Held Report"
+          component={AddClassHeldReport}
           options={{
             tabBarIcon: ({focused}) => (
               <View style={styles.tabIconContainer}>
@@ -109,8 +87,8 @@ const DirectorTabsNavigator = () => {
         />
 
         <Tab.Screen
-          name="Options Weightage"
-          component={OptionWeightage}
+          name="Student Evaluation"
+          component={StudentEvaluationSetting}
           options={{
             tabBarIcon: ({focused}) => (
               <View style={styles.tabIconContainer}>
@@ -129,7 +107,7 @@ const DirectorTabsNavigator = () => {
       </Tab.Navigator>
 
       {/* Render the OptionsModal */}
-      <OptionsModal visible={modalVisible} onClose={toggleModal} />
+      {/* <OptionsModal visible={modalVisible} onClose={toggleModal} /> */}
     </View>
   );
 };
@@ -159,4 +137,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DirectorTabsNavigator;
+export default AdminTabsNavigator;

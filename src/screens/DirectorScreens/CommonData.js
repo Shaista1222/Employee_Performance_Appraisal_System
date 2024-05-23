@@ -1,5 +1,5 @@
 // CommonData.js
-class CommonData {
+const CommonData= {
     generateNames() {
         return [
             "--Select Employee--",
@@ -14,7 +14,7 @@ class CommonData {
             "Zahid Ahmad",
             "Amir Rasheed"
         ];
-    }
+    },
 
     generateEmployeeTypes() {
         return [
@@ -32,7 +32,7 @@ class CommonData {
             "Administrator"
         ];
     }
-
+,
     generateDesignations() {
         return [
             "--Select Role--",
@@ -47,7 +47,7 @@ class CommonData {
             "Administrator",
             "Director"
         ];
-    }
+    },
 
     generateCourseNames() {
         const COURSE_NAMES = [
@@ -72,7 +72,7 @@ class CommonData {
             courses.push(COURSE_NAMES[index]);
         }
         return courses;
-    }
+    },
 
     getSubKPITypes() {
         return [
@@ -81,7 +81,7 @@ class CommonData {
             "CHR",
             "Student Evaluation"
         ];
-    }
+    },
 
     generateDepartments() {
         return [
@@ -97,11 +97,11 @@ class CommonData {
             "Research and Development",
             "Administration"
         ];
-    }
+    },
 
     getSessionPerformance() {
         // Implement session performance retrieval if needed
-    }
+    },
 
     getSessionsPerformance() {
         // Implement sessions performance retrieval if needed

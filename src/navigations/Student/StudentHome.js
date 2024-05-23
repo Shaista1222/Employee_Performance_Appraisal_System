@@ -2,7 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import StudentCourse from '../../screens/Student/StudentCourse';
 import CourseTeacher from '../../screens/Student/CourseTeacher';
 import Evaluate from '../../screens/Student/Evaluate';
-import EvaluationQuestionnaire from '../../screens/EvaluationQuestionaire'
+import EvaluationQuestionnaireFragment from '../../screens/EvaluationQuestionnaireFragment'
 const Stack = createNativeStackNavigator();
 
 const StudentHome =()=>{

@@ -1,100 +1,120 @@
-import { AsyncStorage } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-class SharedPreferencesManager {
-    static PREF_NAME = 'MyAppPref';
-    static KEY_SESSION_ID = 'sessionId';
-    static KEY_USER_ID = 'userId';
-    static KEY_USER_TYPE = 'userType';
-    static KEY_USER_OBJECT = 'userObject';
+const SharedPreferencesManager = {
+  PREF_NAME: 'MyAppPref',
+  KEY_SESSION_ID: 'sessionId',
+  KEY_USER_ID: 'userId',
+  KEY_USER_TYPE: 'userType',
+  KEY_USER_OBJECT: 'userObject',
+  KEY_IS_CONFIDENTIAL: 'isConfidential',
 
-    // Save student user details
-    static async saveStudentUserDetails(student) {
-        try {
-            await AsyncStorage.setItem(SharedPreferencesManager.KEY_USER_OBJECT, JSON.stringify(student));
-        } catch (error) {
-            console.error('Error saving student user details:', error);
-        }
+  setKeyIsConfidential: async (isConfidential) => {
+    try {
+      await AsyncStorage.setItem(
+        SharedPreferencesManager.KEY_IS_CONFIDENTIAL,
+        JSON.stringify(isConfidential)
+      );
+    } catch (error) {
+      console.error('Error setting confidential flag:', error);
     }
+  },
 
-    // Save employee user details
-    static async saveEmployeeUserDetails(employee) {
-        try {
-            await AsyncStorage.setItem(SharedPreferencesManager.KEY_USER_OBJECT, JSON.stringify(employee));
-        } catch (error) {
-            console.error('Error saving employee user details:', error);
-        }
+  isConfidential: async () => {
+    try {
+      const value = await AsyncStorage.getItem(
+        SharedPreferencesManager.KEY_IS_CONFIDENTIAL
+      );
+      return value ? JSON.parse(value) : false;
+    } catch (error) {
+      console.error('Error getting confidential flag:', error);
+      return false;
     }
+  },
 
-    // Save session ID
-    static async saveSessionId(sessionId) {
-        try {
-            await AsyncStorage.setItem(SharedPreferencesManager.KEY_SESSION_ID, sessionId.toString());
-        } catch (error) {
-            console.error('Error saving session ID:', error);
-        }
+  saveStudentUserDetails: async (student) => {
+    try {
+      const userJson = JSON.stringify(student);
+      await AsyncStorage.setItem(SharedPreferencesManager.KEY_USER_OBJECT, userJson);
+    } catch (error) {
+      console.error('Error saving student user details:', error);
     }
+  },
 
-    // Get session ID
-    static async getSessionId() {
-        try {
-            const sessionId = await AsyncStorage.getItem(SharedPreferencesManager.KEY_SESSION_ID);
-            return sessionId ? parseInt(sessionId) : 0;
-        } catch (error) {
-            console.error('Error getting session ID:', error);
-            return 0;
-        }
+  saveEmployeeUserDetails: async (employee) => {
+    try {
+      const userJson = JSON.stringify(employee);
+      await AsyncStorage.setItem(SharedPreferencesManager.KEY_USER_OBJECT, userJson);
+    } catch (error) {
+      console.error('Error saving employee user details:', error);
     }
+  },
 
-    // Get user ID
-    static async getUserId() {
-        try {
-            return await AsyncStorage.getItem(SharedPreferencesManager.KEY_USER_ID);
-        } catch (error) {
-            console.error('Error getting user ID:', error);
-            return null;
-        }
+  saveSessionId: async (sessionId) => {
+    try {
+      await AsyncStorage.setItem(
+        SharedPreferencesManager.KEY_SESSION_ID,
+        sessionId.toString()
+      );
+    } catch (error) {
+      console.error('Error saving session ID:', error);
     }
+  },
 
-    // Get user type
-    static async getUserType() {
-        try {
-            return await AsyncStorage.getItem(SharedPreferencesManager.KEY_USER_TYPE);
-        } catch (error) {
-            console.error('Error getting user type:', error);
-            return null;
-        }
+  getSessionId: async () => {
+    try {
+      const sessionId = await AsyncStorage.getItem(SharedPreferencesManager.KEY_SESSION_ID);
+      return sessionId ? parseInt(sessionId, 10) : 0;
+    } catch (error) {
+      console.error('Error getting session ID:', error);
+      return 0;
     }
+  },
 
-    // Get student user object
-    static async getStudentUserObject() {
-        try {
-            const userJson = await AsyncStorage.getItem(SharedPreferencesManager.KEY_USER_OBJECT);
-            return userJson ? JSON.parse(userJson) : null;
-        } catch (error) {
-            console.error('Error getting student user object:', error);
-            return null;
-        }
+  getUserId: async () => {
+    try {
+      return await AsyncStorage.getItem(SharedPreferencesManager.KEY_USER_ID);
+    } catch (error) {
+      console.error('Error getting user ID:', error);
+      return null;
     }
+  },
 
-    // Get employee user object
-    static async getEmployeeUserObject() {
-        try {
-            const userJson = await AsyncStorage.getItem(SharedPreferencesManager.KEY_USER_OBJECT);
-            return userJson ? JSON.parse(userJson) : null;
-        } catch (error) {
-            console.error('Error getting employee user object:', error);
-            return null;
-        }
+  getUserType: async () => {
+    try {
+      return await AsyncStorage.getItem(SharedPreferencesManager.KEY_USER_TYPE);
+    } catch (error) {
+      console.error('Error getting user type:', error);
+      return null;
     }
+  },
 
-    // Clear session details (logout)
-    static async logoutUser() {
-        try {
-            await AsyncStorage.clear();
-        } catch (error) {
-            console.error('Error clearing session details:', error);
-        }
+  getStudentUserObject: async () => {
+    try {
+      const userJson = await AsyncStorage.getItem(SharedPreferencesManager.KEY_USER_OBJECT);
+      return userJson ? JSON.parse(userJson) : null;
+    } catch (error) {
+      console.error('Error getting student user object:', error);
+      return null;
     }
-}
+  },
+
+  getEmployeeUserObject: async () => {
+    try {
+      const userJson = await AsyncStorage.getItem(SharedPreferencesManager.KEY_USER_OBJECT);
+      return userJson ? JSON.parse(userJson) : null;
+    } catch (error) {
+      console.error('Error getting employee user object:', error);
+      return null;
+    }
+  },
+
+  logoutUser: async () => {
+    try {
+      await AsyncStorage.clear();
+    } catch (error) {
+      console.error('Error clearing session details:', error);
+    }
+  },
+};
 
 export default SharedPreferencesManager;

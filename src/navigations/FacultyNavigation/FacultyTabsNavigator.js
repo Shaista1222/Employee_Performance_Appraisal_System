@@ -10,17 +10,14 @@ import Task from '../../screens/DirectorScreens/Tasks';
 import OptionsModal from './OptionsModal'; // Import OptionsModal
 import {COLORS} from '../../theme/theme';
 import Evaluator from '../../screens/DirectorScreens/Evaluator';
-import OptionWeightage from '../../screens/DirectorScreens/OptionWeightage';
+import OptionWeightage from '../../screens/DirectorScreens/OptionsWeightage';
+import EvaluateeListFragment from '../../screens/EvaluateeListFragment';
+import MyTasksFragment from '../../screens/MyTasksFragment';
 
 const Tab = createBottomTabNavigator();
 
 const EmployeeTabsNavigator = () => {
-  const [modalVisible, setModalVisible] = useState(false);
   const {opened, toggleOpened} = useTabMenu();
-
-  const toggleModal = () => {
-    setModalVisible(!modalVisible);
-  };
 
   return (
     <View style={{flex: 1}}>
@@ -33,7 +30,7 @@ const EmployeeTabsNavigator = () => {
         }}>
         <Tab.Screen
           name="Task"
-          component={Task}
+          component={MyTasksFragment}
           options={{
             tabBarIcon: ({focused}) => (
               <View style={styles.tabIconContainer}>
@@ -67,29 +64,9 @@ const EmployeeTabsNavigator = () => {
             tabPress: e => opened && e.preventDefault(),
           }}
         />
-       {/*  <Tab.Screen
-          name="Settings"
-          component={() => null} // Render an empty component for the plus button
-          options={{
-            tabBarButton: ({focused}) => (
-              <TouchableOpacity
-                style={[styles.tabIconContainer, focused && styles.focusedTab]}
-                onPress={() => toggleModal()}>
-                <FontIcon
-                  name="plus"
-                  size={25}
-                  color={focused ? COLORS.primary : COLORS.dark}
-                />
-              </TouchableOpacity>
-            ),
-          }}
-          listeners={{
-            tabPress: e => opened && e.preventDefault(),
-          }}
-        /> */}
         <Tab.Screen
-          name="Evaluators"
-          component={Evaluator}
+          name="Evaluatees"
+          component={EvaluateeListFragment}
           options={{
             tabBarIcon: ({focused}) => (
               <View style={styles.tabIconContainer}>
@@ -125,9 +102,6 @@ const EmployeeTabsNavigator = () => {
           }}
         />
       </Tab.Navigator>
-
-      {/* Render the OptionsModal */}
-      <OptionsModal visible={modalVisible} onClose={toggleModal} />
     </View>
   );
 };
