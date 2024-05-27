@@ -29,9 +29,9 @@ const EvaluationQuestionnaireAdapter = ({ question, onAnswerSelection }) => {
     <View style={styles.container}>
       <Text style={styles.questionText}>{question.question}</Text>
       <RadioButtonRN
-        data={optionsWeightageList.map((option) => ({ label: option.name }))}
+        data={optionsWeightageList.map((option) => ({ label: option.name, ...option }))}
         initial={selectedOptionIndex}
-        selectedBtn={(e) => handleOptionSelect(e)}
+        selectedBtn={handleOptionSelect}
         boxStyle={styles.radioButton}
         textStyle={styles.radioButtonText}
       />

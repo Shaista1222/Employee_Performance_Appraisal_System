@@ -9,11 +9,8 @@ import Report from '../../screens/DirectorScreens/Report';
 import Task from '../../screens/Task';
 import OptionsModal from './OptionsModal'; // Import OptionsModal
 import {COLORS} from '../../theme/theme';
-import Evaluator from '../../screens/DirectorScreens/Evaluator';
 import OptionWeightage from '../../screens/DirectorScreens/OptionsWeightage';
-import Scores from '../../screens/Scores';
-import EvaluateeListFragment from '../../screens/EvaluateeListFragment';
-
+import Evaluator from '../../screens/DirectorScreens/Evaluator';
 const Tab = createBottomTabNavigator();
 
 const DirectorTabsNavigator = () => {
@@ -90,8 +87,8 @@ const DirectorTabsNavigator = () => {
           }}
         />
         <Tab.Screen
-          name="Scores"
-          component={EvaluateeListFragment}
+          name="Evaluator"
+          component={Evaluator}
           options={{
             tabBarIcon: ({focused}) => (
               <View style={styles.tabIconContainer}>

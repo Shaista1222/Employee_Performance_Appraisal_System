@@ -9,7 +9,7 @@ const SessionService = {
         throw new Error('Failed to fetch student courses');
       }
       const data = await response.json();
-      await AsyncStorage.setItem('sessionId', JSON.stringify(data));
+      await AsyncStorage.setItem('currentSession', JSON.stringify(data));
       return data;
     } catch (error) {
       throw new Error('Failed to fetch session');

@@ -13,6 +13,7 @@ import Evaluator from '../../screens/DirectorScreens/Evaluator';
 import OptionWeightage from '../../screens/DirectorScreens/OptionsWeightage';
 import EvaluateeListFragment from '../../screens/EvaluateeListFragment';
 import MyTasksFragment from '../../screens/MyTasksFragment';
+import PerformanceFragment from '../../screens/PerformanceFragment';
 
 const Tab = createBottomTabNavigator();
 
@@ -47,8 +48,8 @@ const EmployeeTabsNavigator = () => {
           }}
         />
         <Tab.Screen
-          name="Report"
-          component={Report}
+          name="Performnace"
+          component={PerformanceFragment}
           options={{
             tabBarIcon: ({focused}) => (
               <View style={styles.tabIconContainer}>

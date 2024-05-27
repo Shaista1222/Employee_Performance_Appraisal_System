@@ -113,6 +113,19 @@ const QuestionaireServiceListner = {
     }
   },
 
+  getQuestionnaireByTypeID: async questionnaireTypeID => {
+    try {
+      const response = await fetch(
+        `${IPAddress}/Questionnaire/GetQuestionnaireByTypeId?questionnaireTypeId=${questionnaireTypeID}`,
+      );
+      if (!response.ok) {
+        Alert.alert('Failed to fetch questionnaire by type');
+      }
+      return await response.json();
+    } catch (error) {
+      Alert.alert(error.message);
+    }
+  },
   getQuestionnaireByType: async questionnaireType => {
     try {
       const response = await fetch(

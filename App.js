@@ -22,14 +22,31 @@ import OptionsWeightage from './src/screens/DirectorScreens/OptionsWeightage';
 import PeerEvaluationSetting from './src/screens/DirectorScreens/PeerEvaluationSetting';
 import Evaluation from './src/screens/DirectorScreens/Evaluation';
 import ConfidentialEvaluationSetting from './src/screens/DirectorScreens/ConfidentialEvaluationSetting';
-// import PerformanceFragment from './src/screens/PerformanceFragment';
 import NavigateToAdmin from './src/navigations/AdminNavigation/NavigateToAdmin';
 import AdminTabsNavigator from './src/navigations/AdminNavigation/AdminTabsNavigator';
 import EmployeeDetails from './src/screens/Adapter/EmployeeDetailsListAdapter';
+import PerformanceFragment from './src/screens/PerformanceFragment';
+import Evaluator from './src/screens/DirectorScreens/Evaluator';
+import DirectorEvaluation from './src/screens/DirectorScreens/DirectorEvaluation';
+import AddEmployee from './src/screens/AdminScreens/AddEmployee';
+import EmployeeDetailsListItem from './src/screens/EmployeeDetailsListItem';
 const Stack = createStackNavigator();
 
 const App = () => {
   return (
+  //   <NavigationContainer>
+  //   <Stack.Navigator>
+  //     <Stack.Screen name="EmployeeList" component={EvaluateeListFragment} />
+  //     <Stack.Screen name="AddEmployee" component={AddEmployee} />
+  //     <Stack.Screen name="EmployeeDetails" component={EmployeeDetailsListItem} />
+  //   </Stack.Navigator>
+  // </NavigationContainer>
+    // <DirectorEvaluation />
+    // <NavigationContainer>
+    //   <Stack.Navigator initialRouteName="Performance">
+    //     <Stack.Screen name="Performance" component={PerformanceFragment} />
+    //   </Stack.Navigator>
+    // </NavigationContainer>
     // <NavigationContainer>
     //   <Stack.Navigator
     //     screenOptions={{headerShown: false}}
@@ -66,7 +83,7 @@ const App = () => {
           name="NavigateToDirector"
           component={NavigateToDirector}
         />
-        <Stack.Screen name="DirectorMain" component={DirectorTabsNavigator} />
+     <Stack.Screen name="DirectorMain" component={DirectorTabsNavigator} />
         <Stack.Screen name="NavigateToHOD" component={NavigateToHOD} />
         <Stack.Screen name="HODMain" component={HODTabsNavigator} />
         <Stack.Screen name="NavigateToFaculty" component={NavigateToFaculty} />
@@ -79,18 +96,24 @@ const App = () => {
           name="EvaluationQuestionnaire"
           component={EvaluationQuestionnaireFragment}
         />
+        <Stack.Screen name="Evaluation" component={Evaluation} />
+        <Stack.Screen name="Scores" component={Scores} />
+        <Stack.Screen
+          name="DirectorEvaluation"
+          component={DirectorEvaluation}
+        />
+        <Stack.Screen
+          name="QuestionnaireFragment"
+          component={QuestionnaireFragment}
+        />
+        <Stack.Screen name="PeerEvaluation" component={PeerEvaluationSetting} />
+        <Stack.Screen
+          name="ConfidentialEvaluation"
+          component={ConfidentialEvaluationSetting}
+        />
       </Stack.Navigator>
-    </NavigationContainer>
+     </NavigationContainer> 
   );
 };
 
 export default App;
-
-//          {/* <Stack.Screen name="NavigateToStudent" component={NavigateToStudent} />
-//          <Stack.Screen name="StudentMain" component={StudentHome} /> */}
-//        </Stack.Navigator>
-//      </NavigationContainer>
-//   );
-// };
-
-// export default App;

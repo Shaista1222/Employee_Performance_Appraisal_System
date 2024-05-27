@@ -18,14 +18,11 @@ const StudentCourse = ({ navigation }) => {
   useEffect(() => {
     const retrieveStudentData = async () => {
       try {
-        const sessionData = await AsyncStorage.getItem('sessionId');
+        const sessionData = await AsyncStorage.getItem('currentSession');
         const user = await AsyncStorage.getItem('userObject');
         if (sessionData && user) {
           const parsedSessionData = JSON.parse(sessionData);
           const parsedUser = JSON.parse(user);
-          // console.log('Parsed Session Data:', parsedSessionData);
-          // console.log('Parsed User:', parsedUser);
-          
           setCurrentSessionData(parsedSessionData);
           setStudentUser(parsedUser);
         } else {
@@ -42,7 +39,8 @@ const StudentCourse = ({ navigation }) => {
 
   useEffect(() => {
     if (studentUser && currentSessionData) {
-      fetchStudentCourses(studentUser.id, currentSessionData);
+      console.log(studentUser.name, currentSessionData.id)
+      fetchStudentCourses(studentUser.id, currentSessionData.id);
     }
   }, [studentUser, currentSessionData]);
 
@@ -51,6 +49,7 @@ const StudentCourse = ({ navigation }) => {
       const courses = await CourseServiceListener.getStudentCourses(studentID, sessionID);
       if (courses && courses.length > 0) {
         setStudentCourseList(courses);
+        console.log('Student')
       } else {
         console.log('No courses found for the student.');
       }
@@ -63,7 +62,7 @@ const StudentCourse = ({ navigation }) => {
   const handleCoursePress = (courseID) => {
     navigation.navigate('CourseTeacher', {
       studentID: studentUser.id,
-      sessionID: currentSessionData,
+      sessionID: currentSessionData.id,
       courseID: courseID,
     });
   };

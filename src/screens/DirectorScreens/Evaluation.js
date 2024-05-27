@@ -49,6 +49,7 @@ const Evaluation = ({navigation}) => {
           onPress={setConfidentialEvaluation}>
           <Text style={{color: 'black'}}>SET CONFIDENTIAL EVALUATION</Text>
         </TouchableOpacity>
+        
       </View>
     </>
   );

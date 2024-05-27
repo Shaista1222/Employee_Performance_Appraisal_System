@@ -1,8 +1,13 @@
 import React from 'react';
-import {View, Modal, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import { View, Modal, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import MatIcon from 'react-native-vector-icons/MaterialIcons';
-import {useNavigation} from '@react-navigation/native';
-const OptionsModal = ({visible, onClose}) => {
+import { useNavigation } from '@react-navigation/native';
+import Evaluation from '../../screens/DirectorScreens/Evaluation';
+import Scores from '../../screens/Scores';
+import DirectorEvaluation from '../../screens/DirectorScreens/DirectorEvaluation';
+import QuestionnaireFragment from '../../screens/QuestionaireFragment';
+
+const OptionsModal = ({ visible, onClose }) => {
   const navigation = useNavigation();
   return (
     <Modal
@@ -16,15 +21,37 @@ const OptionsModal = ({visible, onClose}) => {
           <TouchableOpacity
             style={styles.button}
             onPress={() => {
-              // navigation.navigate('DirectorMain', {screen: 'DirectorMain'});
+              navigation.navigate('Evaluation'); // Ensure 'Evaluation' is correctly registered in your navigator
             }}>
-            <Text style={styles.buttonText}>Option 1</Text>
+            <Text style={styles.buttonText}>Evaluation</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => {}}>
-            <Text style={styles.buttonText}>Option 2</Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              navigation.navigate('QuestionnaireFragment'); // Ensure 'QuestionnaireFragment' is correctly registered in your navigator
+            }}>
+            <Text style={styles.buttonText}>Questionaire</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => {}}>
-            <Text style={styles.buttonText}>Option 3</Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              navigation.navigate('Scores'); // Ensure 'Scores' is correctly registered in your navigator
+            }}>
+            <Text style={styles.buttonText}>Scores</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              navigation.navigate('DirectorEvaluation'); // Ensure 'DirectorEvaluation' is correctly registered in your navigator
+            }}>
+            <Text style={styles.buttonText}>Director Evaluation</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              // Add navigation or logic for 'Session' here
+            }}>
+            <Text style={styles.buttonText}>Session</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={onClose}>
             <Text style={styles.closeText}>
@@ -43,7 +70,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    paddingTop: 400,
+    paddingTop: 300,
     fontSize: 12,
   },
   modalView: {
@@ -51,6 +78,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     alignItems: 'center',
+    width: '50%',
   },
   closeText: {
     alignSelf: 'flex-end',
@@ -62,7 +90,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     margin: 3,
     padding: 2,
-    width: 70,
+    width: '100%',
   },
   buttonText: {
     color: 'black',

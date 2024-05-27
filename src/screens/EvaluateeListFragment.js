@@ -14,22 +14,16 @@ const EvaluateeListFragment = ({navigation}) => {
   const [loading, setLoading] = useState(true);
   const [employeeUser, setEmployeeUser] = useState(null);
   const [currentSessionData, setCurrentSessionData] = useState(null);
-
+  const questionByType = 'peer';
   useEffect(() => {
     const retrieveEmployeeData = async () => {
       try {
         const sessionData = await AsyncStorage.getItem('sessionId');
         const user = await AsyncStorage.getItem('employee');
 
-        console.log('Session Data from AsyncStorage:', sessionData);
-        console.log('Employee Data from AsyncStorage:', user);
-
         if (sessionData && user) {
           const parsedSessionData = JSON.parse(sessionData);
           const parsedUser = JSON.parse(user);
-
-          console.log('Parsed Session Data:', parsedSessionData);
-          console.log('Parsed User:', parsedUser);
 
           setCurrentSessionData(parsedSessionData);
           setEmployeeUser(parsedUser);
@@ -45,16 +39,15 @@ const EvaluateeListFragment = ({navigation}) => {
   }, []);
 
   useEffect(() => {
-    if (employeeUser && currentSessionData) {
-      fetchEvaluatees(employeeUser.id, currentSessionData); // Ensure you pass the session ID instead of the whole object
+    if (employeeUser && employeeUser.employee && currentSessionData) {
+      fetchEvaluatees(employeeUser.employee.id, currentSessionData.id);
     }
   }, [employeeUser, currentSessionData]);
 
   const fetchEvaluatees = async (evaluatorID, sessionID) => {
     try {
-      const data = await EvaluatorService.getEvaluatees(
-       evaluatorID,sessionID
-      );
+      console.log(JSON.parse(evaluatorID) + '\n' + sessionID);
+      const data = await EvaluatorService.getEvaluatees(evaluatorID, sessionID);
       setEvaluateeList(data);
       setLoading(false);
       console.log(data);
@@ -64,9 +57,26 @@ const EvaluateeListFragment = ({navigation}) => {
   };
 
   const handleItemPress = evaluateeID => {
-    navigation.navigate('EvaluationQuestionnaire', {evaluateeID});
+    navigation.navigate('EvaluationQuestionnaire', {
+      evaluateeID,
+      questionByType,
+    });
   };
 
+  /*
+    const evaluateTeacher = async (teacherId) => {
+    try {
+      const result = await EvaluationService.isEvaluated(studentID, teacherId, courseID, sessionID, 'Confidential');
+      if (result) {
+        Alert.alert('You have already evaluated this teacher');
+      } else {
+        navigation.navigate('EvaluationQuestionnaire', { teacherId, courseID });
+      }
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
+  */
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -85,8 +95,8 @@ const EvaluateeListFragment = ({navigation}) => {
           data={evaluateeList}
           renderItem={({item}) => (
             <TouchableOpacity onPress={() => handleItemPress(item.id)}>
-              <View style={styles.item}>
-                <Text style={styles.itemText}>{item.name}</Text>
+              <View style={styles.itemContainer}>
+                <Text style={styles.name}>{item.name}</Text>
               </View>
             </TouchableOpacity>
           )}
@@ -119,14 +129,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  item: {
-    padding: 20,
+  itemContainer: {
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
-  itemText: {
-    fontSize: 18,
-    color: 'black',
+  name: {
+    fontWeight: 'bold',
+    color:'black'
   },
 });
 
