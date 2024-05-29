@@ -36,7 +36,7 @@ const Evaluation = ({navigation}) => {
               />
             )}
             mode="dropdown">
-            <Picker.Item label="Spring" value="spring" />
+            <Picker.Item label="Session" value="spring" />
           </Picker>
         </View>
 

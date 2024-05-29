@@ -4,12 +4,10 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  ScrollView,
   TouchableOpacity,
   Alert,
   FlatList,
 } from 'react-native';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import EmployeeService from '../Services/EmployeeService';
 import EmployeeDetailsScoreAdapter from '../Adapter/EmployeeDetailsScoreAdapter';
@@ -23,24 +21,24 @@ const Report = ({navigation}) => {
   ] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (sessionID) => {
+      console.log('working');
       try {
-        const data = await EmployeeService.getEmployeesWithKpiScores();
+        const data = await EmployeeService.getEmployeesWithKpiScores(sessionID);
+        console.log(data);
         setEmployeeDetailsScoreList(data);
-        setFilteredEmployeeDetailsScoreList(data); 
+        setFilteredEmployeeDetailsScoreList(data);
       } catch (error) {
         Alert.alert(error.message);
       }
     };
 
-    fetchData();
+    fetchData(10);
   }, []);
 
-  // const handleListItemClick = employeeDetailsScore => {
   const handleListItemClick = () => {
     navigation.navigate('Performance');
   };
-  // };
 
   const handleSearch = query => {
     setSearchQuery(query);
@@ -54,7 +52,6 @@ const Report = ({navigation}) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Report</Text>
-        {/* <Ionicons name="arrow-forward-circle" size={25} color="white" /> */}
       </View>
       <View style={styles.searchContainer}>
         <TextInput
@@ -79,13 +76,11 @@ const Report = ({navigation}) => {
       <FlatList
         data={filteredEmployeeDetailsScoreList}
         renderItem={({item, index}) => (
-          <ScrollView style={styles.scrollView}>
-            <EmployeeDetailsScoreAdapter
-              employeeDetailsScore={item}
-              index={index}
-              onPress={handleListItemClick}
-            />
-          </ScrollView>
+          <EmployeeDetailsScoreAdapter
+            employeeDetailsScore={item}
+            index={index}
+            onPress={handleListItemClick}
+          />
         )}
         keyExtractor={(item, index) => index.toString()}
       />
@@ -102,16 +97,11 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     backgroundColor: '#6360DC',
     alignItems: 'center',
-    // flexDirection: 'row',
-    // justifyContent: 'space-between',
-    // paddingLeft: 12,
-    // paddingRight: 12,
   },
   headerText: {
     fontSize: 24,
     color: '#fff',
     marginBottom: 10,
-    alignItems: 'center',
   },
   searchContainer: {
     alignItems: 'center',
@@ -130,9 +120,6 @@ const styles = StyleSheet.create({
     borderColor: 'purple',
     color: 'black',
     fontSize: 19,
-  },
-  scrollView: {
-    backgroundColor: '#f3f3f3',
   },
   listItemHeader: {
     flexDirection: 'row',

@@ -30,7 +30,15 @@ const OptionsModal = ({ visible, onClose }) => {
             onPress={() => {
               navigation.navigate('QuestionnaireFragment'); // Ensure 'QuestionnaireFragment' is correctly registered in your navigator
             }}>
+            
             <Text style={styles.buttonText}>Questionaire</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              // Add navigation or logic for 'Session' here
+            }}>
+            <Text style={styles.buttonText}>KPI</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.button}

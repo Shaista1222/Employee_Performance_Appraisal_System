@@ -1,4 +1,5 @@
-import React, {useEffect, useState} from 'react';
+// src/components/EmployeeList.js
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,8 +10,9 @@ import {
 } from 'react-native';
 import EmployeeService from '../Services/EmployeeService';
 import AddEmployee from './AddEmployee';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
-const EmployeeList = ({navigation}) => {
+const EmployeeList = ({ navigation }) => {
   const [employeeDetailsList, setEmployeeDetailsList] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -26,12 +28,25 @@ const EmployeeList = ({navigation}) => {
       Alert.alert('Error', error.message);
     }
   };
+
   const handleAddEmployee = () => {
     setModalVisible(true);
   };
 
-  const handleItemPress = employeeDetails => {
-    navigation.navigate('EmployeeDetails', {employeeDetails});
+  const handleDelete = async (id) => {
+    try {
+      await EmployeeService.deleteEmployee(id);
+      Alert.alert('Success', 'Employee deleted successfully');
+      setEmployeeDetailsList((prevList) => 
+        prevList.filter((employeeDetails) => employeeDetails.employee.id !== id)
+      );
+    } catch (error) {
+      Alert.alert('Error', `Failed to delete employee: ${error.message}`);
+    }
+  };
+
+  const handleItemPress = (employeeDetails) => {
+    navigation.navigate('EmployeeDetailsListItem', { employeeDetails });
   };
 
   return (
@@ -42,13 +57,19 @@ const EmployeeList = ({navigation}) => {
       <View style={styles.container}>
         <FlatList
           data={employeeDetailsList}
-          keyExtractor={item => item.employee.id.toString()}
-          renderItem={({item}) => (
-            <TouchableOpacity
-              style={styles.item}
-              onPress={() => handleItemPress(item)}>
-              <Text style={styles.title}>{item.employee.name}</Text>
-            </TouchableOpacity>
+          keyExtractor={(item) => item.employee.id.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.itemContainer}>
+              <TouchableOpacity onPress={() => handleItemPress(item)}>
+                <Text style={styles.textName}>{item.employee.name}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.btnDelete}
+                onPress={() => handleDelete(item.employee.id)}
+              >
+                <AntDesign name="delete" size={18} color="white" />
+              </TouchableOpacity>
+            </View>
           )}
         />
         <TouchableOpacity style={styles.fab} onPress={handleAddEmployee}>
@@ -69,14 +90,32 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 16,
   },
+  itemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    backgroundColor: 'gray',
+    justifyContent: 'space-between',
+  },
+  textName: {
+    fontSize: 18,
+    flex: 1,
+    color: 'white',
+  },
+  btnDelete: {
+    padding: 5,
+  },
+  deleteIcon: {
+    width: 20,
+    height: 20,
+  },
   item: {
     padding: 16,
-    backgroundColor: '#f9c2ff',
+    backgroundColor: '#BEBEBE',
     marginBottom: 8,
     borderRadius: 4,
-  },
-  title: {
-    fontSize: 18,
   },
   header: {
     paddingTop: 10,

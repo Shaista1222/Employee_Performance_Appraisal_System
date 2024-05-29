@@ -12,14 +12,12 @@ const EmployeeDetails = ({employeeDetailsList, parentActivity}) => {
   const renderItem = ({item}) => (
     <View style={styles.itemContainer}>
       <Text style={styles.textName}>{item.name}</Text>
-      {parentActivity !== 'DirectorMain' && (
-        <TouchableOpacity
-          style={styles.btnDelete}
-          onPress={() => handleDelete(item.id)}>
-          <Text style={styles.deleteIcon}>Delete</Text>
-          {/* <Image source={require('../assets/delete_icon.png')} style={styles.deleteIcon} /> */}
-        </TouchableOpacity>
-      )}
+      <TouchableOpacity
+        style={styles.btnDelete}
+        onPress={() => handleDelete(item.id)}>
+        <Text style={styles.deleteIcon}>Delete</Text>
+        {/* <Image source={require('../assets/delete_icon.png')} style={styles.deleteIcon} /> */}
+      </TouchableOpacity>
     </View>
   );
 
@@ -43,7 +41,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
-    backgroundColor:'black'
+    backgroundColor: 'black',
   },
   textName: {
     fontSize: 18,

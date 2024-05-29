@@ -1,11 +1,11 @@
 // screens/EvaluatorScreen.js
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert, Button, ScrollView } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import React, {useState, useEffect} from 'react';
+import {View, StyleSheet, Alert, Button,Text, ScrollView} from 'react-native';
+import {Picker} from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EvaluatorService from '../Services/EvaluatorService';
 import EmployeeService from '../Services/EmployeeService';
-import { CheckBox } from 'react-native-elements'; // Make sure to install this package
+import {CheckBox} from 'react-native-elements'; // Make sure to install this package
 
 const Evaluator = () => {
   const [employeeList, setEmployeeList] = useState([]);
@@ -79,52 +79,62 @@ const Evaluator = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Picker
-        selectedValue={selectedEvaluator}
-        onValueChange={itemValue => handleEvaluatorChange(itemValue)}
-        style={styles.picker}>
-        {employeeList.map(employee => (
-          <Picker.Item
-            key={employee.id}
-            label={employee.name}
-            value={employee.id}
-          />
-        ))}
-      </Picker>
+    <>
+      <View style={styles.title}>
+        <Text style={styles.titleText}>Evaluator</Text>
+      </View>
+      <View style={styles.container}>
+        <Picker
+          selectedValue={selectedEvaluator}
+          onValueChange={itemValue => handleEvaluatorChange(itemValue)}
+          style={styles.picker}
+          dropdownIconColor="black"
+          mode="dropdown">
+          <Picker.Item label="Select Evaluator" value="" />
+          {employeeList.map(employee => (
+            <Picker.Item
+              key={employee.id}
+              label={employee.name}
+              value={employee.id}
+            />
+          ))}
+        </Picker>
+        <Text style={{color:'black',fontSize:15}}>Select Evaluatee</Text>
+        <ScrollView style={styles.scrollView}>
+          {evaluateeList.length > 0 && (
+            <CheckBox
+              title="Select All"
+              checked={selectedEvaluatees.length === evaluateeList.length}
+              onPress={() =>
+                handleSelectAll(
+                  selectedEvaluatees.length !== evaluateeList.length,
+                )
+              }
+            />
+          )}
 
-      <ScrollView style={styles.scrollView}>
-        {evaluateeList.length > 0 && (
-          <CheckBox
-            title="Select All"
-            checked={selectedEvaluatees.length === evaluateeList.length}
-            onPress={() =>
-              handleSelectAll(selectedEvaluatees.length !== evaluateeList.length)
-            }
-          />
-        )}
+          {evaluateeList.map(employee => (
+            <CheckBox
+              key={employee.id}
+              title={employee.name}
+              checked={selectedEvaluatees.includes(employee.id)}
+              onPress={() =>
+                handleCheckboxChange(
+                  employee.id,
+                  !selectedEvaluatees.includes(employee.id),
+                )
+              }
+            />
+          ))}
+        </ScrollView>
 
-        {evaluateeList.map(employee => (
-          <CheckBox
-            key={employee.id}
-            title={employee.name}
-            checked={selectedEvaluatees.includes(employee.id)}
-            onPress={() =>
-              handleCheckboxChange(
-                employee.id,
-                !selectedEvaluatees.includes(employee.id),
-              )
-            }
-          />
-        ))}
-      </ScrollView>
-
-      <Button
-        title="Save"
-        onPress={handleSave}
-        disabled={!selectedEvaluator || selectedEvaluatees.length === 0}
-      />
-    </View>
+        <Button
+          title="Save"
+          onPress={handleSave}
+          disabled={!selectedEvaluator || selectedEvaluatees.length === 0}
+        />
+      </View>
+    </>
   );
 };
 
@@ -136,10 +146,21 @@ const styles = StyleSheet.create({
   },
   picker: {
     marginVertical: 8,
-    color:'black',
+    color: 'black',
   },
   scrollView: {
     marginVertical: 8,
+  },
+  title: {
+    paddingTop: 10,
+    backgroundColor: '#6360DC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleText: {
+    fontSize: 24,
+    color: '#fff',
+    marginBottom: 10,
   },
 });
 

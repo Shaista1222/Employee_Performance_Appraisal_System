@@ -5,15 +5,16 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
+  TextInput,
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker'; // Import DateTimePickerModal package
-import { Button } from 'react-native-paper';
+import {Button} from 'react-native-paper';
 const ConfidentialEvaluationSetting = () => {
   const [isStartTimePickerVisible, setStartTimePickerVisible] = useState(false);
   const [isEndTimePickerVisible, setEndTimePickerVisible] = useState(false);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
-
+  const [pin, setPin] = useState(0);
   const showStartTimePicker = () => {
     setStartTimePickerVisible(true);
   };
@@ -42,8 +43,17 @@ const ConfidentialEvaluationSetting = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+     
       <View style={styles.card}>
         <Text style={styles.title}>Confidential Evaluation</Text>
+        <TextInput
+        placeholderTextColor="gray"
+        style={styles.input}
+        onChangeText={setPin}
+        value={pin}
+        placeholder="Enter Pin"
+        keyboardType="numeric"
+      />
         <View style={styles.dateTimeContainer}>
           <TouchableOpacity style={styles.input} onPress={showStartTimePicker}>
             <Text style={styles.dateTime}>Start Time: {startTime}</Text>
@@ -66,13 +76,13 @@ const ConfidentialEvaluationSetting = () => {
           onConfirm={handleEndTimeConfirm}
           onCancel={hideEndTimePicker}
         />
-         <Button
-              style={styles.saveButton}
-              textColor="white"
-              labelStyle={styles.buttonText}
-              onPress={() => console.log('Save task')}>
-              Save
-            </Button>
+        <Button
+          style={styles.saveButton}
+          textColor="white"
+          labelStyle={styles.buttonText}
+          onPress={() => console.log('Save task')}>
+          Save
+        </Button>
       </View>
     </SafeAreaView>
   );
@@ -95,7 +105,15 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     width: '80%',
     // justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+  },
+  input: {
+    height: 40,
+    width: 200,
+    marginVertical: 7,
+    borderWidth: 1,
+    padding: 8,
+    // color: 'black',
   },
   saveButton: {
     backgroundColor: '#3a7ca5',
@@ -113,15 +131,15 @@ const styles = StyleSheet.create({
     color: '#d35400',
     textAlign: 'center',
   },
-  input: {
-    width: 200,
-    borderWidth: 1,
-    padding: 7,
-    color: 'black',
-    alignItems: 'center',
-  },
+  // input: {
+  //   width: 200,
+  //   borderWidth: 1,
+  //   padding: 7,
+  //   color: 'black',
+  //   alignItems: 'center',
+  // },
   dateTimeContainer: {
-    marginBottom: 16,
+    marginBottom: 10,
     color: 'black',
   },
   dateTime: {
@@ -130,7 +148,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    // justifyContent: 'space-between',
     color: 'black',
   },
 });

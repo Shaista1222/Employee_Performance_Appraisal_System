@@ -26,14 +26,23 @@ const SessionService = {
       throw new Error('Something went wrong while fetching sessions');
     }
   },
-  /*  populateSpinner(sessionList, spinner){
-    if (sessionList && sessionList.length > 0) {
-      const titles = sessionList.map(session => session.title);
-      spinner.setItems(titles);
-    } else {
-      ToastAndroid.show('Session list is empty', ToastAndroid.LONG);
+  postSession:async(session)=> {
+    try {
+      const response = await fetch(`${IPAddress}/Session/PostSession`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(session),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to post session');
+      }
+      return await response.json();
+    } catch (error) {
+      throw new Error(error.message || 'Failed to post session');
     }
-  } */
+  },
 };
 
 export default SessionService;

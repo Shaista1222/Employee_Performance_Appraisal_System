@@ -21,8 +21,10 @@ const AddEmployee = ({visible, onClose}) => {
   const [designationList, setDesignationList] = useState([]);
   const [departmentList, setDepartmentList] = useState([]);
   const [employeeName, setEmployeeName] = useState('');
-  const [employeeEmaila, setEmployeeEmail] = useState('');
+  const [employeeEmail, setEmployeeEmail] = useState('');
   const [employeePassword, setEmployeePassword] = useState('');
+  const [employeeSalary, setEmployeeSalary] = useState('');
+  const [employeeJoiningDate, setEmployeeJoiningDate] = useState('');
 
   useEffect(() => {
     fetchEmployeeTypes();
@@ -62,6 +64,27 @@ const AddEmployee = ({visible, onClose}) => {
     }
   };
 
+  const handleAddEmployee = async () => {
+    const employeeData = {
+      name: employeeName,
+      email: employeeEmail,
+      password: employeePassword,
+      salary: employeeSalary,
+      joiningDate: employeeJoiningDate,
+      roleId: selectedRole,
+      typeId: selectedPersonType,
+      departmentId: selectedRoleDepartment,
+    };
+
+    try {
+      const newEmployee = await EmployeeService.postEmployee(employeeData);
+      // Handle the newly added employee data here, if needed
+      console.log('New employee added:', newEmployee);
+      onClose(); // Close the modal after adding the employee
+    } catch (error) {
+      Alert.alert('Error', `Failed to add employee: ${error.message}`);
+    }
+  };
   return (
     <Modal
       animationType="slide"
@@ -82,17 +105,31 @@ const AddEmployee = ({visible, onClose}) => {
             placeholderTextColor="gray"
             style={styles.input}
             onChangeText={setEmployeeEmail}
-            value={employeeEmaila}
+            value={employeeEmail}
             placeholder="Enter Employee email"
           />
-          <TextInput
+           <TextInput
             placeholderTextColor="gray"
             style={styles.input}
             onChangeText={setEmployeePassword}
             value={employeePassword}
             placeholder="Enter Employee Password"
           />
-          
+            <TextInput
+            placeholderTextColor="gray"
+            style={styles.input}
+            onChangeText={setEmployeeSalary}
+            value={employeeSalary}
+            placeholder="Enter Employee Salary"
+          />
+         
+            <TextInput
+            placeholderTextColor="gray"
+            style={styles.input}
+            onChangeText={setEmployeeJoiningDate}
+            value={employeeJoiningDate}
+            placeholder="Enter Employee Joining Date"
+          />
           <View>
             <View style={styles.showPerformance}>
               <Picker
@@ -106,6 +143,7 @@ const AddEmployee = ({visible, onClose}) => {
                   <FontAwesome5 name="caret-down" size={18} color="black" />
                 )}
                 mode="dropdown">
+                <Picker.Item label='Role'/>
                 {designationList.map((designation, index) => (
                   <Picker.Item
                     key={index}
@@ -127,6 +165,8 @@ const AddEmployee = ({visible, onClose}) => {
                   <FontAwesome5 name="caret-down" size={18} color="black" />
                 )}
                 mode="dropdown">
+                <Picker.Item label='Employee Type'/>
+
                 {employeeTypeList.map((personType, index) => (
                   <Picker.Item
                     key={index}
@@ -148,6 +188,8 @@ const AddEmployee = ({visible, onClose}) => {
                   <FontAwesome5 name="caret-down" size={18} color="black" />
                 )}
                 mode="dropdown">
+                <Picker.Item label='Role Department'/>
+
                 {departmentList.map((department, index) => (
                   <Picker.Item
                     key={index}

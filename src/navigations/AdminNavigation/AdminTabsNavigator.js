@@ -25,14 +25,14 @@ const AdminTabsNavigator = () => {
   return (
     <View style={{flex: 1}}>
       <Tab.Navigator
-        initialRouteName="Task"
+        initialRouteName="Employee"
         screenOptions={{
           headerShown: false,
           tabBarShowLabel: false,
           tabBarStyle: styles.tabBar,
         }}>
         <Tab.Screen
-          name="AddEmployee"
+          name="Employee"
           component={EmployeeList}
           options={{
             tabBarIcon: ({focused}) => (
@@ -105,9 +105,6 @@ const AdminTabsNavigator = () => {
           }}
         />
       </Tab.Navigator>
-
-      {/* Render the OptionsModal */}
-      {/* <OptionsModal visible={modalVisible} onClose={toggleModal} /> */}
     </View>
   );
 };

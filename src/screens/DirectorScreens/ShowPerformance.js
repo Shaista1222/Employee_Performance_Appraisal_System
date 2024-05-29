@@ -20,10 +20,10 @@ const chartConfig = {
 
 export const BarChartComponent = () => {
   const barChartData = {
-    labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+    labels: ['Academic', 'Job Governance'],
     datasets: [
       {
-        data: [20, 45, 28, 80, 99, 43],
+        data: [20, 45,],
       },
     ],
   };
@@ -45,36 +45,15 @@ export const BarChartComponent = () => {
 export const PieChartComponent = () => {
   const pieChartData = [
     {
-      name: 'Seoul',
-      population: 21500000,
-      color: 'rgba(131, 167, 234, 1)',
-      legendFontColor: '#7F7F7F',
-      legendFontSize: 15,
-    },
-    {
-      name: 'Toronto',
-      population: 2800000,
-      color: '#F00',
-      legendFontColor: '#7F7F7F',
-      legendFontSize: 15,
-    },
-    {
-      name: 'Beijing',
-      population: 527612,
-      color: 'red',
-      legendFontColor: '#7F7F7F',
-      legendFontSize: 15,
-    },
-    {
-      name: 'New York',
-      population: 8538000,
+      name: 'Academic',
+      population: 500,
       color: '#ffffff',
       legendFontColor: '#7F7F7F',
       legendFontSize: 15,
     },
     {
-      name: 'Moscow',
-      population: 11920000,
+      name: 'Job Governance',
+      population: 550,
       color: 'rgb(0, 0, 255)',
       legendFontColor: '#7F7F7F',
       legendFontSize: 15,
@@ -92,7 +71,7 @@ export const PieChartComponent = () => {
         backgroundColor={'transparent'}
         absolute
       />
-      <View style={styles.legendContainer}>
+      {/* <View style={styles.legendContainer}>
         {pieChartData.map((data, index) => (
           <View key={index} style={styles.legendItem}>
             <View style={[styles.legendColor, {backgroundColor: data.color}]} />
@@ -101,7 +80,7 @@ export const PieChartComponent = () => {
             </Text>
           </View>
         ))}
-      </View>
+      </View> */}
     </View>
   );
 };

@@ -142,7 +142,38 @@ const QuestionaireServiceListner = {
 
   getQuestionnairTypeTitles(questionnaireTypeList) {
     return questionnaireTypeList.map(type => type.name);
-  }
+  }, 
+   putQuestion: async (question) => {
+    try {
+      const response = await fetch(`${IPAddress}/Questionnaire/PutQuestion`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(question),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update question');
+      }
+      return await response.json();
+    } catch (error) {
+      throw new Error(`Error updating question: ${error.message}`);
+    }
+  },
+  deleteQuestion: async (id) => {
+    try {
+      const response = await fetch(`${IPAddress}/Questionnaire/DeleteQuestion?id=${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete question');
+      }
+      return await response.json();
+    } catch (error) {
+      throw new Error(`Error deleting question: ${error.message}`);
+    }
+  },
+  
 };
 
 export default QuestionaireServiceListner;

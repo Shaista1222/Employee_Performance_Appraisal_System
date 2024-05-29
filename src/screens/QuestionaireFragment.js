@@ -1,75 +1,18 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  FlatList,
-  Modal,
-  TextInput,
-  Alert,
-} from 'react-native';
 import React, {useState, useEffect} from 'react';
 import {Picker} from '@react-native-picker/picker';
-import {Menu, MenuItem} from 'react-native-material-menu';
 import {Button} from 'react-native-paper';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-//   import QuestionaireServiceListner from '../Services/QuestionaireServiceListner';
 import QuestionaireServiceListner from './Services/QuestionaireServiceListner';
-export const QuestionItem = ({question}) => {
-  let _menu = null;
-
-  const setMenuRef = ref => {
-    _menu = ref;
-  };
-
-  const showMenu = () => {
-    _menu.show();
-  };
-
-  const hideMenu = () => {
-    _menu.hide();
-  };
-
-  const deleteItem = () => {
-    // Handle the deletion of the item
-    hideMenu();
-  };
-
-  const updateItem = () => {
-    // Handle the update of the item
-    hideMenu();
-  };
-
-  return (
-    <View
-      style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: 10,
-        backgroundColor: '#f4f4f4',
-      }}>
-      <Text style={{color: 'black'}}>{question.question}</Text>
-      <Menu
-        ref={setMenuRef}
-        button={
-          <TouchableOpacity onPress={showMenu}>
-            <MaterialCommunityIcons
-              name="dots-vertical"
-              color="blue"
-              size={24}
-              onPress={showMenu}
-            />
-          </TouchableOpacity>
-        }>
-        <MenuItem style={{color: 'black'}} onPress={updateItem}>
-          Update
-        </MenuItem>
-        <MenuItem onPress={deleteItem}>Delete</MenuItem>
-      </Menu>
-    </View>
-  );
-};
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Alert,
+  Modal,
+  TextInput,
+  StyleSheet,
+  FlatList,
+} from 'react-native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export const AddQuestion = ({visible, onClose, onSave}) => {
   const [questionText, setQuestionText] = useState('');
@@ -117,12 +60,62 @@ export const AddQuestion = ({visible, onClose, onSave}) => {
   );
 };
 
+export const UpdateQuestion = ({visible, onClose, onSave, initialText}) => {
+  const [questionText, setQuestionText] = useState(initialText);
+
+  useEffect(() => {
+    setQuestionText(initialText);
+  }, [initialText]);
+
+  return (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={visible}
+      onRequestClose={onClose}>
+      <View style={styles.centeredView}>
+        <View style={styles.modalView}>
+          <Text style={styles.modalTitle}>Update Question</Text>
+
+          <TextInput
+            placeholderTextColor="gray"
+            style={styles.input}
+            onChangeText={setQuestionText}
+            value={questionText}
+            placeholder="Enter question"
+          />
+          <View style={styles.buttonRow}>
+            <Button
+              style={styles.buttonCancel}
+              textColor="white"
+              labelStyle={styles.buttonText}
+              onPress={onClose}>
+              Cancel
+            </Button>
+            <Button
+              style={styles.saveButton}
+              textColor="white"
+              labelStyle={styles.buttonText}
+              onPress={() => {
+                onSave(questionText);
+                onClose();
+              }}>
+              Save
+            </Button>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
 const QuestionnaireFragment = () => {
   const [selectedEvaluation, setSelectedEvaluation] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
+  const [updateModalVisible, setUpdateModalVisible] = useState(false);
   const [questionsList, setQuestionsList] = useState([]);
   const [questionnaireTypes, setQuestionnaireTypes] = useState([]);
-  const [questionnaireTypeId, setQuestionnaireTypeId] = useState('');
+  const [currentQuestion, setCurrentQuestion] = useState(null);
 
   useEffect(() => {
     const fetchQuestionnaire = async () => {
@@ -136,28 +129,21 @@ const QuestionnaireFragment = () => {
 
     fetchQuestionnaire();
   }, []);
+
   const fetchQuestionnaireByType = async questionnaireTypeId => {
     try {
       const data = await QuestionaireServiceListner.getQuestionnaireByTypeID(
         questionnaireTypeId,
       );
-      console.log(data); // Log the fetched data
       setQuestionsList(data);
     } catch (error) {
       Alert.alert(error.message);
     }
   };
-  // useEffect(() => {
- 
 
-  //   if (questionnaireTypeId) {
-  //     fetchQuestionnaireByType(questionnaireTypeId);
-  //   }
-  // }, [questionnaireTypeId]);
   useEffect(() => {
-    if (selectedEvaluation !== null) {
+    if (selectedEvaluation !== '') {
       fetchQuestionnaireByType(selectedEvaluation);
-      console.log(selectedEvaluation);
     }
   }, [selectedEvaluation]);
 
@@ -165,7 +151,7 @@ const QuestionnaireFragment = () => {
     try {
       const question = {
         question: questionText,
-        type_id: questionnaireTypeId,
+        type_id: selectedEvaluation,
         deleted: false,
       };
       const savedQuestion = await QuestionaireServiceListner.postQuestion(
@@ -175,6 +161,41 @@ const QuestionnaireFragment = () => {
     } catch (error) {
       Alert.alert(error.message);
     }
+  };
+
+  const handleUpdateQuestion = async updatedText => {
+    try {
+      const updatedQuestion = {
+        ...currentQuestion,
+        question: updatedText,
+      };
+      const result = await QuestionaireServiceListner.putQuestion(
+        updatedQuestion,
+      );
+      setQuestionsList(prevQuestions =>
+        prevQuestions.map(q => (q.id === result.id ? result : q)),
+      );
+      setCurrentQuestion(null);
+    } catch (error) {
+      Alert.alert(error.message);
+    }
+  };
+
+  const handleDeleteQuestion = async questionId => {
+    console.log(questionId);
+    try {
+      await QuestionaireServiceListner.deleteQuestion(questionId);
+      setQuestionsList(prevQuestions =>
+        prevQuestions.filter(q => q.id !== questionId),
+      );
+    } catch (error) {
+      Alert.alert(error.message);
+    }
+  };
+  
+  const openUpdateModal = question => {
+    setCurrentQuestion(question);
+    setUpdateModalVisible(true);
   };
 
   return (
@@ -187,7 +208,6 @@ const QuestionnaireFragment = () => {
           selectedValue={selectedEvaluation}
           onValueChange={itemValue => {
             setSelectedEvaluation(itemValue);
-            // setQuestionnaireTypeId(itemValue);
           }}
           style={{color: 'black'}}
           dropdownIconColor="black"
@@ -211,13 +231,37 @@ const QuestionnaireFragment = () => {
           onClose={() => setModalVisible(false)}
           onSave={handleSaveQuestion}
         />
+        {currentQuestion && (
+          <UpdateQuestion
+            visible={updateModalVisible}
+            onClose={() => setUpdateModalVisible(false)}
+            onSave={handleUpdateQuestion}
+            initialText={currentQuestion.question}
+          />
+        )}
         <FlatList
           data={questionsList}
           renderItem={({item, index}) => (
-            <View style={styles.BoxDesign}>
-              <Text style={{fontWeight: 'bold'}}>
+            <View style={styles.itemContainer}>
+              <Text style={styles.questionText}>
                 Q{index + 1}: {item.question}
               </Text>
+              <View style={styles.iconContainer}>
+                <TouchableOpacity
+                  onPress={() => openUpdateModal(item)}
+                  style={styles.iconButton}>
+                  <MaterialCommunityIcons
+                    name="pencil"
+                    size={24}
+                    color="black"
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => handleDeleteQuestion(item.id)}
+                  style={styles.iconButton}>
+                  <MaterialCommunityIcons name="delete" size={24} color="red" />
+                </TouchableOpacity>
+              </View>
             </View>
           )}
           keyExtractor={item => item.id.toString()}
@@ -308,15 +352,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 20,
   },
-  BoxDesign: {
-    color: '#708090',
-    fontSize: 18,
-    borderColor: 'red',
-    margin: 10,
-    backgroundColor: '#d2b48c',
-    marginBottom: 10,
+  itemContainer: {
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 10,
-    borderRadius: 10,
+    backgroundColor: '#f4f4f4',
+    marginBottom: 10,
+    borderRadius: 5,
+  },
+  questionText: {
+    color: 'black',
+  },
+  iconContainer: {
+    flexDirection: 'row',
+  },
+  iconButton: {
+    marginHorizontal: 2,
   },
 });
 

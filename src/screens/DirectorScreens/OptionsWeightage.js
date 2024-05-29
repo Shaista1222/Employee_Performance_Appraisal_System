@@ -48,6 +48,10 @@ const OptionsWeightage = () => {
   };
 
   return (
+    <>
+      <View style={styles.title}>
+        <Text style={styles.titleText}>Option Weightage</Text>
+      </View>
     <ScrollView contentContainerStyle={styles.container}>
       {loading ? (
         <Text>Loading...</Text>
@@ -72,6 +76,7 @@ const OptionsWeightage = () => {
         </>
       )}
     </ScrollView>
+    </>
   );
 };
 
@@ -80,6 +85,16 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: 'white',
     flexGrow: 1,
+  },  title: {
+    paddingTop: 10,
+    backgroundColor: '#6360DC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleText: {
+    fontSize: 24,
+    color: '#fff',
+    marginBottom: 10,
   },
   buttonContainer: {
     position: 'absolute',
