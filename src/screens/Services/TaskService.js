@@ -46,7 +46,7 @@ const TaskService = {
       return await response.json();
     } catch (error) {
       throw new Error(
-        `Something went wrong while adding task: ${error.message}`,
+        `Something went wrong while adding task: ${error}`,
       );
     }
   },

@@ -6,6 +6,7 @@ import {
   Modal,
   StyleSheet,
   Alert,
+  ScrollView,
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import {Picker} from '@react-native-picker/picker';
@@ -14,10 +15,7 @@ import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
 import DepartmentService from '../Services/DepartmentService';
 import EmployeeService from '../Services/EmployeeService';
 import DesignationService from '../Services/DesignationService';
-import TaskService, {
-  postTask,
-  postRoleBasedTask,
-} from '../Services/TaskService'; // Assuming you import these API methods
+import TaskService from '../Services/TaskService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Individual = ({
@@ -28,70 +26,70 @@ const Individual = ({
   showStartTimePicker,
   startTime,
   day,
-  selectedPerson,
+  personId,
+  setPersonId,
   setSelectedPerson,
+  selectedPerson,
   employeeList = [],
   onClose,
-}) => (
-  <View style={styles.tabContent}>
-    <TextInput
-      placeholderTextColor="gray"
-      style={styles.input}
-      onChangeText={setTaskDescription}
-      value={taskDescription}
-      placeholder="Enter Task Description"
-    />
-    <View style={styles.showPerformance}>
-      <Picker
-        selectedValue={selectedPerson}
-        onValueChange={itemValue => setSelectedPerson(itemValue)}
-        style={styles.picker}
-        dropdownIconColor="black"
-        mode="dropdown">
-        {employeeList.map(employee => (
-          <Picker.Item
-            key={employee.id}
-            label={employee.name}
-            value={employee.id}
-          />
-        ))}
-      </Picker>
-    </View>
-    <TextInput
-      placeholderTextColor="gray"
-      style={styles.input}
-      onChangeText={setTaskWeightage}
-      value={taskWeightage}
-      placeholder="Select Task Weightage"
-      keyboardType="numeric"
-    />
-    <TouchableOpacity style={styles.input} onPress={showStartTimePicker}>
-      <Text style={{color: 'black'}}>
-        Due Date: {startTime} {day}
-      </Text>
-      <View style={styles.buttonRow}>
-        <Button
-          style={styles.button}
-          textColor="white"
-          labelStyle={styles.buttonText}
-          onPress={onClose}>
+}) => {
+  return (
+    <ScrollView contentContainerStyle={styles.tabContent}>
+      <TextInput
+        label="Task Description"
+        mode="outlined"
+        multiline
+        style={styles.input}
+        onChangeText={setTaskDescription}
+        value={taskDescription}
+        placeholder="Enter Task Description"
+      />
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={selectedPerson}
+          onValueChange={itemValue => setSelectedPerson(itemValue)}
+          style={styles.picker}
+          dropdownIconColor="black"
+          mode="dropdown">
+          {employeeList.map(employee => (
+            <Picker.Item
+              key={employee.id}
+              label={employee.name}
+              value={employee.id}
+            />
+          ))}
+        </Picker>
+      </View>
+      <TextInput
+        label="Task Weightage"
+        mode="outlined"
+        style={styles.input}
+        onChangeText={setTaskWeightage}
+        value={taskWeightage}
+        placeholder="Enter Task Weightage"
+        keyboardType="numeric"
+      />
+      <TouchableOpacity style={styles.datePicker} onPress={showStartTimePicker}>
+        <Text style={{color: 'black'}}>
+          Due Date: {startTime} {day}
+        </Text>
+      </TouchableOpacity>
+      <View style={styles.buttonContainer}>
+        <Button mode="contained" style={styles.cancelButton} onPress={onClose}>
           Cancel
         </Button>
         <Button
+          mode="contained"
           style={styles.saveButton}
-          textColor="white"
-          labelStyle={styles.buttonText}
           onPress={async () => {
             try {
               const sessionId = await AsyncStorage.getItem('currentSession');
               const employeeId = await AsyncStorage.getItem('employee');
-              console.log(`Session ID from AsyncStorage: ${sessionId}`);
               const sid = JSON.parse(sessionId);
-              const empid=JSON.parse(employeeId)
-              console.log(`Parsed Session ID: ${sid.id}`);
-
+              const empid = JSON.parse(employeeId);
+              console.log(sid, empid.employee.id);
               if (!sessionId || !empid) {
-                Alert.alert('Error', 'Id not foun',sid,empid);
+                Alert.alert('Error', 'ID not found');
                 return;
               }
 
@@ -101,32 +99,53 @@ const Individual = ({
                 !taskWeightage ||
                 !startTime
               ) {
-                Alert.alert('Error', 'please fill the task information.');
+                Alert.alert(
+                  'Error',
+                  'Please fill in all the task information.',
+                );
                 return;
               }
+
               const task = {
-                assigned_to_id: selectedPerson,
-                assigned_by_id: empid,
+                assigned_to_id: personId,
+                assigned_by_id: empid.employee.id,
                 task_description: taskDescription,
-                status: false,
-                weightage: taskWeightage,
+                status: 0,
+                weightage: parseInt(taskWeightage),
                 due_date: startTime,
-                assigned_date: new Date(),
-                session_id: sid,
+                assigned_date: new Date().toISOString(),
+                session_id: sid.id,
               };
-              await TaskService.postTask(task);
-              console.log('Task saved successfully');
-              onClose();
+
+              console.log(task);
+
+              const response = await TaskService.postTask(task);
+              console.log(response);
+              if (response) {
+                Alert.alert('Success', 'Task saved successfully');
+                onClose();
+              } else {
+                const errorData = await response.json();
+                console.error('Error saving task:', errorData);
+                Alert.alert(
+                  'Error',
+                  `Something went wrong while adding task: ${errorData}`,
+                );
+              }
             } catch (error) {
-              console.error('Error saving task:', error.message);
+              console.error('Error saving task:', error);
+              Alert.alert(
+                'Error',
+                `Something went wrong while adding task: ${error}`,
+              );
             }
           }}>
           Save
         </Button>
       </View>
-    </TouchableOpacity>
-  </View>
-);
+    </ScrollView>
+  );
+};
 
 const RoleBased = ({
   taskDescription,
@@ -145,17 +164,22 @@ const RoleBased = ({
   showStartTimePicker,
   startTime,
   day,
+  departmentId,
+  designationId,
+  personTypeId,
   onClose,
 }) => (
-  <View style={styles.tabContent}>
+  <ScrollView contentContainerStyle={styles.tabContent}>
     <TextInput
-      placeholderTextColor="gray"
+      label="Task Description"
+      mode="outlined"
+      multiline
       style={styles.input}
       onChangeText={setTaskDescription}
       value={taskDescription}
       placeholder="Enter Task Description"
     />
-    <View style={styles.showPerformance}>
+    <View style={styles.pickerContainer}>
       <Picker
         selectedValue={selectedDesignation}
         onValueChange={itemValue => setSelectedDesignation(itemValue)}
@@ -171,8 +195,7 @@ const RoleBased = ({
         ))}
       </Picker>
     </View>
-
-    <View style={styles.showPerformance}>
+    <View style={styles.pickerContainer}>
       <Picker
         selectedValue={selectedDepartment}
         onValueChange={itemValue => setSelectedDepartment(itemValue)}
@@ -188,8 +211,7 @@ const RoleBased = ({
         ))}
       </Picker>
     </View>
-
-    <View style={styles.showPerformance}>
+    <View style={styles.pickerContainer}>
       <Picker
         selectedValue={selectedPersonType}
         onValueChange={itemValue => setSelectedPersonType(itemValue)}
@@ -206,99 +228,112 @@ const RoleBased = ({
       </Picker>
     </View>
     <TextInput
-      placeholderTextColor="gray"
+      label="Task Weightage"
+      mode="outlined"
       style={styles.input}
       onChangeText={setTaskWeightage}
       value={taskWeightage}
-      placeholder="Select Task Weightage"
+      placeholder="Enter Task Weightage"
       keyboardType="numeric"
     />
-    <TouchableOpacity style={styles.input} onPress={showStartTimePicker}>
+    <TouchableOpacity style={styles.datePicker} onPress={showStartTimePicker}>
       <Text style={{color: 'black'}}>
         Due Date: {startTime} {day}
       </Text>
     </TouchableOpacity>
-    <View style={styles.buttonRow}>
-      <Button
-        style={styles.button}
-        textColor="white"
-        labelStyle={styles.buttonText}
-        onPress={onClose}>
+    <View style={styles.buttonContainer}>
+      <Button mode="contained" style={styles.cancelButton} onPress={onClose}>
         Cancel
       </Button>
       <Button
+        mode="contained"
         style={styles.saveButton}
-        textColor="white"
-        labelStyle={styles.buttonText}
         onPress={async () => {
           try {
             const sessionId = await AsyncStorage.getItem('currentSession');
               const employeeId = await AsyncStorage.getItem('employee');
-              console.log(`Session ID from AsyncStorage: ${sessionId}`);
               const sid = JSON.parse(sessionId);
-              const empid=JSON.parse(employeeId)
-              console.log(`Parsed Session ID: ${sid.id}`);
-
+              const empid = JSON.parse(employeeId);
+              console.log(sid.id, empid.employee.id);
               if (!sessionId || !empid) {
-                Alert.alert('Error', 'Id not foun',sid,empid);
+                Alert.alert('Error', 'ID not found');
                 return;
               }
 
-              if (
-                !taskDescription ||
-                !selectedDepartment ||
-                !selectedDesignation||
-                !selectedPersonType||
-                !taskWeightage ||
-                !startTime
-              ) {
-                Alert.alert('Error', 'please fill the task information.');
-                return;
-              }
-              const taskWithRole = {
-                department_id: selectedDepartment,
-                designation_id:selectedDesignation,
-                employee_type_id:selectedPersonType,
-                assigned_by_id: empid,
-                task_description: taskDescription,
-                status: false,
-                weightage: taskWeightage,
-                due_date: startTime,
-                assigned_date: new Date(),
-                session_id: sid,
-              };
-            await TaskService.postRoleBasedTask(taskWithRole);
-            console.log('Role-based task saved successfully');
-            onClose(); // Close modal after successful save
+            if (
+              !taskDescription ||
+              !selectedDepartment ||
+              !selectedDesignation ||
+              !selectedPersonType ||
+              !taskWeightage ||
+              !startTime
+            ) {
+              Alert.alert('Error', 'Please fill in all the task information.');
+              return;
+            }
+
+            const taskWithRole = {
+              department_id: departmentId,
+              designation_id: designationId,
+              employee_type_id: personTypeId,
+              assigned_by_id: empid.employee.id,
+              task_description: taskDescription,
+              status: false,
+              weightage: taskWeightage,
+              due_date: startTime,
+              assigned_date: new Date(),
+              session_id: sid.id,
+            };
+
+            const response = await TaskService.postRoleBasedTask(taskWithRole);
+            console.log(response);
+            if (response) {
+              Alert.alert('Success', 'Task saved successfully');
+              onClose();
+            } else {
+              const errorData = await response.json();
+              console.error('Error saving task:', errorData);
+              Alert.alert(
+                'Error',
+                `Something went wrong while adding task: ${errorData}`,
+              );
+            }
           } catch (error) {
-            console.error('Error saving role-based task:', error.message);
+            console.error('Error saving task:', error);
+            Alert.alert(
+              'Error',
+              `Something went wrong while adding task: ${error}`,
+            );
           }
         }}>
         Save
       </Button>
     </View>
-  </View>
+  </ScrollView>
 );
 
 const AssignTask = ({visible, onClose}) => {
   const [selectedPerson, setSelectedPerson] = useState('');
+  const [personId, setPersonId] = useState('');
+  const [departmentId, setDepartmentId] = useState('');
+  const [designationId, setDesignationId] = useState('');
+  const [personTypeId, setPersonTypeId] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [selectedDesignation, setSelectedDesignation] = useState('');
   const [selectedPersonType, setSelectedPersonType] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
   const [taskWeightage, setTaskWeightage] = useState('');
-  const [employeeList, setEmployeeList] = useState([]);
-  const [designationList, setDesignationList] = useState([]);
-  const [departmentList, setDepartmentList] = useState([]);
-  const [employeeTypeList, setEmployeeTypeList] = useState([]);
-
-  const [isStartTimePickerVisible, setStartTimePickerVisible] = useState(false);
   const [startTime, setStartTime] = useState('');
-  const [index, setIndex] = useState(0);
   const [day, setDay] = useState('');
+  const [employeeList, setEmployeeList] = useState([]);
+  const [departmentList, setDepartmentList] = useState([]);
+  const [designationList, setDesignationList] = useState([]);
+  const [employeeTypeList, setEmployeeTypeList] = useState([]);
+  const [index, setIndex] = useState(0);
+  const [isStartTimePickerVisible, setStartTimePickerVisible] = useState(false);
   const [routes] = useState([
     {key: 'first', title: 'Individual'},
-    {key: 'second', title: 'Role Based'},
+    {key: 'second', title: 'Role-Based'},
   ]);
 
   useEffect(() => {
@@ -307,61 +342,57 @@ const AssignTask = ({visible, onClose}) => {
     fetchDepartments();
     fetchEmployeeType();
   }, []);
+  useEffect(() => {
+    if (selectedPerson) {
+      setPersonId(selectedPerson);
+      console.log('Selected Evaluation Type:', selectedPerson);
+    }
+  }, [selectedPerson]);
+  useEffect(() => {
+    if (selectedPerson) {
+      setPersonId(selectedPerson);
+      console.log('Selected Evaluation Type:', selectedPerson);
+    }
+  }, [selectedPerson]);
+  useEffect(() => {
+    if (selectedDepartment) {
+      setDepartmentId(selectedDepartment);
+      console.log('Selected Evaluation Type:', selectedDepartment);
+    }
+  }, [selectedDepartment]);
+  useEffect(() => {
+    if (selectedDesignation) {
+      setDesignationId(selectedDesignation);
+      console.log('Selected Evaluation Type:', selectedDesignation);
+    }
+  }, [selectedDesignation]);
+  useEffect(() => {
+    if (selectedPersonType) {
+      setPersonTypeId(selectedPersonType);
+      console.log('Selected Evaluation Type:', selectedPersonType);
+    }
+  }, [selectedPersonType]);
 
   const fetchEmployees = async () => {
-    try {
-      const employees = await EmployeeService.getEmployees();
-      setEmployeeList(employees);
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
+    const employees = await EmployeeService.getEmployees();
+    setEmployeeList(employees);
   };
 
   const fetchDesignations = async () => {
-    try {
-      const designations = await DesignationService.getDesignations();
-      setDesignationList(designations);
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
+    const designations = await DesignationService.getDesignations();
+    setDesignationList(designations);
   };
 
   const fetchDepartments = async () => {
-    try {
-      const departments = await DepartmentService.getDepartments();
-      setDepartmentList(departments);
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
+    const departments = await DepartmentService.getDepartments();
+    setDepartmentList(departments);
   };
 
   const fetchEmployeeType = async () => {
-    try {
-      const employeeTypes = await EmployeeService.getEmployeeTypes();
-      setEmployeeTypeList(employeeTypes);
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
+    const employeeTypes = await EmployeeService.getEmployeeTypes();
+    setEmployeeTypeList(employeeTypes);
   };
 
-  // const showStartTimePicker = () => {
-  //   setStartTimePickerVisible(true);
-  // };
-
-  // const hideStartTimePicker = () => {
-  //   setStartTimePickerVisible(false);
-  // };
-
-  // const handleStartTimeConfirm = date => {
-  //   setStartTime(date.toLocaleTimeString());
-  //   hideStartTimePicker();
-  // };
-
-  // const handleStartDayConfirm = date => {
-  //   const options = {weekday: 'long'};
-  //   const dayOfWeek = date.toLocaleDateString(undefined, options);
-  //   setDay(dayOfWeek);
-  // };
   const showStartTimePicker = () => {
     setStartTimePickerVisible(true);
   };
@@ -370,47 +401,49 @@ const AssignTask = ({visible, onClose}) => {
     setStartTimePickerVisible(false);
   };
 
-  const handleStartTimeConfirm = date => {
-    const formattedDate = date.toISOString();
-    setStartTime(formattedDate);
+  const handleConfirmStartTime = date => {
+    const formattedTime = date.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    const dayString = date.toLocaleDateString([], {
+      month: 'short',
+      day: '2-digit',
+      year: 'numeric',
+    });
+    setStartTime(formattedTime);
+    setDay(dayString);
     hideStartTimePicker();
   };
-  const renderTabBar = props => (
-    <TabBar
-      {...props}
-      indicatorStyle={styles.indicator}
-      style={styles.tabBar}
-      labelStyle={styles.labelStyle}
-    />
-  );
 
   const renderScene = SceneMap({
     first: () => (
       <Individual
+        personId={personId}
+        setPersonId={setPersonId}
         taskDescription={taskDescription}
         setTaskDescription={setTaskDescription}
-        selectedPerson={selectedPerson}
-        setSelectedPerson={setSelectedPerson}
-        employeeList={employeeList}
         taskWeightage={taskWeightage}
         setTaskWeightage={setTaskWeightage}
         showStartTimePicker={showStartTimePicker}
         startTime={startTime}
         day={day}
+        selectedPerson={selectedPerson}
+        setSelectedPerson={setSelectedPerson}
+        employeeList={employeeList}
+        onClose={onClose}
       />
     ),
     second: () => (
       <RoleBased
+        departmentId={departmentId}
+        designationId={designationId}
+        personTypeId={personTypeId}
+        setDepartmentId={setDepartmentId}
+        setDesignationId={setDesignationId}
+        setPersonTypeId={setPersonTypeId}
         taskDescription={taskDescription}
         setTaskDescription={setTaskDescription}
-        selectedPerson={selectedPerson}
-        setSelectedPerson={setSelectedPerson}
-        employeeList={employeeList}
-        taskWeightage={taskWeightage}
-        setTaskWeightage={setTaskWeightage}
-        showStartTimePicker={showStartTimePicker}
-        startTime={startTime}
-        day={day}
         selectedDesignation={selectedDesignation}
         setSelectedDesignation={setSelectedDesignation}
         designationList={designationList}
@@ -420,135 +453,96 @@ const AssignTask = ({visible, onClose}) => {
         selectedPersonType={selectedPersonType}
         setSelectedPersonType={setSelectedPersonType}
         employeeTypeList={employeeTypeList}
+        taskWeightage={taskWeightage}
+        setTaskWeightage={setTaskWeightage}
+        showStartTimePicker={showStartTimePicker}
+        startTime={startTime}
+        day={day}
+        onClose={onClose}
       />
     ),
   });
 
   return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={visible}
-      onRequestClose={onClose}>
-      <View style={styles.centeredView}>
-        <View style={styles.modalView}>
-          <Text style={styles.modalTitle}>Add Task</Text>
-
-          <View style={styles.tabContainer}>
-            <TabView
-              navigationState={{index, routes}}
-              renderScene={renderScene}
-              onIndexChange={setIndex}
-              initialLayout={{width: 300}}
-              renderTabBar={renderTabBar}
+    <Modal visible={visible} onRequestClose={onClose} animationType="slide">
+      <View style={styles.container}>
+        <Text style={styles.title}>Assign Task</Text>
+        <TabView
+          navigationState={{index, routes}}
+          renderScene={renderScene}
+          onIndexChange={setIndex}
+          initialLayout={{width: 300}}
+          renderTabBar={props => (
+            <TabBar
+              {...props}
+              indicatorStyle={{backgroundColor: 'blue'}}
+              style={{backgroundColor: 'white'}}
+              labelStyle={{color: 'black'}}
             />
-          </View>
-          <DateTimePickerModal
-            isVisible={isStartTimePickerVisible}
-            mode="datetime"
-            onConfirm={date => {
-              handleStartTimeConfirm(date);
-              // handleStartDayConfirm(date);
-            }}
-            onCancel={hideStartTimePicker}
-          />
-        </View>
+          )}
+        />
+        <DateTimePickerModal
+          isVisible={isStartTimePickerVisible}
+          mode="datetime"
+          onConfirm={handleConfirmStartTime}
+          onCancel={hideStartTimePicker}
+        />
       </View>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  centeredView: {
+  container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 22,
-  },
-  modalView: {
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
     padding: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
-    width: '85%',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    backgroundColor: 'white',
   },
-  modalTitle: {
-    marginBottom: 15,
-    textAlign: 'center',
-    color: 'black',
+  title: {
     fontSize: 24,
     fontWeight: 'bold',
-  },
-  tabBar: {
-    backgroundColor: '#3a7ca5',
-  },
-  indicator: {
-    backgroundColor: 'white',
-  },
-  labelStyle: {
-    fontWeight: 'bold',
-  },
-  input: {
-    height: 40,
-    width: 250,
-    marginVertical: 10,
-    borderWidth: 1,
-    padding: 10,
-    color: 'black',
-  },
-  picker: {
-    color: 'black',
-    width: '100%',
-  },
-  showPerformance: {
-    height: 40,
-    width: 250,
-    marginVertical: 10,
-    borderWidth: 1,
-    paddingBottom: 16,
-    color: 'black',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    // marginTop: 15,
-  },
-  button: {
-    backgroundColor: 'crimson',
-    marginLeft: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  saveButton: {
-    backgroundColor: 'green',
-    marginLeft: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    fontSize: 14,
-  },
-  tabContainer: {
-    height: 500,
-    width: '100%',
+    marginBottom: 20,
+    textAlign: 'center',
   },
   tabContent: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
+  },
+  input: {
+    marginBottom: 20,
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 5,
+    marginBottom: 20,
+  },
+  picker: {
+    height: 50,
+    color: 'black',
+  },
+  datePicker: {
+    padding: 10,
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 5,
+    marginBottom: 20,
+    justifyContent: 'center',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  cancelButton: {
+    backgroundColor: 'red',
+    flex: 1,
+    marginRight: 10,
+  },
+  saveButton: {
+    backgroundColor: 'green',
+    flex: 1,
+    marginLeft: 10,
   },
 });
 
