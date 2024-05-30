@@ -20,10 +20,14 @@ const EvaluateeListFragment = ({navigation}) => {
       try {
         const sessionData = await AsyncStorage.getItem('currentSession');
         const user = await AsyncStorage.getItem('employee');
-
+        console.log(sessionData, user);
+        console.log(sessionData, user)
         if (sessionData && user) {
+          const sesionObjectString = JSON.stringify(sessionData)
           const parsedSessionData = JSON.parse(sessionData);
+          console.log(parsedSessionData)
           const parsedUser = JSON.parse(user);
+          console.log(parsedSessionData, parsedUser);
           setCurrentSessionData(parsedSessionData);
           setEmployeeUser(parsedUser);
         } else {
