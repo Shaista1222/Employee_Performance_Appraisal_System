@@ -8,11 +8,11 @@ const EvaluatorService = {
         `${IPAddress}/Evaluator/GetEvaluatees?evaluatorID=${evaluatorID}&sessionID=${sessionID}`,
       );
       if (!response.ok) {
-        throw new Error('Failed to fetch evaluatees');
+       Alert('Failed to fetch evaluatees');
       }
       return await response.json();
     } catch (error) {
-      throw new Error(
+      Alert(
         `Something went wrong while fetching evaluatees: ${error.message}`,
       );
     }

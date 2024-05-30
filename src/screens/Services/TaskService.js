@@ -53,7 +53,7 @@ const TaskService = {
 
   postRoleBasedTask: async function (taskWithRole) {
     try {
-      const response = await fetch(` ${IPAddress}/Task/PostRoleBasedTask`, {
+      const response = await fetch(`${IPAddress}/Task/PostRoleBasedTask`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

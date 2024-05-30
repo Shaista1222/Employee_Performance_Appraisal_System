@@ -18,13 +18,12 @@ const EvaluateeListFragment = ({navigation}) => {
   useEffect(() => {
     const retrieveEmployeeData = async () => {
       try {
-        const sessionData = await AsyncStorage.getItem('sessionId');
+        const sessionData = await AsyncStorage.getItem('currentSession');
         const user = await AsyncStorage.getItem('employee');
 
         if (sessionData && user) {
           const parsedSessionData = JSON.parse(sessionData);
           const parsedUser = JSON.parse(user);
-
           setCurrentSessionData(parsedSessionData);
           setEmployeeUser(parsedUser);
         } else {
@@ -46,7 +45,6 @@ const EvaluateeListFragment = ({navigation}) => {
 
   const fetchEvaluatees = async (evaluatorID, sessionID) => {
     try {
-      console.log(JSON.parse(evaluatorID) + '\n' + sessionID);
       const data = await EvaluatorService.getEvaluatees(evaluatorID, sessionID);
       setEvaluateeList(data);
       setLoading(false);
@@ -136,7 +134,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontWeight: 'bold',
-    color:'black'
+    color: 'black',
   },
 });
 

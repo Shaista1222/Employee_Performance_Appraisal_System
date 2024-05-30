@@ -186,11 +186,12 @@ const RoleBased = ({
         style={styles.picker}
         dropdownIconColor="black"
         mode="dropdown">
+        <Picker.Item label="Select Designation" />
         {designationList.map(designation => (
           <Picker.Item
             key={designation.id}
             label={designation.name}
-            value={designation.id}
+            value={designation}
           />
         ))}
       </Picker>
@@ -202,11 +203,12 @@ const RoleBased = ({
         style={styles.picker}
         dropdownIconColor="black"
         mode="dropdown">
+        <Picker.Item label="Select Department" />
         {departmentList.map(department => (
           <Picker.Item
             key={department.id}
             label={department.name}
-            value={department.id}
+            value={department}
           />
         ))}
       </Picker>
@@ -218,11 +220,12 @@ const RoleBased = ({
         style={styles.picker}
         dropdownIconColor="black"
         mode="dropdown">
+        <Picker.Item label="Select Person Type" />
         {employeeTypeList.map(employeeType => (
           <Picker.Item
             key={employeeType.id}
             label={employeeType.title}
-            value={employeeType.id}
+            value={employeeType}
           />
         ))}
       </Picker>
@@ -251,14 +254,14 @@ const RoleBased = ({
         onPress={async () => {
           try {
             const sessionId = await AsyncStorage.getItem('currentSession');
-              const employeeId = await AsyncStorage.getItem('employee');
-              const sid = JSON.parse(sessionId);
-              const empid = JSON.parse(employeeId);
-              console.log(sid.id, empid.employee.id);
-              if (!sessionId || !empid) {
-                Alert.alert('Error', 'ID not found');
-                return;
-              }
+            const employeeId = await AsyncStorage.getItem('employee');
+            const sid = JSON.parse(sessionId);
+            const empid = JSON.parse(employeeId);
+            console.log(sid.id, empid.employee.id);
+            if (!sessionId || !empid) {
+              Alert.alert('Error', 'ID not found');
+              return;
+            }
 
             if (
               !taskDescription ||
@@ -273,17 +276,22 @@ const RoleBased = ({
             }
 
             const taskWithRole = {
-              department_id: departmentId,
-              designation_id: designationId,
-              employee_type_id: personTypeId,
-              assigned_by_id: empid.employee.id,
-              task_description: taskDescription,
-              status: false,
-              weightage: taskWeightage,
-              due_date: startTime,
-              assigned_date: new Date(),
-              session_id: sid.id,
+              Task: {
+                assigned_by_id: empid.employee.id,
+                task_description: taskDescription,
+                status: 0,
+                weightage: parseInt(taskWeightage),
+                due_date: startTime,
+                assigned_date: new Date().toISOString(),
+                session_id: sid.id,
+              },
+              Role: {
+                Department: selectedDepartment,
+                Designation: selectedDesignation,
+                EmployeeType: selectedPersonType,
+              },
             };
+            console.log(taskWithRole);
 
             const response = await TaskService.postRoleBasedTask(taskWithRole);
             console.log(response);
@@ -345,31 +353,26 @@ const AssignTask = ({visible, onClose}) => {
   useEffect(() => {
     if (selectedPerson) {
       setPersonId(selectedPerson);
-      console.log('Selected Evaluation Type:', selectedPerson);
+      console.log('Selected person:', selectedPerson);
     }
   }, [selectedPerson]);
-  useEffect(() => {
-    if (selectedPerson) {
-      setPersonId(selectedPerson);
-      console.log('Selected Evaluation Type:', selectedPerson);
-    }
-  }, [selectedPerson]);
+
   useEffect(() => {
     if (selectedDepartment) {
       setDepartmentId(selectedDepartment);
-      console.log('Selected Evaluation Type:', selectedDepartment);
+      console.log('Selected department:', selectedDepartment);
     }
   }, [selectedDepartment]);
   useEffect(() => {
     if (selectedDesignation) {
       setDesignationId(selectedDesignation);
-      console.log('Selected Evaluation Type:', selectedDesignation);
+      console.log('Selected designation:', selectedDesignation);
     }
   }, [selectedDesignation]);
   useEffect(() => {
     if (selectedPersonType) {
       setPersonTypeId(selectedPersonType);
-      console.log('Selected Evaluation Type:', selectedPersonType);
+      console.log('Selected person type:', selectedPersonType);
     }
   }, [selectedPersonType]);
 
@@ -381,6 +384,7 @@ const AssignTask = ({visible, onClose}) => {
   const fetchDesignations = async () => {
     const designations = await DesignationService.getDesignations();
     setDesignationList(designations);
+    console.log(designations)
   };
 
   const fetchDepartments = async () => {
