@@ -50,6 +50,26 @@ const TaskService = {
       );
     }
   },
+
+  postRoleBasedTask: async function (taskWithRole) {
+    try {
+      const response = await fetch(` ${IPAddress}/Task/PostRoleBasedTask`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(taskWithRole),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to add role-based task');
+      }
+      return await response.json();
+    } catch (error) {
+      throw new Error(
+        ` Something went wrong while adding role-based task: ${error.message}`,
+      );
+    }
+  },
   putTask: async function (task, onSuccess, onFailure) {
     try {
       const response = await fetch(`${IPAddress}/Task/PutTask`, {
@@ -68,25 +88,6 @@ const TaskService = {
       onSuccess(updatedTask);
     } catch (error) {
       onFailure(error.message || 'Failed to update task');
-    }
-  },
-  postRoleBasedTask: async function (taskWithRole) {
-    try {
-      const response = await fetch(` ${IPAddress}/Task/PostRoleBasedTask`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(taskWithRole),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to add role-based task');
-      }
-      return await response.json();
-    } catch (error) {
-      throw new Error(
-        ` Something went wrong while adding role-based task: ${error.message}`,
-      );
     }
   },
 };

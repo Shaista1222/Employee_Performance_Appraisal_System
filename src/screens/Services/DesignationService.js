@@ -21,12 +21,4 @@ export default DesignationService= {
     return this.fetchDesignations('GetDesignations');
   },
 
-  populateDesignationSpinner(designationList, setItems) {
-    if (designationList && designationList.length > 0) {
-      const names = designationList.map(designation => designation.name);
-      setItems(names);
-    } else {
-      Alert.alert('Designation list is empty', ToastAndroid.LONG);
-    }
-  }
 }

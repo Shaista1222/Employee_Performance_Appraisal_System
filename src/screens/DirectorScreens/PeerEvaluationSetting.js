@@ -1,13 +1,17 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
+  Alert,
 } from 'react-native';
-import DateTimePickerModal from 'react-native-modal-datetime-picker'; // Import DateTimePickerModal package
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { Button } from 'react-native-paper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { postEvaluationTime } from '../Services/EvaluationTimeServices'; // Adjust the import path as necessary
+
 const PeerEvaluationSetting = () => {
   const [isStartTimePickerVisible, setStartTimePickerVisible] = useState(false);
   const [isEndTimePickerVisible, setEndTimePickerVisible] = useState(false);
@@ -23,7 +27,9 @@ const PeerEvaluationSetting = () => {
   };
 
   const handleStartTimeConfirm = date => {
-    setStartTime(date.toLocaleTimeString());
+    const formattedDate = date.toISOString(); // Ensure it's in ISO format
+    setStartTime(formattedDate);
+    console.log(`Start Time set to: ${formattedDate}`);
     hideStartTimePicker();
   };
 
@@ -36,8 +42,51 @@ const PeerEvaluationSetting = () => {
   };
 
   const handleEndTimeConfirm = date => {
-    setEndTime(date.toLocaleTimeString());
+    const formattedDate = date.toISOString(); // Ensure it's in ISO format
+    setEndTime(formattedDate);
+    console.log(`End Time set to: ${formattedDate}`);
     hideEndTimePicker();
+  };
+
+  const handleSave = async () => {
+    try {
+      const sessionId = await AsyncStorage.getItem('currentSession');
+      console.log(`Session ID from AsyncStorage: ${sessionId}`);
+      const sid = JSON.parse(sessionId);
+      console.log(`Parsed Session ID: ${sid.id}`);
+
+      if (!sessionId) {
+        Alert.alert('Error', 'Session ID not found.');
+        return;
+      }
+
+      if (!startTime || !endTime) {
+        Alert.alert('Error', 'Start Time and End Time must be set.');
+        return;
+      }
+
+      const evaluationTime = {
+        start_time: startTime,
+        end_time: endTime,
+        evaluation_type: 'peer',
+        session_id: sid.id
+      };
+
+      console.log('Sending evaluation time data to server:', evaluationTime);
+
+      const response = await postEvaluationTime(evaluationTime);
+      console.log(`Response from server: ${JSON.stringify(response)}`);
+
+      // Check for success
+      if (response && (response.success || response.id)) {
+        Alert.alert('Success', 'Evaluation time saved successfully.');
+      } else {
+        Alert.alert('Error', response.message || 'Something went wrong.');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', error.message);
+    }
   };
 
   return (
@@ -46,37 +95,39 @@ const PeerEvaluationSetting = () => {
         <Text style={styles.title}>Peer Evaluation</Text>
         <View style={styles.dateTimeContainer}>
           <TouchableOpacity style={styles.input} onPress={showStartTimePicker}>
-            <Text style={styles.dateTime}>Start Time: {startTime}</Text>
+            <Text style={styles.dateTime}>Start Time: {startTime ? new Date(startTime).toLocaleString() : ''}</Text>
           </TouchableOpacity>
         </View>
         <DateTimePickerModal
           isVisible={isStartTimePickerVisible}
-          mode="time"
+          mode="datetime"
           onConfirm={handleStartTimeConfirm}
           onCancel={hideStartTimePicker}
         />
         <View style={styles.dateTimeContainer}>
           <TouchableOpacity style={styles.input} onPress={showEndTimePicker}>
-            <Text style={styles.dateTime}>End Time: {endTime}</Text>
+            <Text style={styles.dateTime}>End Time: {endTime ? new Date(endTime).toLocaleString() : ''}</Text>
           </TouchableOpacity>
         </View>
         <DateTimePickerModal
           isVisible={isEndTimePickerVisible}
-          mode="time"
+          mode="datetime"
           onConfirm={handleEndTimeConfirm}
           onCancel={hideEndTimePicker}
         />
-         <Button
-              style={styles.saveButton}
-              textColor="white"
-              labelStyle={styles.buttonText}
-              onPress={() => console.log('Save task')}>
-              Save
-            </Button>
+        <Button
+          style={styles.saveButton}
+          textColor="white"
+          labelStyle={styles.buttonText}
+          onPress={handleSave}
+        >
+          Save
+        </Button>
       </View>
     </SafeAreaView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -89,17 +140,16 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 8,
     elevation: 3,
-    shadowOffset: {width: 1, height: 1},
+    shadowOffset: { width: 1, height: 1 },
     shadowColor: '#333',
     shadowOpacity: 0.3,
     shadowRadius: 2,
     width: '80%',
-    // justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   saveButton: {
     backgroundColor: '#3a7ca5',
-    marginLeft: 10,
+    marginTop: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -130,8 +180,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    // justifyContent: 'space-between',
-    color: 'black',
   },
 });
+
 export default PeerEvaluationSetting;

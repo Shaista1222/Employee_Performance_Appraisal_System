@@ -1,11 +1,7 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {Picker} from '@react-native-picker/picker';
 
 const Evaluation = ({navigation}) => {
-  const [selectedSession, setSelectedSession] = useState('spring-2024');
-
   const setPeerEvaluation = () => {
     navigation.navigate('PeerEvaluation');
   };
@@ -19,27 +15,6 @@ const Evaluation = ({navigation}) => {
         <Text style={styles.titleText}>Evaluation</Text>
       </View>
       <View style={styles.container}>
-        {/* <View style={styles.dropdownContainer}> */}
-        <View style={styles.showPerformance}>
-          <Picker
-            selectedValue={selectedSession}
-            onValueChange={(itemValue, itemIndex) =>
-              setSelectedSession(itemValue)
-            }
-            style={styles.picker}
-            dropdownIconColor="black"
-            dropdownIconComponent={() => (
-              <MaterialCommunityIcons
-                name="caret-down"
-                size={18}
-                color="black"
-              />
-            )}
-            mode="dropdown">
-            <Picker.Item label="Session" value="spring" />
-          </Picker>
-        </View>
-
         <TouchableOpacity style={styles.button} onPress={setPeerEvaluation}>
           <Text style={{color: 'black'}}>SET PEER EVALUATION</Text>
         </TouchableOpacity>

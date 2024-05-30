@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, Modal, TextInput} from 'react-native';
+import {View, Text, StyleSheet, Modal, TextInput, Alert} from 'react-native';
 import CommonData from '../DirectorScreens/CommonData';
 import {Picker} from '@react-native-picker/picker';
 import {Button} from 'react-native-paper';
@@ -8,15 +8,9 @@ import DepartmentService from '../Services/DepartmentService';
 import EmployeeService from '../Services/EmployeeService';
 
 const AddEmployee = ({visible, onClose}) => {
-  const [selectedEmployeeType, setSelectedEmployeeType] = useState('');
-  const [selectedDesignation, setSelectedDesignation] = useState('');
-  const [session, setSession] = useState('');
-  const [selectedPerson, setSelectedPerson] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
   const [selectedPersonType, setSelectedPersonType] = useState('');
   const [selectedRoleDepartment, setSelectedDepartment] = useState('');
-  const [taskWeightage, setTaskWeightage] = useState('');
-  const [employeeList, setEmployeeList] = useState([]);
   const [employeeTypeList, setEmployeeTypeList] = useState([]);
   const [designationList, setDesignationList] = useState([]);
   const [departmentList, setDepartmentList] = useState([]);
@@ -31,6 +25,7 @@ const AddEmployee = ({visible, onClose}) => {
     fetchDesignations();
     fetchDepartments();
   }, []);
+
   const fetchDesignations = async () => {
     try {
       DesignationService.getDesignations()
@@ -69,22 +64,36 @@ const AddEmployee = ({visible, onClose}) => {
       name: employeeName,
       email: employeeEmail,
       password: employeePassword,
+      employee_type_id: selectedPersonType,
       salary: employeeSalary,
-      joiningDate: employeeJoiningDate,
-      roleId: selectedRole,
-      typeId: selectedPersonType,
-      departmentId: selectedRoleDepartment,
+      doj: employeeJoiningDate,
+      deleted:false,
+      department_id: selectedRoleDepartment,
+      designation_id:selectedRole ,
     };
-
+  
     try {
-      const newEmployee = await EmployeeService.postEmployee(employeeData);
-      // Handle the newly added employee data here, if needed
-      console.log('New employee added:', newEmployee);
-      onClose(); // Close the modal after adding the employee
+      if (
+        !selectedRole ||
+        !employeeName ||
+        !employeeEmail ||
+        !employeePassword ||
+        !employeeJoiningDate ||
+        !employeeSalary ||
+        !selectedPersonType ||
+        !selectedRoleDepartment
+      ) {
+        alert('Please fill out employee information.');
+      } else {
+        const newEmployee = await EmployeeService.postEmployee(employeeData);
+        console.log('New employee added:', newEmployee);
+        onClose();
+      }
     } catch (error) {
-      Alert.alert('Error', `Failed to add employee: ${error.message}`);
+      alert(`Failed to add employee: ${error.message}`);
     }
   };
+  
   return (
     <Modal
       animationType="slide"
@@ -108,22 +117,22 @@ const AddEmployee = ({visible, onClose}) => {
             value={employeeEmail}
             placeholder="Enter Employee email"
           />
-           <TextInput
+          <TextInput
             placeholderTextColor="gray"
             style={styles.input}
             onChangeText={setEmployeePassword}
             value={employeePassword}
             placeholder="Enter Employee Password"
           />
-            <TextInput
+          <TextInput
             placeholderTextColor="gray"
             style={styles.input}
             onChangeText={setEmployeeSalary}
             value={employeeSalary}
             placeholder="Enter Employee Salary"
           />
-         
-            <TextInput
+
+          <TextInput
             placeholderTextColor="gray"
             style={styles.input}
             onChangeText={setEmployeeJoiningDate}
@@ -143,7 +152,7 @@ const AddEmployee = ({visible, onClose}) => {
                   <FontAwesome5 name="caret-down" size={18} color="black" />
                 )}
                 mode="dropdown">
-                <Picker.Item label='Role'/>
+                <Picker.Item label="Role" />
                 {designationList.map((designation, index) => (
                   <Picker.Item
                     key={index}
@@ -165,7 +174,7 @@ const AddEmployee = ({visible, onClose}) => {
                   <FontAwesome5 name="caret-down" size={18} color="black" />
                 )}
                 mode="dropdown">
-                <Picker.Item label='Employee Type'/>
+                <Picker.Item label="Employee Type" />
 
                 {employeeTypeList.map((personType, index) => (
                   <Picker.Item
@@ -188,7 +197,7 @@ const AddEmployee = ({visible, onClose}) => {
                   <FontAwesome5 name="caret-down" size={18} color="black" />
                 )}
                 mode="dropdown">
-                <Picker.Item label='Role Department'/>
+                <Picker.Item label="Role Department" />
 
                 {departmentList.map((department, index) => (
                   <Picker.Item
@@ -212,7 +221,7 @@ const AddEmployee = ({visible, onClose}) => {
               style={styles.saveButton}
               textColor="white"
               labelStyle={styles.buttonText}
-              onPress={() => console.log('Save task')}>
+              onPress={handleAddEmployee}>
               Save
             </Button>
           </View>

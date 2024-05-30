@@ -5,11 +5,12 @@ const SessionService = {
   getCurrentSession: async () => {
     try {
       const response = await fetch(`${IPAddress}/Session/GetCurrentSession`);
+      console.log(response)
       if (!response.ok) {
         throw new Error('Failed to fetch student courses');
       }
       const data = await response.json();
-      await AsyncStorage.setItem('currentSession', JSON.stringify(data));
+      await AsyncStorage.setItem('currentSession', JSON.parse(data));
       return data;
     } catch (error) {
       throw new Error('Failed to fetch session');

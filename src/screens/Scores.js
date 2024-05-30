@@ -1,24 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Alert, StyleSheet, ActivityIndicator } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {View, Text, Alert, StyleSheet, ActivityIndicator,FlatList} from 'react-native';
+import {Picker} from '@react-native-picker/picker';
 import SessionService from './Services/SessionService';
 import EmployeeService from './Services/EmployeeService';
-import { Picker } from '@react-native-picker/picker';
-import { FlatList } from 'react-native-gesture-handler';
 import EvaluatonScores from './Services/EvaluatonScores';
 import QuestionaireServiceListner from './Services/QuestionaireServiceListner';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
-export default function Scores() {
+const Scores = () => {
   const [sessionList, setSessionList] = useState([]);
   const [employeeList, setEmployeeList] = useState([]);
+  const [evaluationTypeList, setEvaluationTypeList] = useState([]);
+  const [evaluationScoreList, setEvaluationScoreList] = useState([]);
   const [selectedSession, setSelectedSession] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState('');
-  const [evaluationScoreList, setEvaluationScoreList] = useState([]);
+  const [selectedEvaluationType, setSelectedEvaluationType] = useState('');
   const [loading, setLoading] = useState(true);
   const [employeeId, setEmployeeId] = useState('');
   const [sessionId, setSessionId] = useState('');
-  const [evaluationTypeList, setEvaluationTypeList] = useState([]);
-  const [selectedEvaluationType, setSelectedEvaluationType] = useState('');
   const [evaluationTypeId, setEvaluationTypeId] = useState('');
 
   useEffect(() => {
@@ -26,6 +24,7 @@ export default function Scores() {
       try {
         const data = await SessionService.getSessions();
         setSessionList(data);
+        console.log(data);
       } catch (error) {
         Alert.alert('Error', error.message);
       }
@@ -35,6 +34,7 @@ export default function Scores() {
       try {
         const data = await EmployeeService.getEmployees();
         setEmployeeList(data);
+        console.log(data);
       } catch (error) {
         Alert.alert('Error', error.message);
       }
@@ -44,6 +44,7 @@ export default function Scores() {
       try {
         const data = await QuestionaireServiceListner.getQuestionnaireTypes();
         setEvaluationTypeList(data);
+        console.log(data);
       } catch (error) {
         Alert.alert('Error', error.message);
       }
@@ -55,14 +56,18 @@ export default function Scores() {
   }, []);
 
   useEffect(() => {
-    const fetchEvaluationScore = async () => {
+    const fetchEvaluationScore = async (
+      employeeID,
+      sessionID,
+      evaluationTypeID,
+    ) => {
       if (employeeId && sessionId && evaluationTypeId) {
         setLoading(true);
         try {
           const data = await EvaluatonScores.getEmployeeQuestionScore(
-            employeeId,
-            sessionId,
-            evaluationTypeId
+            employeeID,
+            sessionID,
+            evaluationTypeID,
           );
           setEvaluationScoreList(data);
         } catch (error) {
@@ -72,7 +77,7 @@ export default function Scores() {
       }
     };
 
-    fetchEvaluationScore();
+    fetchEvaluationScore(employeeId, sessionId, evaluationTypeId);
   }, [employeeId, sessionId, evaluationTypeId]);
 
   useEffect(() => {
@@ -102,70 +107,77 @@ export default function Scores() {
         <Text style={styles.titleText}>Scores</Text>
       </View>
       <View style={styles.container}>
+        <Text style={styles.label}>Employee</Text>
+        <View style={styles.showPerformance}>
+          <Picker
+            selectedValue={selectedEmployee}
+            onValueChange={itemValue => setSelectedEmployee(itemValue)}
+            style={styles.picker}
+            dropdownIconColor="black"
+            mode="dropdown">
+            {employeeList.map((emp, index) => (
+              <Picker.Item key={index} label={emp.name} value={emp.id} />
+            ))}
+          </Picker>
+        </View>
+        <Text style={styles.label}>Session</Text>
+        <View style={styles.showPerformance}>
+          <Picker
+            selectedValue={selectedSession}
+            onValueChange={itemValue => setSelectedSession(itemValue)}
+            style={styles.picker}
+            dropdownIconColor="black"
+            mode="dropdown">
+            {sessionList.map((session, index) => (
+              <Picker.Item
+                key={index}
+                label={session.title}
+                value={session.id}
+              />
+            ))}
+          </Picker>
+        </View>
+        <Text style={styles.label}>Evaluation Type</Text>
+        <View style={styles.showPerformance}>
+          <Picker
+            selectedValue={selectedEvaluationType}
+            onValueChange={itemValue => setSelectedEvaluationType(itemValue)}
+            style={styles.picker}
+            dropdownIconColor="black"
+            mode="dropdown">
+            {evaluationTypeList.map((evaluationType, index) => (
+              <Picker.Item
+                key={index}
+                label={evaluationType.name}
+                value={evaluationType.id}
+              />
+            ))}
+          </Picker>
+        </View>
         {loading ? (
           <ActivityIndicator size="large" color="#0000ff" />
         ) : (
           <>
-            <Text style={styles.label}>Employee</Text>
-            <View style={styles.showPerformance}>
-              <Picker
-                selectedValue={selectedEmployee}
-                onValueChange={(itemValue) => setSelectedEmployee(itemValue)}
-                style={styles.picker}
-                dropdownIconColor="black"
-                mode="dropdown"
-              >
-                {employeeList.map((emp, index) => (
-                  <Picker.Item key={index} label={emp.name} value={emp.id} />
-                ))}
-              </Picker>
-            </View>
-            <Text style={styles.label}>Session</Text>
-            <View style={styles.showPerformance}>
-              <Picker
-                selectedValue={selectedSession}
-                onValueChange={(itemValue) => setSelectedSession(itemValue)}
-                style={styles.picker}
-                dropdownIconColor="black"
-                mode="dropdown"
-              >
-                {sessionList.map((session, index) => (
-                  <Picker.Item key={index} label={session.title} value={session.id} />
-                ))}
-              </Picker>
-            </View>
-            <Text style={styles.label}>Evaluation Type</Text>
-            <View style={styles.showPerformance}>
-              <Picker
-                selectedValue={selectedEvaluationType}
-                onValueChange={(itemValue) => setSelectedEvaluationType(itemValue)}
-                style={styles.picker}
-                dropdownIconColor="black"
-                mode="dropdown"
-              >
-                {evaluationTypeList.map((evaluationType, index) => (
-                  <Picker.Item key={index} label={evaluationType.name} value={evaluationType.id} />
-                ))}
-              </Picker>
-            </View>
             <FlatList
               data={evaluationScoreList}
-              renderItem={({ item }) => (
+              renderItem={({item}) => (
                 <View style={styles.BoxDesign}>
-                  <Text style={{ fontWeight: 'bold' }}>{item.question.question}</Text>
+                  <Text style={{fontWeight: 'bold'}}>
+                    {item.question.question}
+                  </Text>
                   <Text>
                     {item.obtainedScore}/{item.totalScore}
                   </Text>
                 </View>
               )}
-              keyExtractor={(item) => item.question.id.toString()}
+              keyExtractor={item => item.question.id.toString()}
             />
           </>
         )}
       </View>
     </>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -208,3 +220,5 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 });
+
+export default Scores;
