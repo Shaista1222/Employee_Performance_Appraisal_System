@@ -26,14 +26,14 @@ const CourseTeacher = ({ route, navigation }) => {
     }
   };
 
-  const evaluateTeacher = async (teacherId) => {
+  const evaluateTeacher = async (evaluateeID,type) => {
     try {
-      console.log(studentID, teacherId, courseID, sessionID,);
-      const result = await EvaluationService.isEvaluated(studentID, teacherId, courseID, sessionID, 'Student');
+      console.log(studentID, evaluateeID, courseID, sessionID,);
+      const result = await EvaluationService.isEvaluated(studentID, evaluateeID, courseID, sessionID, 'student');
       if (result) {
         Alert.alert('You have already evaluated this teacher');
       } else {
-        navigation.navigate('EvaluationQuestionnaire', { teacherId, courseID });
+        navigation.navigate('EvaluationQuestionnaire', { evaluateeID, courseID, questionByType: type, });
       }
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -50,7 +50,7 @@ const CourseTeacher = ({ route, navigation }) => {
           data={TeacherCourseList}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.onClick} onPress={() => evaluateTeacher(item.id)}>
+            <TouchableOpacity style={styles.onClick} onPress={() => evaluateTeacher(item.id, "student")}>
               <Text style={styles.courseList}>{item.name}</Text>
             </TouchableOpacity>
           )}

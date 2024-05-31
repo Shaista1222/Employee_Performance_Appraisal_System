@@ -3,7 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, Dimensions }
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EvaluatorService from './Services/EvaluatorService';
-import {getTeacherJuniors} from './Services/JuniorEmployeeService';
+import { getTeacherJuniors } from './Services/JuniorEmployeeService';
 
 const EvaluateeList = ({ evaluatees, onPress }) => (
   <FlatList
@@ -15,7 +15,22 @@ const EvaluateeList = ({ evaluatees, onPress }) => (
         </View>
       </TouchableOpacity>
     )}
-    keyExtractor={item => item.id.toString()}
+    keyExtractor={item => (item.id ? item.id.toString() : Math.random().toString())}
+  />
+);
+
+const JuniorEvaluateeList = ({ evaluatees, onPress }) => (
+  <FlatList
+    data={evaluatees}
+    renderItem={({ item }) => (
+      <TouchableOpacity onPress={() => onPress(item.employee.id, item.course.id)}>
+        <View style={styles.itemContainer}>
+          <Text style={styles.name}>{item.employee.name}</Text>
+          <Text style={styles.name}> {item.course.title}</Text>
+        </View>
+      </TouchableOpacity>
+    )}
+    keyExtractor={item => (item.employee.id ? item.employee.id.toString() : Math.random().toString())}
   />
 );
 
@@ -73,16 +88,19 @@ const EvaluateeListFragment = ({ navigation }) => {
     try {
       const data = await getTeacherJuniors(evaluatorID, sessionID);
       setJuniorList(data);
+      console.log(data);
       setLoading(false);
     } catch (error) {
       Alert.alert(error.message);
     }
   };
 
-  const handleItemPress = (evaluateeID, type) => {
+  const handleItemPress = (evaluateeID, type, courseId, teacherId) => {
     navigation.navigate('EvaluationQuestionnaire', {
       evaluateeID,
       questionByType: type,
+      courseID: courseId,
+      teacherId: 0
     });
   };
 
@@ -102,7 +120,7 @@ const EvaluateeListFragment = ({ navigation }) => {
     ),
     junior: () => (
       <View style={styles.scene}>
-        <EvaluateeList evaluatees={juniorList} onPress={(id) => handleItemPress(id, 'junior')} />
+        <JuniorEvaluateeList evaluatees={juniorList} onPress={(id, courseId) => handleItemPress(id, 'senior', courseId)} />
       </View>
     ),
   });

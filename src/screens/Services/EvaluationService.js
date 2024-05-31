@@ -11,7 +11,7 @@ export default EvaluationService = {
       }
 
       const responseBody = await response.text();
-      return responseBody === 'true'; // Assuming the response is a string 'true' or 'false'
+      return responseBody === 'true'; 
     } catch (error) {
       console.error('Error:', error);
       return false;

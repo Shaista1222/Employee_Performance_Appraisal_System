@@ -2,20 +2,13 @@ import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
-  TextInput,
-  ScrollView,
   TouchableOpacity,
-  Modal,
-  Button,
   StyleSheet,
   useWindowDimensions,
-  FlatList,
 } from 'react-native';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
 import TaskAdapter from './Adapter/TaskAdapter';
 import TaskService from './Services/TaskService';
-import {Button as PaperButton} from 'react-native-paper';
 import DepartmentService from './Services/DepartmentService';
 import EmployeeService from './Services/EmployeeService';
 import DesignationService from './Services/DesignationService';
@@ -31,12 +24,7 @@ const Task = () => {
   const [designationList, setDesignationList] = useState([]);
   const [departmentList, setDepartmentList] = useState([]);
   const [dueDate, setDueDate] = useState(new Date());
-  const [taskDescription, setTaskDescription] = useState('');
-  const [weightage, setWeightage] = useState('');
-
-  // useEffect(() => {
-  //   loadTasksForSelectedTab(tabIndex);
-  // }, [tabIndex]);
+ 
   useEffect(() => {
     fetchTasks();
     fetchEmployees();

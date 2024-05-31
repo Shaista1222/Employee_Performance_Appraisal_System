@@ -10,9 +10,7 @@ const StudentHome =()=>{
     <Stack.Navigator>
       <Stack.Screen  options={{headerShown: false}} name="StudentCourse" component={StudentCourse} />
       <Stack.Screen  options={{headerShown: false}} name="CourseTeacher" component={CourseTeacher} />
-      {/* <Stack.Screen  options={{headerShown: false}} name="EvaluateTeacher" component={Evaluate} /> */}
       <Stack.Screen  options={{headerShown: false}} name="EvaluationQuestionnaire" component={EvaluationQuestionnaireFragment} />
-
     </Stack.Navigator>
   );
 }

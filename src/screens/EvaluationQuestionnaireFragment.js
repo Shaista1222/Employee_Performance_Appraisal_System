@@ -18,11 +18,13 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
+        console.log('Fetching questions for type:', questionByType);
         const questions = await QuestionaireServiceListner.getQuestionnaireByType(questionByType);
         setQuestionsList(questions);
-        console.log(questions);
+        console.log('Fetched questions:', questions);
       } catch (error) {
-        Alert.alert('Error', error.message);
+        console.error('Error fetching questions:', error);
+        Alert.alert('Error', 'Failed to fetch questions. Please try again later.');
       } finally {
         setIsLoading(false);
       }
@@ -34,22 +36,47 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
     const retrieveData = async () => {
       try {
         const sessionData = await AsyncStorage.getItem('currentSession');
-        const user = await AsyncStorage.getItem('userObject');
-        const employeeId = await AsyncStorage.getItem('employee');
-        if (sessionData && user && employeeId) {
-          setSessionId(JSON.parse(sessionData));
-          setStudentId(JSON.parse(user));
-          setEmployeeId(JSON.parse(employeeId));
+        const user = await AsyncStorage.getItem('employee');
+        console.log('Retrieved data from AsyncStorage', { sessionData, user });
+
+        if (sessionData && user) {
+          const parsedSessionData = JSON.parse(sessionData);
+          const parsedUser = JSON.parse(user);
+
+          setSessionId(parsedSessionData);
+          setEmployeeId(parsedUser);
+
+          console.log('Parsed Data', { parsedSessionData, parsedUser });
         } else {
-          Alert.alert('Error', 'Student session or ID not found');
+          console.log('Data not found in AsyncStorage', { sessionData, user });
+          Alert.alert('Error', 'Student, session or employee ID not found');
         }
       } catch (error) {
         Alert.alert('Error', error.message);
-        console.error('Error retrieving student data:', error);
+        console.error('Error retrieving data:', error);
       }
     };
     retrieveData();
   }, []);
+
+  const retrieveStudentData = async () => {
+    try {
+      const studentUser = await AsyncStorage.getItem('userObject');
+
+      if (studentUser) {
+        const parsedStudent = JSON.parse(studentUser);
+        setStudentId(parsedStudent);
+
+        console.log('Parsed Data', { parsedStudent });
+      } else {
+        console.log('Data not found in AsyncStorage');
+        Alert.alert('Error', 'Student ID not found');
+      }
+    } catch (error) {
+      Alert.alert('Error', error.message);
+      console.error('Error retrieving data:', error);
+    }
+  };
 
   const handleAnswerSelection = (questionId, answer) => {
     setSelectedAnswers(prevAnswers => ({
@@ -58,77 +85,122 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
     }));
   };
 
+  const calculateScore = (selectedOption, optionWeightage) => {
+    const selectedOptionData = optionWeightage.find(
+      option => option.name === selectedOption,
+    );
+    return selectedOptionData ? selectedOptionData.weightage : 0;
+  };
+
   const handleStudentEvaluation = async () => {
     try {
+      await retrieveStudentData();
       const optionWeightage = await QuestionaireServiceListner.getOptionsWeightages();
       const studentEvaluations = questionsList.map(item => {
         const selectedOption = selectedAnswers[item.id];
-        const selectedOptionData = optionWeightage.find(option => option.name === selectedOption);
+        const score = calculateScore(selectedOption, optionWeightage);
         return {
-          student_id: studentID,
-          session_id: sessionID,
-          teacher_id: teacherId,
+          student_id: studentID.id,
+          session_id: sessionID.id,
+          teacher_id: evaluateeID,
           question_id: item.id,
-          score: selectedOptionData ? selectedOptionData.score : 0,
+          score,
           course_id: courseID,
         };
       });
       const evaluate = await EvaluationService.postStudentEvaluation(studentEvaluations);
-      console.log(evaluate);
+      if (evaluate) {
+        Alert.alert('Successfully Evaluated');
+      }
+      console.log('Evaluation response:', evaluate);
       setSelectedAnswers({});
     } catch (err) {
-      console.log(err);
+      console.error('Error during student evaluation:', err);
     }
   };
 
   const handleDirectorEvaluation = async () => {
     try {
-      const optionWeightage = await QuestionaireServiceListner.getOptionsWeightages(); // Fetch weightages once
+      const optionWeightage = await QuestionaireServiceListner.getOptionsWeightages();
       const directorEvaluations = questionsList.map(item => {
         const selectedOption = selectedAnswers[item.id];
-        const selectedOptionData = optionWeightage.find(option => option.name === selectedOption);
+        const score = calculateScore(selectedOption, optionWeightage);
         return {
           evaluator_id: employeeID.employee.id,
           evaluatee_id: evaluateeID,
           question_id: item.id,
-          session_id: sessionID,
-          score: selectedOptionData ? selectedOptionData.score : 0,
+          session_id: sessionID.id,
+          score,
         };
       });
       const evaluate = await EvaluationService.postDirectorEvaluation(directorEvaluations);
-      console.log(evaluate);
+      if (evaluate) {
+        Alert.alert('Successfully Evaluated');
+      }
+      console.log('Evaluation response:', evaluate);
       setSelectedAnswers({});
     } catch (err) {
-      console.log(err);
+      console.error('Error during director evaluation:', err);
     }
   };
 
   const handlePeerEvaluation = async () => {
     try {
-      const optionWeightage = await QuestionaireServiceListner.getOptionsWeightages(); // Fetch weightages once
+      const optionWeightage = await QuestionaireServiceListner.getOptionsWeightages();
       const peerEvaluations = questionsList.map(item => {
         const selectedOption = selectedAnswers[item.id];
-        const selectedOptionData = optionWeightage.find(option => option.name === selectedOption);
+        const score = calculateScore(selectedOption, optionWeightage);
         return {
           evaluator_id: employeeID.employee.id,
           evaluatee_id: evaluateeID,
           question_id: item.id,
-          session_id: sessionID,
-          score: selectedOptionData ? selectedOptionData.score : 0,
+          session_id: sessionID.id,
+          score,
         };
       });
       const evaluate = await EvaluationService.postPeerEvaluation(peerEvaluations);
-      console.log(evaluate);
+      if (evaluate) {
+        Alert.alert('Successfully Evaluated');
+      }
+      console.log('Evaluation response:', evaluate);
       setSelectedAnswers({});
     } catch (err) {
-      console.log(err);
+      console.error('Error during peer evaluation:', err);
+    }
+  };
+
+  const handleJuniorEvaluation = async () => {
+    try {
+      const optionWeightage = await QuestionaireServiceListner.getOptionsWeightages();
+      const juniorEvaluations = questionsList.map(item => {
+        const selectedOption = selectedAnswers[item.id];
+        const score = calculateScore(selectedOption, optionWeightage);
+        return {
+          senior_teacher_id: employeeID.employee.id,
+          junior_teacher_id: evaluateeID,
+          question_id: item.id,
+          course_id: courseID,
+          session_id: sessionID.id,
+          score,
+        };
+      });
+      console.log('Junior evaluations:', juniorEvaluations);
+      const evaluate = await EvaluationService.postSeniorTeacherEvaluation(juniorEvaluations);
+      if (evaluate) {
+        Alert.alert('Successfully evaluated');
+      }
+      console.log('Evaluation response:', evaluate);
+      setSelectedAnswers({});
+    } catch (err) {
+      console.error('Error during junior evaluation:', err);
     }
   };
 
   const handleSubmit = () => {
     if (questionByType === 'student') handleStudentEvaluation();
     else if (questionByType === 'director') handleDirectorEvaluation();
-    else if (questionByType === 'peer') handlePeerEvaluation(); // Fix: added parentheses to call the function
+    else if (questionByType === 'peer') handlePeerEvaluation();
+    else if (questionByType === 'senior') handleJuniorEvaluation();
     else {
       Alert.alert('Please Login');
     }

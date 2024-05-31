@@ -14,6 +14,7 @@ import OptionWeightage from '../../screens/DirectorScreens/OptionsWeightage';
 import EvaluateeListFragment from '../../screens/EvaluateeListFragment';
 import MyTasksFragment from '../../screens/MyTasksFragment';
 import PerformanceFragment from '../../screens/PerformanceFragment';
+import MyScores from '../../screens/MyScores';
 
 const Tab = createBottomTabNavigator();
 
@@ -85,8 +86,8 @@ const EmployeeTabsNavigator = () => {
         />
 
         <Tab.Screen
-          name="Options Weightage"
-          component={OptionWeightage}
+          name="My Scores"
+          component={MyScores}
           options={{
             tabBarIcon: ({focused}) => (
               <View style={styles.tabIconContainer}>
