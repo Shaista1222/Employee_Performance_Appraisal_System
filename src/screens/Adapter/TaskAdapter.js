@@ -9,17 +9,16 @@ import {
   FlatList,
 } from 'react-native';
 
-const TaskAdapter = ({tasks, onOkButtonPress}) => {
-  const renderItem = ({item}) => (
-    <View style={{backgroundColor: 'white'}}>
+const TaskAdapter = ({ tasks, onOkButtonPress, onEditButtonPress, onDeleteButtonPress }) => {
+  const renderItem = ({ item }) => (
+    <View style={{ backgroundColor: 'white' }}>
       <View style={styles.container}>
         <Text style={styles.highlightedTest}>Task: </Text>
         <Text style={styles.simpleText}>{item.task.task_description}</Text>
+
         <View style={styles.dueDate}>
           <Text style={styles.highlightedTest}>Due: </Text>
-          <Text style={styles.simpleText}>
-            {new Date(item.task.due_date).toGMTString()}
-          </Text>
+          <Text style={styles.simpleText}>{new Date(item.task.due_date).toGMTString()}</Text>
         </View>
         <View style={styles.dueDate}>
           <Text style={styles.highlightedTest}>To: </Text>
@@ -37,13 +36,20 @@ const TaskAdapter = ({tasks, onOkButtonPress}) => {
           <TextInput
             style={styles.scoreInput}
             placeholder="Enter Score"
+            placeholderTextColor="gray"
             keyboardType="numeric"
             onChangeText={text => (item.task.score = parseInt(text))}
           />
-          <TouchableOpacity
-            style={styles.btn}
-            onPress={() => onOkButtonPress(item)}>
-            <Text style={{color: 'black', fontSize: 20}}>Ok</Text>
+          <TouchableOpacity style={styles.btn} onPress={() => onOkButtonPress(item)}>
+            <Text style={{ color: 'black', fontSize: 20 }}>Ok</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.editBtn} onPress={() => onEditButtonPress(item)}>
+            <Text style={{ color: 'black', fontSize: 20 }}>Edit</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.deleteBtn} onPress={() => onDeleteButtonPress(item.task.id)}>
+            <Text style={{ color: 'black', fontSize: 20 }}>Delete</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -67,7 +73,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
@@ -105,12 +111,34 @@ const styles = StyleSheet.create({
     color: 'black',
     marginTop: 12,
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    marginTop: 10,
+  },
   btn: {
     backgroundColor: '#D3D3D3',
     width: 56,
     height: 52,
     alignItems: 'center',
     justifyContent: 'center',
+    
+  },
+  editBtn: {
+    backgroundColor: '#FFA500',
+    width: 56,
+    height: 32,
+    alignItems: 'center',
+    // fontSize:12,
+    justifyContent: 'center',
+  },
+  deleteBtn: {
+    backgroundColor: '#FF0000',
+    width: 56,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    // fontSize:7
   },
 });
 

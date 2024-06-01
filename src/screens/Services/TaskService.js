@@ -90,5 +90,19 @@ const TaskService = {
       onFailure(error.message || 'Failed to update task');
     }
   },
+
+  deleteTask: async (id) => {
+    try {
+      const response = await fetch(`${IPAddress}/Task/DeleteTask?id=${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete Task');
+      }
+      return await response.json();
+    } catch (error) {
+      throw new Error(`Error deleting Task: ${error.message}`);
+    }
+  },
 };
 export default TaskService;

@@ -1,22 +1,25 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   useWindowDimensions,
+  Alert,
 } from 'react-native';
-import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
+import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import TaskAdapter from './Adapter/TaskAdapter';
 import TaskService from './Services/TaskService';
 import DepartmentService from './Services/DepartmentService';
 import EmployeeService from './Services/EmployeeService';
 import DesignationService from './Services/DesignationService';
 import AssignTask from './DirectorScreens/AssignTask';
+import TaskEditModal from './TaskEditModal';
 
 const Task = () => {
   const layout = useWindowDimensions();
   const [modalVisible, setModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false); // State for edit modal visibility
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [taskList, setTaskList] = useState([]);
   const [employeeList, setEmployeeList] = useState([]);
@@ -24,7 +27,8 @@ const Task = () => {
   const [designationList, setDesignationList] = useState([]);
   const [departmentList, setDepartmentList] = useState([]);
   const [dueDate, setDueDate] = useState(new Date());
- 
+  const [selectedTask, setSelectedTask] = useState(null); // State for selected task
+
   useEffect(() => {
     fetchTasks();
     fetchEmployees();
@@ -50,6 +54,7 @@ const Task = () => {
       Alert.alert('Error', error.message);
     }
   };
+
   const fetchEmployeeTypes = async () => {
     try {
       EmployeeService.getEmployeeTypes()
@@ -62,7 +67,7 @@ const Task = () => {
 
   const fetchDesignations = async () => {
     try {
-      DesignationService.getDesignation()
+      DesignationService.getDesignations()
         .then(Designation => setDesignationList(Designation))
         .catch(error => console.error(error));
     } catch (error) {
@@ -75,7 +80,6 @@ const Task = () => {
       DepartmentService.getDepartments()
         .then(departments => setDepartmentList(departments))
         .catch(error => console.error(error));
-      // setTaskList(tasks);
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -85,6 +89,7 @@ const Task = () => {
     setSelectedTabIndex(index);
     loadTasksForSelectedTab(index);
   };
+
   const loadTasksForSelectedTab = index => {
     switch (index) {
       case 0:
@@ -109,7 +114,8 @@ const Task = () => {
         break;
     }
   };
-  const handleOkButtonPress = async (task) => {
+
+  const handleOkButtonPress = async task => {
     try {
       await TaskService.putTask(task.task);
       Alert.alert('Success', `Task ${task.task.task_description} updated successfully!`);
@@ -118,6 +124,33 @@ const Task = () => {
       Alert.alert('Error', error.message);
     }
   };
+
+  const handleEditButtonPress = task => {
+    setSelectedTask(task);
+    setEditModalVisible(true);
+  };
+
+  const handleSaveEdit = async updatedTask => {
+    try {
+      await TaskService.putTask(updatedTask);
+      Alert.alert('Success', `Task ${updatedTask.task_description} updated successfully!`);
+      loadTasksForSelectedTab(selectedTabIndex);
+      setEditModalVisible(false);
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
+
+  const handleDeleteButtonPress = async taskId => {
+    try {
+      await TaskService.deleteTask(taskId);
+      Alert.alert('Success', 'Task deleted successfully!');
+      loadTasksForSelectedTab(selectedTabIndex);
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
+
   const renderScene = ({ route }) => {
     switch (route.key) {
       case 'tab1':
@@ -125,7 +158,12 @@ const Task = () => {
       case 'tab3':
         return (
           <View style={styles.scrollView}>
-            <TaskAdapter tasks={taskList} onOkButtonPress={handleOkButtonPress} />
+            <TaskAdapter
+              tasks={taskList}
+              onOkButtonPress={handleOkButtonPress}
+              onEditButtonPress={handleEditButtonPress}
+              onDeleteButtonPress={handleDeleteButtonPress}
+            />
           </View>
         );
       default:
@@ -135,18 +173,6 @@ const Task = () => {
 
   const handleAddTask = () => {
     setModalVisible(true);
-  };
-
-  const renderTaskItem = ({item}) => {
-    return (
-      <TouchableOpacity onPress={() => handleTaskItemClick(item)}>
-        <View>{/* Render task item */}</View>
-      </TouchableOpacity>
-    );
-  };
-  const handleTaskItemClick = task => {
-    // Handle task item click
-    Alert.alert('Task Clicked', `Task ID: ${task.id}`);
   };
 
   const handleDueDateChange = (event, selectedDate) => {
@@ -186,6 +212,14 @@ const Task = () => {
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
       <AssignTask visible={modalVisible} onClose={() => setModalVisible(false)} />
+      {selectedTask && (
+        <TaskEditModal
+          visible={editModalVisible}
+          onClose={() => setEditModalVisible(false)}
+          task={selectedTask.task}
+          onSave={handleSaveEdit}
+        />
+      )}
     </View>
   );
 };
@@ -197,8 +231,7 @@ const styles = StyleSheet.create({
   },
   tabLayout: {
     flex: 1,
-    // backgroundColor: '#f4f4f4',
-  }, 
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -244,13 +277,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   card: {
-    // marginVertical: 8,
-    // marginHorizontal: 16,
     padding: 16,
     borderRadius: 8,
     backgroundColor: '#F5F5F5',
     color: 'black',
-    // marginBottom:12
   },
   boldText: {
     fontWeight: 'bold',

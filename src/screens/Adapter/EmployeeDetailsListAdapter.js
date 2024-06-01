@@ -16,7 +16,6 @@ const EmployeeDetails = ({employeeDetailsList, parentActivity}) => {
         style={styles.btnDelete}
         onPress={() => handleDelete(item.id)}>
         <Text style={styles.deleteIcon}>Delete</Text>
-        {/* <Image source={require('../assets/delete_icon.png')} style={styles.deleteIcon} /> */}
       </TouchableOpacity>
     </View>
   );

@@ -40,31 +40,31 @@ const Stack = createStackNavigator();
 const App = () => {
   return (
     // <Task/>
-  //   <NavigationContainer>
-  //   <Stack.Navigator
-  //     screenOptions={{headerShown: false}}
-  //     initialRouteName="Evaluation">
-  //     <Stack.Screen name="Evaluation" component={Evaluation} />
-  //     <Stack.Screen name="PeerEvaluation" component={PeerEvaluationSetting} />
-  //     <Stack.Screen
-  //       name="ConfidentialEvaluation"
-  //       component={ConfidentialEvaluationSetting}
-  //     />
-  // </Stack.Navigator>
-  // </NavigationContainer>
-  //   <NavigationContainer>
-  //   <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName="EmployeeList">
-  //     <Stack.Screen name="EmployeeList" component={EmployeeList} />
-  //     <Stack.Screen name="EmployeeDetailsListItem" component={EmployeeDetailsListItem} />
-  //   </Stack.Navigator>
-  // </NavigationContainer>
+    //   <NavigationContainer>
+    //   <Stack.Navigator
+    //     screenOptions={{headerShown: false}}
+    //     initialRouteName="Evaluation">
+    //     <Stack.Screen name="Evaluation" component={Evaluation} />
+    //     <Stack.Screen name="PeerEvaluation" component={PeerEvaluationSetting} />
+    //     <Stack.Screen
+    //       name="ConfidentialEvaluation"
+    //       component={ConfidentialEvaluationSetting}
+    //     />
+    // </Stack.Navigator>
+    // </NavigationContainer>
+    //   <NavigationContainer>
+    //   <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName="EmployeeList">
+    //     <Stack.Screen name="EmployeeList" component={EmployeeList} />
+    //     <Stack.Screen name="EmployeeDetailsListItem" component={EmployeeDetailsListItem} />
+    //   </Stack.Navigator>
+    // </NavigationContainer>
     // <Task/>
     // <NavigationContainer>
-  //   <Stack.Navigator>
-  //     <Stack.Screen name="Employee" component={EmployeeList} />
-  //     {/* <Stack.Screen name="EmployeeDetails" component={EmployeeDetailsListItem} /> */}
-  //   </Stack.Navigator>
-  //  </NavigationContainer> 
+    //   <Stack.Navigator>
+    //     <Stack.Screen name="Employee" component={EmployeeList} />
+    //     {/* <Stack.Screen name="EmployeeDetails" component={EmployeeDetailsListItem} /> */}
+    //   </Stack.Navigator>
+    //  </NavigationContainer>
     // <DirectorEvaluation />
     // <NavigationContainer>
     //   <Stack.Navigator initialRouteName="Performance">
@@ -82,7 +82,7 @@ const App = () => {
     //   </Stack.Navigator>
     // </NavigationContainer>
     // <MyTasksFragment/>
-   
+
     // <NavigationContainer>
     //   <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName="EvaluateeList">
     //     <Stack.Screen name="EvaluateeList" component={EvaluateeListFragment} />
@@ -96,13 +96,13 @@ const App = () => {
           name="NavigateToDirector"
           component={NavigateToDirector}
         />
-     <Stack.Screen name="DirectorMain" component={DirectorTabsNavigator} />
+        <Stack.Screen name="DirectorMain" component={DirectorTabsNavigator} />
         <Stack.Screen name="NavigateToHOD" component={NavigateToHOD} />
         <Stack.Screen name="HODMain" component={HODTabsNavigator} />
         <Stack.Screen name="NavigateToFaculty" component={NavigateToFaculty} />
         <Stack.Screen name="FacultyMain" component={FacultyTabsNavigator} />
         <Stack.Screen name="NavigateToStudent" component={NavigateToStudent} />
-         <Stack.Screen name="StudentMain" component={StudentHome} />
+        <Stack.Screen name="StudentMain" component={StudentHome} />
         <Stack.Screen name="Performance" component={Performance} />
         <Stack.Screen name="EvaluateeList" component={EvaluateeListFragment} />
         <Stack.Screen
@@ -125,7 +125,7 @@ const App = () => {
           component={ConfidentialEvaluationSetting}
         />
       </Stack.Navigator>
-     </NavigationContainer>  
+    </NavigationContainer>
   );
 };
 
