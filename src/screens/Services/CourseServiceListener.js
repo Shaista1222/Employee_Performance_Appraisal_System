@@ -10,8 +10,8 @@ const CourseServiceListener = {
         return response.json();
       });
   },
-  getTeacherCourses: async(teacherID) => {
-    return fetch(`${IPAddress}/Course/GetTeacherCourses?teacherID=${teacherID}`)
+  getTeacherCourses: async(teacherID,sessionID) => {
+    return fetch(`${IPAddress}/Course/GetTeacherCourses?teacherID=${teacherID}&sessionID=${sessionID}`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch teacher courses');

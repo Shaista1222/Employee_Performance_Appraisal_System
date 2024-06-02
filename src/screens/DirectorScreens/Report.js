@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,13 +12,10 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import EmployeeService from '../Services/EmployeeService';
 import EmployeeDetailsScoreAdapter from '../Adapter/EmployeeDetailsScoreAdapter';
 
-const Report = ({navigation}) => {
+const Report = ({ navigation }) => {
   const [employeeDetailsScoreList, setEmployeeDetailsScoreList] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [
-    filteredEmployeeDetailsScoreList,
-    setFilteredEmployeeDetailsScoreList,
-  ] = useState([]);
+  const [filteredEmployeeDetailsScoreList, setFilteredEmployeeDetailsScoreList] = useState([]);
 
   useEffect(() => {
     const fetchData = async (sessionID) => {
@@ -36,8 +33,8 @@ const Report = ({navigation}) => {
     fetchData(10);
   }, []);
 
-  const handleListItemClick = () => {
-    navigation.navigate('Performance');
+  const handleListItemClick = (employee) => {
+    navigation.navigate('Performance', { employee });
   };
 
   const handleSearch = query => {
@@ -65,17 +62,17 @@ const Report = ({navigation}) => {
           name="search-circle"
           size={40}
           color="#02367B"
-          style={{paddingBottom: 10}}
+          style={{ paddingBottom: 10 }}
         />
       </View>
       <View style={styles.listItemHeader}>
-        <Text style={{color: 'white', fontWeight: 'bold'}}>Rank</Text>
-        <Text style={{color: 'white', fontWeight: 'bold'}}>Name</Text>
-        <Text style={{color: 'white', fontWeight: 'bold'}}>Average</Text>
+        <Text style={{ color: 'white', fontWeight: 'bold' }}>Rank</Text>
+        <Text style={{ color: 'white', fontWeight: 'bold' }}>Name</Text>
+        <Text style={{ color: 'white', fontWeight: 'bold' }}>Average</Text>
       </View>
       <FlatList
         data={filteredEmployeeDetailsScoreList}
-        renderItem={({item, index}) => (
+        renderItem={({ item, index }) => (
           <EmployeeDetailsScoreAdapter
             employeeDetailsScore={item}
             index={index}
