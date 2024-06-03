@@ -1,15 +1,15 @@
 import IPAddress from '../../../IPAddress';
 
-const uploadFile = async (file) => {
+const uploadEnrollmentFile = async (file) => {
   const formData = new FormData();
-  formData.append('chr', {
+  formData.append('enrollment', {
     name: file.name,
     type: file.type,
     uri: file.uri,
   });
 
   try {
-    const response = await fetch(`${IPAddress}/ClassHeldReport/UploadFile`, {
+    const response = await fetch(`${IPAddress}/Enrollment/UploadFile`, {
       method: 'POST',
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -22,7 +22,12 @@ const uploadFile = async (file) => {
     if (response.ok) {
       return { success: true, message: 'File uploaded successfully' };
     } else {
-      const errorData = await response.json();
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (e) {
+        errorData = { message: 'An unknown error occurred' };
+      }
       return { success: false, message: errorData.message };
     }
   } catch (error) {
@@ -31,4 +36,4 @@ const uploadFile = async (file) => {
   }
 };
 
-export { uploadFile };
+export { uploadEnrollmentFile };

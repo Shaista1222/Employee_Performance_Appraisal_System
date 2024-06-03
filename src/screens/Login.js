@@ -34,7 +34,7 @@ const Login = () => {
             user.designation.name === 'Administrative' &&
             user.employeeType.title === 'Administrative Staff'
           ) {
-            navigation.navigate('AdminMainActivity');
+            navigation.navigate('AdminMain');
           }
         }
       } else {

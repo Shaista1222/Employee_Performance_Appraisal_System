@@ -6,21 +6,16 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontIcon from 'react-native-vector-icons/FontAwesome5';
 import MatCommunity from 'react-native-vector-icons/MaterialCommunityIcons';
 import {COLORS} from '../../theme/theme';
-import AddEmployee from '../../screens/AdminScreens/AddEmployee';
-import AssignCourses from '../../screens/AdminScreens/AssignCourses';
 import AddClassHeldReport from '../../screens/AdminScreens/AddClassHeldReport';
 import StudentEvaluationSetting from '../../screens/AdminScreens/StudentEvaluationSetting';
 import EmployeeList from '../../screens/AdminScreens/EmployeeList';
+import Enrollment from '../../screens/AdminScreens/Enrollment';
 
 const Tab = createBottomTabNavigator();
 
 const AdminTabsNavigator = () => {
-  // const [modalVisible, setModalVisible] = useState(false);
   const {opened, toggleOpened} = useTabMenu();
 
-  // const toggleModal = () => {
-  //   setModalVisible(!modalVisible);
-  // };
 
   return (
     <View style={{flex: 1}}>
@@ -50,8 +45,8 @@ const AdminTabsNavigator = () => {
           }}
         />
         <Tab.Screen
-          name="AssignCourses"
-          component={AssignCourses}
+          name="Enrollment"
+          component={Enrollment}
           options={{
             tabBarIcon: ({focused}) => (
               <View style={styles.tabIconContainer}>

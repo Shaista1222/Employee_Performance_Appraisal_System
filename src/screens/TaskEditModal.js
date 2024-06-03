@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -6,16 +6,55 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Alert,
 } from 'react-native';
+import EmployeeService from './Services/EmployeeService';
+import {Picker} from '@react-native-picker/picker';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
-const TaskEditModal = ({ visible, onClose, task, onSave }) => {
+const TaskEditModal = ({visible, onClose, task, onSave}) => {
   const [taskDescription, setTaskDescription] = useState(task.task_description);
-  const [dueDate, setDueDate] = useState(task.due_date);
+  const [dueDate, setDueDate] = useState(new Date(task.due_date));
   const [weightage, setWeightage] = useState(task.weightage);
+  const [assignedTo, setAssignedTo] = useState(task.assigned_to_id);
+  const [employeeList, setEmployeeList] = useState([]);
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+
+  useEffect(() => {
+    fetchDropdownData();
+  }, []);
+
+  const fetchDropdownData = async () => {
+    try {
+      const fetchedEmployeeTypes = await EmployeeService.getEmployees();
+      setEmployeeList(fetchedEmployeeTypes);
+    } catch (error) {
+      Alert.alert('Error', `Failed to fetch dropdown data: ${error.message}`);
+    }
+  };
 
   const handleSave = () => {
-    const updatedTask = { ...task, task_description: taskDescription, due_date: dueDate, weightage: weightage };
+    const updatedTask = {
+      ...task,
+      task_description: taskDescription,
+      due_date: dueDate.toISOString(),
+      weightage: weightage,
+      assigned_to_id: assignedTo,
+    };
     onSave(updatedTask);
+  };
+
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
+
+  const handleConfirm = date => {
+    setDueDate(date);
+    hideDatePicker();
   };
 
   return (
@@ -28,19 +67,42 @@ const TaskEditModal = ({ visible, onClose, task, onSave }) => {
           onChangeText={setTaskDescription}
           placeholder="Task Description"
         />
-        <TextInput
-          style={styles.input}
-          value={dueDate}
-          onChangeText={setDueDate}
-          placeholder="Due Date"
+        <TouchableOpacity onPress={showDatePicker} style={styles.input}>
+          <Text style={styles.dateText}>{dueDate.toDateString()}</Text>
+        </TouchableOpacity>
+        <DateTimePickerModal
+          isVisible={isDatePickerVisible}
+          mode="date"
+          onConfirm={handleConfirm}
+          onCancel={hideDatePicker}
         />
         <TextInput
           style={styles.input}
           value={weightage.toString()}
-          onChangeText={text => setWeightage(parseInt(text))}
+          onChangeText={text => {
+            if (!isNaN(text) && text !== '') {
+              setWeightage(parseInt(text));
+            } else {
+              setWeightage(0);
+            }
+          }}
           placeholder="Weightage"
           keyboardType="numeric"
         />
+
+        <Picker
+          selectedValue={assignedTo}
+          style={styles.picker}
+          onValueChange={itemValue => setAssignedTo(itemValue)}>
+          {employeeList.map(employee => (
+            <Picker.Item
+              key={employee.id}
+              label={employee.name}
+              value={employee.id}
+            />
+          ))}
+        </Picker>
+
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
             <Text style={styles.buttonText}>Save</Text>
@@ -65,6 +127,9 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: 'black',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   input: {
     borderWidth: 1,
@@ -72,7 +137,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginBottom: 10,
-    color:'black'
+    color: 'black',
+  },
+  dateText: {
+    color: 'black',
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -93,6 +161,12 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  picker: {
+    height: 50,
+    width: '100%',
+    marginBottom: 10,
+    color: 'black',
   },
 });
 

@@ -35,11 +35,13 @@ import EmployeeList from './src/screens/AdminScreens/EmployeeList';
 import StudentEvaluationSetting from './src/screens/AdminScreens/StudentEvaluationSetting';
 import AddClassHeldReport from './src/screens/AdminScreens/AddClassHeldReport';
 import Session from './src/screens/DirectorScreens/Session';
+import Kpi from './src/screens/DirectorScreens/Kpi';
+import AddKpi from './src/screens/DirectorScreens/AddKpi';
 const Stack = createStackNavigator();
 
 const App = () => {
   return (
-    // <Task/>
+    <AddKpi/>
     //   <NavigationContainer>
     //   <Stack.Navigator
     //     screenOptions={{headerShown: false}}
@@ -71,61 +73,48 @@ const App = () => {
     //     <Stack.Screen name="Performance" component={PerformanceFragment} />
     //   </Stack.Navigator>
     // </NavigationContainer>
+
+
     // <NavigationContainer>
-    //   <Stack.Navigator
-    //     screenOptions={{headerShown: false}}
-    //     initialRouteName="AdminMain">
+    //   <Stack.Navigator screenOptions={{headerShown: false}}>
+    //     <Stack.Screen name="Login" component={Login} />
+    //     <Stack.Screen
+    //       name="NavigateToDirector"
+    //       component={NavigateToDirector}
+    //     />
+    //     <Stack.Screen name="DirectorMain" component={DirectorTabsNavigator} />
+    //     <Stack.Screen name="NavigateToHOD" component={NavigateToHOD} />
+    //     <Stack.Screen name="HODMain" component={HODTabsNavigator} />
+    //     <Stack.Screen name="NavigateToFaculty" component={NavigateToFaculty} />
+    //     <Stack.Screen name="FacultyMain" component={FacultyTabsNavigator} />
+    //     <Stack.Screen name="NavigateToStudent" component={NavigateToStudent} />
+    //     <Stack.Screen name="StudentMain" component={StudentHome} />
     //     <Stack.Screen name="NavigateToAdmin" component={NavigateToAdmin} />
     //     <Stack.Screen name="AdminMain" component={AdminTabsNavigator} />
-    //     <Stack.Screen name="EmployeeDetails" component={EmployeeDetails} />
-
+    //     <Stack.Screen name="EmployeeDetailsListItem" component={EmployeeDetailsListItem} />
+    //     <Stack.Screen name="Performance" component={Performance} />
+    //     <Stack.Screen name="EvaluateeList" component={EvaluateeListFragment} />
+    //     <Stack.Screen
+    //       name="EvaluationQuestionnaire"
+    //       component={EvaluationQuestionnaireFragment}
+    //     />
+    //     <Stack.Screen name="Evaluation" component={Evaluation} />
+    //     <Stack.Screen name="Scores" component={Scores} />
+    //     <Stack.Screen
+    //       name="DirectorEvaluation"
+    //       component={DirectorEvaluation}
+    //     />
+    //     <Stack.Screen
+    //       name="QuestionnaireFragment"
+    //       component={QuestionnaireFragment}
+    //     />
+    //     <Stack.Screen name="PeerEvaluation" component={PeerEvaluationSetting} />
+    //     <Stack.Screen
+    //       name="ConfidentialEvaluation"
+    //       component={ConfidentialEvaluationSetting}
+    //     />
     //   </Stack.Navigator>
     // </NavigationContainer>
-    // <MyTasksFragment/>
-
-    // <NavigationContainer>
-    //   <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName="EvaluateeList">
-    //     <Stack.Screen name="EvaluateeList" component={EvaluateeListFragment} />
-    //     <Stack.Screen name="EvaluationQuestionnaire" component={EvaluationQuestionnaireFragment} />
-    //   </Stack.Navigator>
-    //  </NavigationContainer>
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{headerShown: false}}>
-        <Stack.Screen name="Login" component={Login} />
-        <Stack.Screen
-          name="NavigateToDirector"
-          component={NavigateToDirector}
-        />
-        <Stack.Screen name="DirectorMain" component={DirectorTabsNavigator} />
-        <Stack.Screen name="NavigateToHOD" component={NavigateToHOD} />
-        <Stack.Screen name="HODMain" component={HODTabsNavigator} />
-        <Stack.Screen name="NavigateToFaculty" component={NavigateToFaculty} />
-        <Stack.Screen name="FacultyMain" component={FacultyTabsNavigator} />
-        <Stack.Screen name="NavigateToStudent" component={NavigateToStudent} />
-        <Stack.Screen name="StudentMain" component={StudentHome} />
-        <Stack.Screen name="Performance" component={Performance} />
-        <Stack.Screen name="EvaluateeList" component={EvaluateeListFragment} />
-        <Stack.Screen
-          name="EvaluationQuestionnaire"
-          component={EvaluationQuestionnaireFragment}
-        />
-        <Stack.Screen name="Evaluation" component={Evaluation} />
-        <Stack.Screen name="Scores" component={Scores} />
-        <Stack.Screen
-          name="DirectorEvaluation"
-          component={DirectorEvaluation}
-        />
-        <Stack.Screen
-          name="QuestionnaireFragment"
-          component={QuestionnaireFragment}
-        />
-        <Stack.Screen name="PeerEvaluation" component={PeerEvaluationSetting} />
-        <Stack.Screen
-          name="ConfidentialEvaluation"
-          component={ConfidentialEvaluationSetting}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
   );
 };
 

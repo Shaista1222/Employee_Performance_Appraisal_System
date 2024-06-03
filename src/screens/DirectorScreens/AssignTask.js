@@ -175,8 +175,8 @@ const RoleBased = ({
       mode="outlined"
       multiline
       style={styles.input}
-      onChangeText={setTaskDescription}
-      value={taskDescription}
+      onChangeText={setTaskDescription} // Ensure this function is correctly passed
+      value={taskDescription} // Ensure this is bound to the state variable
       placeholder="Enter Task Description"
     />
     <View style={styles.pickerContainer}>
@@ -230,12 +230,13 @@ const RoleBased = ({
         ))}
       </Picker>
     </View>
+
     <TextInput
       label="Task Weightage"
       mode="outlined"
       style={styles.input}
-      onChangeText={setTaskWeightage}
-      value={taskWeightage}
+      onChangeText={setTaskWeightage} // Ensure this function is correctly passed
+      value={taskWeightage} // Ensure this is bound to the state variable
       placeholder="Enter Task Weightage"
       keyboardType="numeric"
     />
@@ -384,7 +385,7 @@ const AssignTask = ({visible, onClose}) => {
   const fetchDesignations = async () => {
     const designations = await DesignationService.getDesignations();
     setDesignationList(designations);
-    console.log(designations)
+    console.log(designations);
   };
 
   const fetchDepartments = async () => {

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, Alert, StyleSheet } from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
-import { Button, Text, Card, Title, Paragraph, Snackbar} from 'react-native-paper';
-import { uploadFile } from '../Services/ChrServices';
+import { uploadEnrollmentFile } from '../Services/EnrollmentServices';
+import { Button, Text, Card, Title, Paragraph, Snackbar } from 'react-native-paper';
 
-const AddClassHeldReport = () => {
+const Enrollment = () => {
   const [file, setFile] = useState(null);
   const [visible, setVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -31,7 +31,7 @@ const AddClassHeldReport = () => {
       return;
     }
 
-    const result = await uploadFile(file);
+    const result = await uploadEnrollmentFile(file);
 
     if (result.success) {
       setSnackbarMessage(result.message);
@@ -44,17 +44,17 @@ const AddClassHeldReport = () => {
   return (
     <>
       <View style={styles.title}>
-        <Text style={styles.titleText}>Class Held Report</Text>
+        <Text style={styles.titleText}>Enrollment Upload</Text>
       </View>
       <View style={styles.container}>
         <Card style={styles.card}>
           <Card.Content>
-            <Title>Upload Class Held Report File</Title>
+            <Title>Upload Enrollment File</Title>
             <Paragraph>Please select an Excel file to upload the enrollment data.</Paragraph>
           </Card.Content>
           <Card.Actions>
-        <Button mode="contained" onPress={pickFile} style={styles.button}>Pick Excel File</Button>
-        </Card.Actions>
+            <Button mode="contained" onPress={pickFile} style={styles.button}>Pick Excel File</Button>
+          </Card.Actions>
         </Card>
         {file && <Text style={styles.fileName}>{file.name}</Text>}
         <Button mode="contained" onPress={handleUploadFile} style={styles.uploadButton}>Upload File</Button>
@@ -79,8 +79,12 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#f5f5f5',
   },
-  button: {
+  card: {
     marginBottom: 20,
+    width: '90%',
+  },
+  button: {
+    marginVertical: 10,
     backgroundColor: '#6360DC',
   },
   uploadButton: {
@@ -107,4 +111,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddClassHeldReport;
+export default Enrollment;

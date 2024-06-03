@@ -11,7 +11,7 @@ const NavigateToAdmin = () => {
     <TabContextProvider>
     <NavigationContainer>
     <Stack.Navigator>
-      <Stack.Screen options={{ headerShown: false }} name="AdminMain" component={AdminTabsNavigator } />
+      <Stack.Screen options={{ headerShown: false }} name="AdminMain" component={AdminTabsNavigator} />
     </Stack.Navigator>
   </NavigationContainer>
   </TabContextProvider>

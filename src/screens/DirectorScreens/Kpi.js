@@ -4,7 +4,7 @@ import {View, Text, Button, Spinner} from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import SessionService from '../Services/SessionService';
 
-const Kpi = () => {
+const Kpi = ({navigation}) => {
   const [sessionList, setSessionList] = useState([]);
   const [selectedSessionId, setSelectedSessionId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,6 +29,7 @@ const Kpi = () => {
   };
 
   const handleAddKpi = () => {
+    navigation.navigate('AddKpi')
     // Navigate to AddKpiFragment
     // You need to implement your navigation logic here
     console.log('Navigate to Add KPI');

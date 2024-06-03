@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   useWindowDimensions,
   Alert,
 } from 'react-native';
-import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
+import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
 import TaskAdapter from './Adapter/TaskAdapter';
 import TaskService from './Services/TaskService';
 import DepartmentService from './Services/DepartmentService';
@@ -90,57 +90,77 @@ const Task = () => {
     loadTasksForSelectedTab(index);
   };
 
-  const loadTasksForSelectedTab = index => {
-    switch (index) {
-      case 0:
-        TaskService.getTasks()
-          .then(tasks => {
-            setTaskList(tasks);
-            console.log(tasks);
-          })
-          .catch(error => console.error(error));
-        break;
-      case 1:
-        TaskService.getPendingTasks()
-          .then(tasks => setTaskList(tasks))
-          .catch(error => console.error(error));
-        break;
-      case 2:
-        TaskService.getCompletedTasks()
-          .then(tasks => setTaskList(tasks))
-          .catch(error => console.error(error));
-        break;
-      default:
-        break;
+  const loadTasksForSelectedTab = async index => {
+    try {
+      let tasks = [];
+      switch (index) {
+        case 0:
+          tasks = await TaskService.getTasks();
+          break;
+        case 1:
+          tasks = await TaskService.getPendingTasks();
+          break;
+        case 2:
+          tasks = await TaskService.getCompletedTasks();
+          break;
+        default:
+          break;
+      }
+      setTaskList(tasks);
+      console.log('Tasks loaded:', tasks);
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', error.message);
     }
   };
 
   const handleOkButtonPress = async task => {
+    console.log('handleOkButtonPress:', task);
     try {
-      await TaskService.putTask(task.task);
-      Alert.alert('Success', `Task ${task.task.task_description} updated successfully!`);
-      loadTasksForSelectedTab(selectedTabIndex);
+      await TaskService.putTask(
+        task.task,
+        updatedTask => {
+          Alert.alert('Success', `score updated successfully!`);
+          loadTasksForSelectedTab(selectedTabIndex);
+        },
+        error => {
+          console.error(error);
+          Alert.alert('Error', error.message);
+        }
+      );
     } catch (error) {
+      console.error(error);
       Alert.alert('Error', error.message);
     }
   };
+  
 
   const handleEditButtonPress = task => {
+    console.log('handleEditButtonPress:', task);
     setSelectedTask(task);
     setEditModalVisible(true);
   };
-
   const handleSaveEdit = async updatedTask => {
+    console.log('handleSaveEdit:', updatedTask);
     try {
-      await TaskService.putTask(updatedTask);
-      Alert.alert('Success', `Task ${updatedTask.task_description} updated successfully!`);
-      loadTasksForSelectedTab(selectedTabIndex);
-      setEditModalVisible(false);
+      await TaskService.putTask(
+        updatedTask,
+        () => {
+          Alert.alert('Success', `Task  updated successfully!`);
+          loadTasksForSelectedTab(selectedTabIndex);
+          setEditModalVisible(false);
+        },
+        error => {
+          console.error(error);
+          Alert.alert('Error', error.message);
+        }
+      );
     } catch (error) {
+      console.error(error);
       Alert.alert('Error', error.message);
     }
   };
-
+  
   const handleDeleteButtonPress = async taskId => {
     try {
       await TaskService.deleteTask(taskId);
@@ -151,7 +171,7 @@ const Task = () => {
     }
   };
 
-  const renderScene = ({ route }) => {
+  const renderScene = ({route}) => {
     switch (route.key) {
       case 'tab1':
       case 'tab2':
@@ -181,7 +201,7 @@ const Task = () => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{flex: 1}}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Task</Text>
       </View>
@@ -190,15 +210,15 @@ const Task = () => {
         navigationState={{
           index: selectedTabIndex,
           routes: [
-            { key: 'tab1', title: 'All' },
-            { key: 'tab2', title: 'Pending' },
-            { key: 'tab3', title: 'Complete' },
+            {key: 'tab1', title: 'All'},
+            {key: 'tab2', title: 'Pending'},
+            {key: 'tab3', title: 'Complete'},
           ],
         }}
         renderScene={renderScene}
         onIndexChange={handleTabChange}
-        initialLayout={{ width: layout.width }}
-        renderTabBar={(props) => (
+        initialLayout={{width: layout.width}}
+        renderTabBar={props => (
           <TabBar
             activeColor="black"
             inactiveColor="gray"
@@ -211,7 +231,10 @@ const Task = () => {
       <TouchableOpacity style={styles.fab} onPress={handleAddTask}>
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
-      <AssignTask visible={modalVisible} onClose={() => setModalVisible(false)} />
+      <AssignTask
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+      />
       {selectedTask && (
         <TaskEditModal
           visible={editModalVisible}

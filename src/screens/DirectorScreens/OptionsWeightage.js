@@ -1,4 +1,3 @@
-// components/OptionsWeightageFragment.js
 import React, {useEffect, useState} from 'react';
 import {
   View,
@@ -35,7 +34,7 @@ const OptionsWeightage = () => {
   const handleSave = async () => {
     try {
       await OptionWeightageService.putOptionsWeightage(optionWeightageList);
-      Alert('Options weightage updated successfully');
+      Alert.alert('Options weightage updated successfully');
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -52,30 +51,34 @@ const OptionsWeightage = () => {
       <View style={styles.title}>
         <Text style={styles.titleText}>Option Weightage</Text>
       </View>
-    <ScrollView contentContainerStyle={styles.container}>
-      {loading ? (
-        <Text>Loading...</Text>
-      ) : (
-        <>
-          {optionWeightageList.map((option, index) => (
-            <View key={index} style={styles.optionContainer}>
-              <Text style={styles.optionTitle}>{option.name}</Text>
-              <TextInput
-                style={styles.optionInput}
-                value={option.weightage.toString()}
-                onChangeText={text =>
-                  handleWeightageChange(index, parseInt(text, 10))
-                }
-                keyboardType="numeric"
-              />
+      <ScrollView contentContainerStyle={styles.container}>
+        {loading ? (
+          <Text>Loading...</Text>
+        ) : (
+          <>
+            {optionWeightageList.map((option, index) => (
+              <View key={index} style={styles.optionContainer}>
+                <Text style={styles.optionTitle}>{option.name}</Text>
+                <TextInput
+                  style={styles.optionInput}
+                  value={(option.weightage || 0).toString()}
+                  onChangeText={text => {
+                    if (!isNaN(text) && text !== '') {
+                      handleWeightageChange(index, parseInt(text, 10));
+                    } else {
+                      handleWeightageChange(index, 0); // Ensure you handle invalid input correctly
+                    }
+                  }}
+                  keyboardType="numeric"
+                />
+              </View>
+            ))}
+            <View style={styles.buttonContainer}>
+              <Button onPress={handleSave} title="Save" color="#6360DC" />
             </View>
-          ))}
-          <View style={styles.buttonContainer}>
-            <Button onPress={handleSave} title="Save" color="#6360DC" />
-          </View>
-        </>
-      )}
-    </ScrollView>
+          </>
+        )}
+      </ScrollView>
     </>
   );
 };
@@ -85,7 +88,8 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: 'white',
     flexGrow: 1,
-  },  title: {
+  },
+  title: {
     paddingTop: 10,
     backgroundColor: '#6360DC',
     alignItems: 'center',

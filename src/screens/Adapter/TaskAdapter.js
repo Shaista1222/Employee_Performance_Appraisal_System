@@ -90,55 +90,43 @@ const styles = StyleSheet.create({
   dueDate: {
     flexDirection: 'row',
     fontSize: 17,
-    paddingTop: 6,
   },
   portionSpacing: {
-    paddingLeft: 20,
     flexDirection: 'row',
-    flex: 2,
-  },
-  scoreInput: {
-    flex: 2,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    paddingHorizontal: 3,
-    color: 'black',
+    marginLeft: 10,
   },
   scoreContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  scoreInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    flex: 1,
     color: 'black',
-    marginTop: 12,
+  },
+  btn: {
+    backgroundColor: '#32CD32',
+    padding: 10,
+    borderRadius: 5,
+    marginLeft: 10,
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
+    justifyContent: 'space-between',
     marginTop: 10,
-  },
-  btn: {
-    backgroundColor: '#D3D3D3',
-    width: 56,
-    height: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
-    
   },
   editBtn: {
     backgroundColor: '#FFA500',
-    width: 56,
-    height: 32,
-    alignItems: 'center',
-    // fontSize:12,
-    justifyContent: 'center',
+    padding: 10,
+    borderRadius: 5,
   },
   deleteBtn: {
     backgroundColor: '#FF0000',
-    width: 56,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    // fontSize:7
+    padding: 10,
+    borderRadius: 5,
   },
 });
 

@@ -1,22 +1,22 @@
-import {Alert} from 'react-native';
+import { Alert } from 'react-native';
 import IPAddress from '../../../IPAddress';
 
 const EvaluatorService = {
   async getEvaluatees(evaluatorID, sessionID) {
     try {
       const response = await fetch(
-        `${IPAddress}/Evaluator/GetEvaluatees?evaluatorID=${evaluatorID}&sessionID=${sessionID}`,
+        `${IPAddress}/Evaluator/GetEvaluatees?evaluatorID=${evaluatorID}&sessionID=${sessionID}`
       );
       if (!response.ok) {
-       Alert('Failed to fetch evaluatees');
+        throw new Error('Failed to fetch evaluatees');
       }
       return await response.json();
     } catch (error) {
-      Alert(
-        `Something went wrong while fetching evaluatees: ${error.message}`,
-      );
+      Alert.alert('Error', `Something went wrong while fetching evaluatees: ${error.message}`);
+      throw error; // Ensure the error is propagated
     }
   },
+
   async postEvaluator(evaluatorEvaluatees) {
     try {
       const response = await fetch(`${IPAddress}/Evaluator/PostEvaluator`, {
@@ -28,14 +28,15 @@ const EvaluatorService = {
       });
 
       if (!response.ok) {
-        throw new Error(response.statusText);
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
       const data = await response.json();
-      Alert('Evaluator added successfully');
+      Alert.alert('Success', 'Evaluator added successfully');
       return data;
     } catch (error) {
-      throw new Error(error.message);
+      Alert.alert('Error', `Failed to save evaluator evaluates: ${error.message}`);
+      throw error;
     }
   },
 };

@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Picker } from '@react-native-picker/picker';
-import { View, Text, StyleSheet, Alert, useWindowDimensions } from 'react-native';
-import { TabView, TabBar } from 'react-native-tab-view';
+import React, {useState, useEffect} from 'react';
+import {Picker} from '@react-native-picker/picker';
+import {View, Text, StyleSheet, Alert, useWindowDimensions} from 'react-native';
+import {TabView, TabBar} from 'react-native-tab-view';
 import CourseServiceListener from '../Services/CourseServiceListener';
 import SessionService from '../Services/SessionService';
-import { BarChartComponent } from './ShowPerformance';
+import {BarChartComponent, SessionBarChartComponent} from './ShowPerformance';
 import EmployeeKPIPerformance from '../Services/EmployeeKPIPerformance';
 
-const Performance = ({ route }) => {
-  const { employee } = route.params;
+const Performance = ({route}) => {
+  const {employee} = route.params;
   const layout = useWindowDimensions();
 
   const [index, setIndex] = useState(0);
   const [routes] = useState([
-    { key: 'first', title: 'Session' },
-    { key: 'second', title: 'Multi-Session' },
-    { key: 'third', title: 'Comparison' },
-    { key: 'fourth', title: 'Multi-Session-Comparison' },
+    {key: 'first', title: 'Course'},
+    {key: 'second', title: 'Session'},
+    {key: 'third', title: 'Comparison'},
+    {key: 'fourth', title: 'Course-Comparison'},
   ]);
 
   const [courseList, setCourseList] = useState([]);
@@ -24,7 +24,6 @@ const Performance = ({ route }) => {
   const [selectedSession, setSelectedSession] = useState('');
   const [selectedCourse, setSelectedCourse] = useState('');
   const [filteredPerformance, setFilteredPerformance] = useState([]);
-
 
   const [employeeKpiPerformance, setEmployeeKpiPerformance] = useState([]);
 
@@ -48,7 +47,10 @@ const Performance = ({ route }) => {
     if (selectedSession) {
       const fetchTeacherCourses = async (teacherID, sessionID) => {
         try {
-          const data = await CourseServiceListener.getTeacherCourses(teacherID, sessionID);
+          const data = await CourseServiceListener.getTeacherCourses(
+            teacherID,
+            sessionID,
+          );
           setCourseList(data || []);
           if (data && data.length > 0) {
             setSelectedCourse(data[0].id);
@@ -64,18 +66,20 @@ const Performance = ({ route }) => {
 
   useEffect(() => {
     const filtered = employeeKpiPerformance.filter(
-      item => item.employee_id == employee.id
+      item => item.employee_id == employee.id,
     );
     setFilteredPerformance(filtered);
   }, [employeeKpiPerformance, selectedSession]);
-  
 
   useEffect(() => {
     if (selectedSession) {
       const fetchEmployeeKpiPerformance = async (employeeID, sessionID) => {
         try {
-          const data = await EmployeeKPIPerformance.getKpiEmployeePerformance(employeeID, sessionID);
-          console.log("new data : "+data);
+          const data = await EmployeeKPIPerformance.getKpiEmployeePerformance(
+            employeeID,
+            sessionID,
+          );
+          console.log('new data : ' + data);
           setEmployeeKpiPerformance(data || []);
         } catch (error) {
           console.log(error);
@@ -91,15 +95,11 @@ const Performance = ({ route }) => {
   console.log('Selected Session:', selectedSession);
   console.log('Employee KPI Performance:', employeeKpiPerformance);
 
-  // const filteredPerformance = employeeKpiPerformance.filter(
-  //   item => item.employee_id === employee.id
-  // );
-
   console.log('Filtered Performance:', filteredPerformance);
 
   const FirstRoute = () => (
     <>
-      <View style={{ backgroundColor: 'brown', padding: 4 }}>
+      <View style={{backgroundColor: 'brown', padding: 4}}>
         <Text style={styles.topName}>{employee.name}</Text>
       </View>
       <View style={styles.container}>
@@ -128,7 +128,11 @@ const Performance = ({ route }) => {
             mode="dropdown">
             {sessionList.length > 0 ? (
               sessionList.map((session, index) => (
-                <Picker.Item key={index} label={session.title} value={session.id} />
+                <Picker.Item
+                  key={index}
+                  label={session.title}
+                  value={session.id}
+                />
               ))
             ) : (
               <Picker.Item label="No sessions available" value="" />
@@ -144,75 +148,50 @@ const Performance = ({ route }) => {
 
   const SecondRoute = () => (
     <>
-      <View style={{ backgroundColor: 'brown', padding: 4 }}>
+      <View
+        style={{
+          backgroundColor: 'brown',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
         <Text style={styles.topName}>{employee.name}</Text>
       </View>
       <View style={styles.container}>
-        <Text style={styles.label}>Course</Text>
-        <Picker
-          selectedValue={selectedCourse}
-          onValueChange={itemValue => setSelectedCourse(itemValue)}
-          style={styles.picker}
-          dropdownIconColor="black"
-          mode="dropdown">
-          {courseList.length > 0 ? (
-            courseList.map((course, index) => (
-              <Picker.Item key={index} label={course.title} value={course.id} />
-            ))
-          ) : (
-            <Picker.Item label="No courses available" value="" />
-          )}
-        </Picker>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={styles.label}>From:</Text>
-          <Text style={{ paddingRight: 180, fontSize: 16, color: 'black' }}>
-            To:
-          </Text>
-        </View>
+        <Text style={styles.label}>Session</Text>
         <View style={styles.showPerformance}>
           <Picker
             selectedValue={selectedSession}
             onValueChange={itemValue => setSelectedSession(itemValue)}
-            style={styles.pickerCompare}
+            style={styles.picker}
             dropdownIconColor="black"
             mode="dropdown">
             {sessionList.length > 0 ? (
               sessionList.map((session, index) => (
-                <Picker.Item key={index} label={session.title} value={session.id} />
-              ))
-            ) : (
-              <Picker.Item label="No sessions available" value="" />
-            )}
-          </Picker>
-          <Picker
-            selectedValue={selectedSession}
-            onValueChange={itemValue => setSelectedSession(itemValue)}
-            style={styles.pickerCompare}
-            dropdownIconColor="black"
-            mode="dropdown">
-            {sessionList.length > 0 ? (
-              sessionList.map((session, index) => (
-                <Picker.Item key={index} label={session.title} value={session.id} />
+                <Picker.Item
+                  key={index}
+                  label={session.title}
+                  value={session.id}
+                />
               ))
             ) : (
               <Picker.Item label="No sessions available" value="" />
             )}
           </Picker>
         </View>
-        <BarChartComponent />
+        <SessionBarChartComponent />
       </View>
     </>
   );
 
   const ThirdRoute = () => (
-    <View style={{ flex: 1, backgroundColor: '#ff4081' }} />
+    <View style={{flex: 1, backgroundColor: '#ff4081'}} />
   );
 
   const FourthRoute = () => (
-    <View style={{ flex: 1, backgroundColor: '#673ab7' }} />
+    <View style={{flex: 1, backgroundColor: '#673ab7'}} />
   );
 
-  const renderScene = ({ route }) => {
+  const renderScene = ({route}) => {
     switch (route.key) {
       case 'first':
         return <FirstRoute />;
@@ -233,10 +212,10 @@ const Performance = ({ route }) => {
         <Text style={styles.titleText}>Report</Text>
       </View>
       <TabView
-        navigationState={{ index, routes }}
+        navigationState={{index, routes}}
         renderScene={renderScene}
         onIndexChange={setIndex}
-        initialLayout={{ width: layout.width }}
+        initialLayout={{width: layout.width}}
         renderTabBar={props => (
           <TabBar
             activeColor={'black'}

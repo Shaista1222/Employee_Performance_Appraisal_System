@@ -29,7 +29,7 @@ export const BarChartComponent = ({ data = [] }) => {
       },
     ],
   };
-
+  
   return (
     <View style={styles.container}>
       {data.length > 0 ? (
@@ -47,7 +47,34 @@ export const BarChartComponent = ({ data = [] }) => {
     </View>
   );
 };
-
+export const SessionBarChartComponent = ({ data = [] }) => {
+  console.log(data);
+  const chartData = {
+    labels: data.length > 0 ? data.map(item => item.kpi_title) : [],
+    datasets: [
+      {
+        data: data.length > 0 ? data.map(item => item.score) : [],
+      },
+    ],
+  };
+  
+  return (
+    <View style={styles.container}>
+      {data.length > 0 ? (
+        <BarChart
+          data={chartData}
+          width={screenWidth}
+          height={390}
+          yAxisLabel=""
+          chartConfig={chartConfig}
+          verticalLabelRotation={30}
+        />
+      ) : (
+        <Text>No data available</Text>
+      )}
+    </View>
+  );
+};
 const styles = StyleSheet.create({
   container: {
     flex: 1,

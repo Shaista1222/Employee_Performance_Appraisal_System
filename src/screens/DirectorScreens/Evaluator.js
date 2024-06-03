@@ -1,6 +1,5 @@
-// screens/EvaluatorScreen.js
 import React, {useState, useEffect} from 'react';
-import {View, StyleSheet, Alert, Button,Text, ScrollView} from 'react-native';
+import {View, StyleSheet, Alert, Button, Text, ScrollView} from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EvaluatorService from '../Services/EvaluatorService';
@@ -17,21 +16,22 @@ const Evaluator = () => {
   useEffect(() => {
     const fetchSessionID = async () => {
       try {
-        const sessionId = await AsyncStorage.getItem('sessionId');
-        setSessionID(sessionId);
+        const sessionId = await AsyncStorage.getItem('currentSession');
+        const parsedSessionId = JSON.parse(sessionId);
+        setSessionID(parsedSessionId.id);
       } catch (error) {
         Alert.alert('Error', 'Failed to retrieve session ID');
       }
     };
-
+  
     fetchSessionID();
     fetchEmployees();
   }, []);
+  
 
   const fetchEmployees = async () => {
     try {
       const data = await EmployeeService.getEmployees();
-      // console.log('Fetched employees:', data); // Log the fetched data
       setEmployeeList(data);
     } catch (error) {
       Alert.alert('Error', 'Failed to fetch employees');
@@ -44,7 +44,7 @@ const Evaluator = () => {
       employee => employee.id !== evaluatorId,
     );
     setEvaluateeList(updatedEvaluateeList);
-    setSelectedEvaluatees([]); // Clear selected evaluatees when evaluator changes
+    setSelectedEvaluatees([]);
   };
 
   const handleCheckboxChange = (employeeId, isChecked) => {
@@ -64,20 +64,38 @@ const Evaluator = () => {
   };
 
   const handleSave = async () => {
+    if (!sessionID) {
+      Alert.alert('Error', 'Session ID is missing');
+      return;
+    }
+    if (!selectedEvaluator) {
+      Alert.alert('Error', 'Evaluator is not selected');
+      return;
+    }
+    if (selectedEvaluatees.length === 0) {
+      Alert.alert('Error', 'No evaluatees selected');
+      return;
+    }
+  
     try {
       const evaluatorEvaluates = {
         evaluator_id: selectedEvaluator,
         session_id: sessionID,
         evaluatee_ids: selectedEvaluatees,
       };
-
+  
+      console.log('Saving evaluator evaluates:', evaluatorEvaluates);
+  
       const result = await EvaluatorService.postEvaluator(evaluatorEvaluates);
-      console.log(result);
+      console.log('Save result:', result);
     } catch (error) {
-      Alert.alert('Error', error.message);
+      console.error('Save error details:', error);
+      console.error('Save error response:', error.response ? error.response.data : 'No response data');
+      Alert.alert('Error', `Failed to save evaluator evaluates: ${error.message}`);
     }
   };
-
+  
+  
   return (
     <>
       <View style={styles.title}>
@@ -99,7 +117,7 @@ const Evaluator = () => {
             />
           ))}
         </Picker>
-        <Text style={{color:'black',fontSize:15}}>Select Evaluatee</Text>
+        <Text style={{color: 'black', fontSize: 15}}>Select Evaluatee</Text>
         <ScrollView style={styles.scrollView}>
           {evaluateeList.length > 0 && (
             <CheckBox
