@@ -1,153 +1,296 @@
-// screens/PerformanceScreen.js
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, Alert } from 'react-native';
-import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
-import { Button } from 'react-native-paper';
-import { BarChart, PieChart } from 'react-native-chart-kit';
+import React, {useState, useEffect} from 'react';
+import {View, Text, StyleSheet, Alert, useWindowDimensions} from 'react-native';
+import {TabView, TabBar} from 'react-native-tab-view';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {Picker} from '@react-native-picker/picker';
 import SessionService from './Services/SessionService';
-import { Picker } from '@react-native-picker/picker';
-
-const screenWidth = Dimensions.get('window').width;
+import EmployeeKPIPerformance from './Services/EmployeeKPIPerformance';
+import {
+  EmployeeCourseBarChartComponent,
+  SessionBarChartComponent,
+} from './DirectorScreens/ShowPerformance';
+import CourseServiceListener from './Services/CourseServiceListener';
+import EmployeeCoursePerformanceService from './Services/EmployeeCoursePerformanceService';
 
 const PerformanceFragment = () => {
-  const [employeeID, setEmployeeID] = useState('');
-  const [sessions, setSessions] = useState([]);
-  const [selectedSession, setSelectedSession] = useState(null);
-  const [selectedFromSession, setSelectedFromSession] = useState(null);
-  const [selectedToSession, setSelectedToSession] = useState(null);
-  const [pieData, setPieData] = useState([]);
-  const [barData, setBarData] = useState([]);
-
-  useEffect(() => {
-    fetchSessions();
-    retrieveEmployeeData();
-  }, []);
-
-  const retrieveEmployeeData = async () => {
-    try {
-      const user = await AsyncStorage.getItem('employee');
-      if (user) {
-        const parsedUser = JSON.parse(user);
-        setEmployeeID(parsedUser);
-      } else {
-        Alert.alert('Error', 'Session or employee data not found');
-      }
-    } catch (error) {
-      Alert.alert('Error', error.message);
-      console.error('Error retrieving data:', error);
-    }
-  };
-
-  const fetchSessions = async () => {
-    try {
-      const data = await SessionService.getSessions();
-      setSessions(data);
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
-  };
-
-  const fetchPieData = async (sessionId) => {
-    // Fetch pie chart data based on sessionId and update the state
-  };
-
-  const fetchBarData = async (fromSessionId, toSessionId) => {
-    // Fetch bar chart data based on fromSessionId and toSessionId and update the state
-  };
-
-  const handleSessionChange = (sessionId) => {
-    setSelectedSession(sessionId);
-    fetchPieData(sessionId);
-  };
-
-  const handleFromSessionChange = (sessionId) => {
-    setSelectedFromSession(sessionId);
-    fetchBarData(sessionId, selectedToSession);
-  };
-
-  const handleToSessionChange = (sessionId) => {
-    setSelectedToSession(sessionId);
-    fetchBarData(selectedFromSession, sessionId);
-  };
-
-  const renderPickerItems = () => {
-    return sessions.map(session => (
-      <Picker.Item key={session.id} label={session.title} value={session.id} />
-    ));
-  };
-
-  const renderPieChart = () => (
-    <PieChart
-      data={pieData}
-      width={screenWidth}
-      height={220}
-      chartConfig={chartConfig}
-      accessor={"score"}
-      backgroundColor={"transparent"}
-      paddingLeft={"15"}
-      absolute
-    />
-  );
-
-  const renderBarChart = () => (
-    <BarChart
-      data={barData}
-      width={screenWidth}
-      height={220}
-      chartConfig={chartConfig}
-      verticalLabelRotation={30}
-    />
-  );
-
-  const renderScene = SceneMap({
-    pie: renderPieChart,
-    bar: renderBarChart,
-  });
+  const layout = useWindowDimensions();
 
   const [index, setIndex] = useState(0);
   const [routes] = useState([
-    { key: 'pie', title: 'Pie Chart' },
-    { key: 'bar', title: 'Bar Chart' },
+    {key: 'first', title: 'Course'},
+    {key: 'second', title: 'Session'},
+    {key: 'third', title: 'Comparison'},
+    {key: 'fourth', title: 'Course-Comparison'},
   ]);
 
-  const chartConfig = {
-    backgroundGradientFrom: "#1E2923",
-    backgroundGradientFromOpacity: 0,
-    backgroundGradientTo: "#08130D",
-    backgroundGradientToOpacity: 0.5,
-    color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
-    strokeWidth: 2, 
-    barPercentage: 0.5,
-    useShadowColorFromDataset: false, 
+  const [courseList, setCourseList] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState('');
+  const [courseId, setCourseId] = useState('');
+  const [sessionList, setSessionList] = useState([]);
+  const [selectedSession, setSelectedSession] = useState('');
+  const [filteredPerformance, setFilteredPerformance] = useState([]);
+  const [employeeUser, setEmployeeUser] = useState('');
+  const [employeeKpiPerformance, setEmployeeKpiPerformance] = useState([]);
+
+  useEffect(() => {
+    const retrieveEmployeeData = async () => {
+      try {
+        const user = await AsyncStorage.getItem('employee');
+        if (user) {
+          const parsedUser = JSON.parse(user);
+          setEmployeeUser(parsedUser);
+        } else {
+          Alert.alert('Error', 'Employee data not found');
+        }
+      } catch (error) {
+        Alert.alert('Error', error.message);
+        console.error('Error retrieving data:', error);
+      }
+    };
+    retrieveEmployeeData();
+  }, []);
+
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        const data = await SessionService.getSessions();
+        setSessionList(data || []);
+        if (data && data.length > 0) {
+          setSelectedSession(data[0].id);
+        }
+      } catch (error) {
+        Alert.alert('Error', error.message);
+      }
+    };
+
+    fetchSessions();
+  }, []);
+
+  useEffect(() => {
+    if (selectedSession && employeeUser) {
+      const fetchTeacherCourses = async (teacherID, sessionID) => {
+        try {
+          const courses = await CourseServiceListener.getTeacherCourses(
+            teacherID,
+            sessionID,
+          );
+          const coursesWithPerformance = await Promise.all(
+            courses.map(async course => {
+              const performanceData =
+                await EmployeeCoursePerformanceService.getEmployeeCoursePerformance(
+                  employeeUser.employee.id,
+                  sessionID,
+                  course.id,
+                );
+              return {
+                ...course,
+                employeeQuestionScores:
+                  performanceData.employeeQuestionScores || [],
+              };
+            }),
+          );
+          console.log(courses);
+          setCourseList(coursesWithPerformance || []);
+          if (coursesWithPerformance && coursesWithPerformance.length > 0) {
+            setCourseId(coursesWithPerformance[0].id);
+          }
+        } catch (error) {
+          Alert.alert('Error', error.message);
+        }
+      };
+
+      fetchTeacherCourses(employeeUser.employee.id, selectedSession);
+    }
+  }, [selectedSession, employeeUser]);
+
+  // useEffect(() => {
+  //   if (selectedSession && courseId) {
+  //     const fetchEmployeeCoursePerformance = async (employeeID, sessionID, courseID) => {
+  //       try {
+  //         const data = await EmployeeCoursePerformanceService.getEmployeeCoursePerformance(
+  //           employeeID,
+  //           sessionID,
+  //           courseID,
+  //         );
+  //         setEmployeeKpiPerformance(data.employeeQuestionScores || []);
+  //       } catch (error) {
+  //         Alert.alert('Error', error.message);
+  //       }
+  //     };
+
+  //     fetchEmployeeCoursePerformance(
+  //       employeeUser.employee.id,
+  //       selectedSession,
+  //       courseId,
+  //     );
+  //   }
+  // }, [selectedSession, courseId]);
+
+  useEffect(() => {
+    if (employeeUser && employeeUser.employee) {
+      const filtered = employeeKpiPerformance.filter(
+        item => item.employee_id == employeeUser.employee.id,
+      );
+      setFilteredPerformance(filtered);
+    }
+  }, [employeeKpiPerformance, selectedSession]);
+
+  useEffect(() => {
+    if (selectedSession) {
+      const fetchEmployeeKpiPerformance = async (employeeID, sessionID) => {
+        try {
+          const data = await EmployeeKPIPerformance.getKpiEmployeePerformance(
+            employeeID,
+            sessionID,
+          );
+          console.log('new data : ' + data);
+          setEmployeeKpiPerformance(data || []);
+        } catch (error) {
+          console.log(error);
+          Alert.alert('Error ..', error.message);
+        }
+      };
+
+      fetchEmployeeKpiPerformance(employeeUser.employee.id, selectedSession);
+    }
+  }, [selectedSession]);
+
+  // console.log('Employee ID:', employeeUser.employee.id);
+  console.log('Selected Session:', selectedSession);
+  console.log('Employee KPI Performance:', employeeKpiPerformance);
+  console.log('Filtered Performance:', filteredPerformance);
+
+  const FirstRoute = () => (
+    <View>
+      <Text>Session Route</Text>
+      <Text style={styles.label}>Session</Text>
+      <View style={styles.showPerformance}>
+        <Picker
+          selectedValue={selectedSession}
+          onValueChange={itemValue => setSelectedSession(itemValue)}
+          style={styles.picker}
+          dropdownIconColor="black"
+          mode="dropdown">
+          {sessionList.length > 0 ? (
+            sessionList.map((session, index) => (
+              <Picker.Item
+                key={index}
+                label={session.title}
+                value={session.id}
+              />
+            ))
+          ) : (
+            <Picker.Item label="No sessions available" value="" />
+          )}
+        </Picker>
+      </View>
+      <Text>Course Route</Text>
+      {courseList.map((course, index) => (
+        <EmployeeCourseBarChartComponent
+          key={index}
+          data={course.employeeQuestionScores.map(score => ({
+            kpi_title: course.title, 
+            score: score.obtainedScore,
+          }))}
+        />
+      ))}
+    </View>
+  );
+
+  const SecondRoute = () => (
+    <View>
+      <Text>Session Route</Text>
+      <Text style={styles.label}>Session</Text>
+      <View style={styles.showPerformance}>
+        <Picker
+          selectedValue={selectedSession}
+          onValueChange={itemValue => setSelectedSession(itemValue)}
+          style={styles.picker}
+          dropdownIconColor="black"
+          mode="dropdown">
+          {sessionList.length > 0 ? (
+            sessionList.map((session, index) => (
+              <Picker.Item
+                key={index}
+                label={session.title}
+                value={session.id}
+              />
+            ))
+          ) : (
+            <Picker.Item label="No sessions available" value="" />
+          )}
+        </Picker>
+      </View>
+      {selectedSession && (
+        <SessionBarChartComponent data={filteredPerformance} />
+      )}
+    </View>
+  );
+
+  const renderScene = ({route}) => {
+    switch (route.key) {
+      case 'first':
+        return <FirstRoute />;
+      case 'second':
+        return <SecondRoute />;
+      // Third and Fourth Routes
+      default:
+        return null;
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <Picker
-        selectedValue={selectedSession}
-        onValueChange={(itemValue) => handleSessionChange(itemValue)}
-      >
-        {renderPickerItems()}
-      </Picker>
+    <>
+      <View style={styles.title}>
+        <Text style={styles.titleText}>Report</Text>
+      </View>
       <TabView
-        navigationState={{ index, routes }}
+        navigationState={{index, routes}}
         renderScene={renderScene}
         onIndexChange={setIndex}
-        initialLayout={{ width: screenWidth }}
-        renderTabBar={props => <TabBar {...props} />}
+        initialLayout={{width: layout.width}}
+        renderTabBar={props => (
+          <TabBar
+            activeColor={'black'}
+            inactiveColor={'gray'}
+            {...props}
+            scrollEnabled={true}
+            style={styles.tabBar}
+          />
+        )}
       />
-      <Button mode="contained" onPress={() => fetchPieData(selectedSession)}>Show</Button>
-      <Button mode="contained" onPress={() => fetchBarData(selectedFromSession, selectedToSession)}>Compare</Button>
-    </View>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#fff',
+  title: {
+    paddingTop: 10,
+    backgroundColor: '#6360DC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleText: {
+    fontSize: 24,
+    color: '#fff',
+  },
+  tabBar: {
+    backgroundColor: '#ffffff',
+    height: 45,
+    marginVertical: -8,
+  },
+  label: {
+    fontSize: 16,
+    color: 'black',
+  },
+  picker: {
+    color: 'black',
+    width: '100%',
+  },
+  showPerformance: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
 });
 

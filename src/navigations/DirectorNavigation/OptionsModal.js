@@ -36,7 +36,7 @@ const OptionsModal = ({ visible, onClose }) => {
           <TouchableOpacity
             style={styles.button}
             onPress={() => {
-              // Add navigation or logic for 'Session' here
+              navigation.navigate('Kpi')
             }}>
             <Text style={styles.buttonText}>KPI</Text>
           </TouchableOpacity>

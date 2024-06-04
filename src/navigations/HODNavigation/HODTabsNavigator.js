@@ -5,35 +5,31 @@ import {useTabMenu} from '../../context/TabContext';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontIcon from 'react-native-vector-icons/FontAwesome5';
 import MatCommunity from 'react-native-vector-icons/MaterialCommunityIcons';
-import Report from '../../screens/DirectorScreens/Report';
-import Task from '../../screens/DirectorScreens/Tasks';
-import OptionsModal from './OptionsModal'; // Import OptionsModal
+import Task from '../../screens/Task'
 import {COLORS} from '../../theme/theme';
-import Evaluator from '../../screens/DirectorScreens/Evaluator';
 import OptionWeightage from '../../screens/DirectorScreens/OptionsWeightage';
+import MyTasksFragment from '../../screens/MyTasksFragment';
+import EvaluateeListFragment from '../../screens/EvaluateeListFragment';
+import PerformanceFragment from '../../screens/PerformanceFragment';
 
 const Tab = createBottomTabNavigator();
 
 const HODTabsNavigator = () => {
-  const [modalVisible, setModalVisible] = useState(false);
   const {opened, toggleOpened} = useTabMenu();
 
-  const toggleModal = () => {
-    setModalVisible(!modalVisible);
-  };
 
   return (
     <View style={{flex: 1}}>
       <Tab.Navigator
-        initialRouteName="Task"
+        initialRouteName="MyTasksFragment"
         screenOptions={{
           headerShown: false,
           tabBarShowLabel: false,
           tabBarStyle: styles.tabBar,
         }}>
         <Tab.Screen
-          name="Task"
-          component={Task}
+          name="MyTasksFragment"
+          component={MyTasksFragment}
           options={{
             tabBarIcon: ({focused}) => (
               <View style={styles.tabIconContainer}>
@@ -50,8 +46,8 @@ const HODTabsNavigator = () => {
           }}
         />
         <Tab.Screen
-          name="Report"
-          component={Report}
+          name="PerformanceFragment"
+          component={PerformanceFragment}
           options={{
             tabBarIcon: ({focused}) => (
               <View style={styles.tabIconContainer}>
@@ -67,29 +63,10 @@ const HODTabsNavigator = () => {
             tabPress: e => opened && e.preventDefault(),
           }}
         />
+     
         <Tab.Screen
-          name="Settings"
-          component={() => null} // Render an empty component for the plus button
-          options={{
-            tabBarButton: ({focused}) => (
-              <TouchableOpacity
-                style={[styles.tabIconContainer, focused && styles.focusedTab]}
-                onPress={() => toggleModal()}>
-                <FontIcon
-                  name="plus"
-                  size={25}
-                  color={focused ? COLORS.primary : COLORS.dark}
-                />
-              </TouchableOpacity>
-            ),
-          }}
-          listeners={{
-            tabPress: e => opened && e.preventDefault(),
-          }}
-        />
-        <Tab.Screen
-          name="Evaluators"
-          component={Evaluator}
+          name="Task"
+          component={Task}
           options={{
             tabBarIcon: ({focused}) => (
               <View style={styles.tabIconContainer}>
@@ -107,8 +84,8 @@ const HODTabsNavigator = () => {
         />
 
         <Tab.Screen
-          name="Options Weightage"
-          component={OptionWeightage}
+          name="Evaluatee"
+          component={EvaluateeListFragment}
           options={{
             tabBarIcon: ({focused}) => (
               <View style={styles.tabIconContainer}>
@@ -126,8 +103,6 @@ const HODTabsNavigator = () => {
         />
       </Tab.Navigator>
 
-      {/* Render the OptionsModal */}
-      <OptionsModal visible={modalVisible} onClose={toggleModal} />
     </View>
   );
 };

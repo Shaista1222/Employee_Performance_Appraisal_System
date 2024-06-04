@@ -63,6 +63,33 @@ export const SessionBarChartComponent = ({ data = [] }) => {
       {data.length > 0 ? (
         <BarChart
           data={chartData}
+          width={screenWidth - 16} 
+          height={390}
+          yAxisLabel=""
+          chartConfig={chartConfig}
+          verticalLabelRotation={30}
+        />
+      ) : (
+        <Text>No data available</Text>
+      )}
+    </View>
+  );
+};
+export const EmployeeCourseBarChartComponent = ({ data = [] }) => {
+  const chartData = {
+    labels: data.length > 0 ? data.map(item => item.kpi_title) : [],
+    datasets: [
+      {
+        data: data.length > 0 ? data.map(item => item.score) : [],
+      },
+    ],
+  };
+
+  return (
+    <View style={styles.container}>
+      {data.length > 0 ? (
+        <BarChart
+          data={chartData}
           width={screenWidth}
           height={390}
           yAxisLabel=""

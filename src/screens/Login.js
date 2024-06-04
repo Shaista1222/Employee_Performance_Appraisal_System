@@ -27,7 +27,7 @@ const Login = () => {
           if (user.designation.name === 'Director') {
             navigation.navigate('DirectorMain', { screen: 'DirectorMain' });
           } else if (user.designation.name === 'HOD') {
-            navigation.navigate('HodMain');
+            navigation.navigate('HODMain');
           } else if (user.designation.name === 'Teacher') {
             navigation.navigate('FacultyMain');
           } else if (
