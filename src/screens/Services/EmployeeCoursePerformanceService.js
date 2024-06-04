@@ -1,8 +1,10 @@
-import IPAddress from "../../../IPAddress";
+import IPAddress from '../../../IPAddress';
 const EmployeeCoursePerformanceService = {
   getEmployeeCoursePerformance: async (employeeID, sessionID, courseID) => {
     try {
-      const response = await fetch(`${IPAddress}/EmployeeCoursePerformance/employeeCoursePerformance?employeeID=${employeeID}&sessionID=${sessionID}&courseID=${courseID}`);
+      const response = await fetch(
+        `${IPAddress}/EmployeeCoursePerformance/employeeCoursePerformance?employeeID=${employeeID}&sessionID=${sessionID}&courseID=${courseID}`,
+      );
       if (!response.ok) {
         throw new Error('Failed to fetch data');
       }
@@ -13,26 +15,34 @@ const EmployeeCoursePerformanceService = {
     }
   },
 
-  getEmployeeCoursesPerformance: async (employeeCoursesPerformanceRequest) => {
+  getEmployeeCoursesPerformance: async (employeeID, sessionID, coursesIds) => {
     try {
-      const response = await fetch(`${IPAddress}/EmployeeCoursePerformance/employeeCoursesPerformance`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
+      const response = await fetch(
+        `${IPAddress}/EmployeeCoursePerformance/GetEmployeeCoursesPerformance`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            employeeID,
+            sessionID,
+            coursesIds,
+          }),
         },
-        body: JSON.stringify(employeeCoursesPerformanceRequest)
-      });
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to fetch data');
+        throw new Error('Network response was not ok');
       }
+
       const data = await response.json();
       return data;
     } catch (error) {
-      throw new Error(error.message);
+      console.error('Error fetching employee courses performance:', error);
+      throw error;
     }
   },
-
-  // Define other methods similarly
 };
 
 export default EmployeeCoursePerformanceService;

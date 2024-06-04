@@ -24,8 +24,6 @@ const PerformanceFragment = () => {
   ]);
 
   const [courseList, setCourseList] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState('');
-  const [courseId, setCourseId] = useState('');
   const [sessionList, setSessionList] = useState([]);
   const [selectedSession, setSelectedSession] = useState('');
   const [filteredPerformance, setFilteredPerformance] = useState([]);
@@ -77,54 +75,29 @@ const PerformanceFragment = () => {
           const coursesWithPerformance = await Promise.all(
             courses.map(async course => {
               const performanceData =
-                await EmployeeCoursePerformanceService.getEmployeeCoursePerformance(
+                await EmployeeCoursePerformanceService.getEmployeeCoursesPerformance(
                   employeeUser.employee.id,
                   sessionID,
-                  course.id,
+                  [course.id],
                 );
+
+              const obtainedScore =
+                performanceData.length > 0 ? performanceData[0].average : 0;
+
               return {
                 ...course,
-                employeeQuestionScores:
-                  performanceData.employeeQuestionScores || [],
+                obtainedScore: obtainedScore,
               };
             }),
           );
-          console.log(courses);
           setCourseList(coursesWithPerformance || []);
-          if (coursesWithPerformance && coursesWithPerformance.length > 0) {
-            setCourseId(coursesWithPerformance[0].id);
-          }
         } catch (error) {
           Alert.alert('Error', error.message);
         }
       };
-
       fetchTeacherCourses(employeeUser.employee.id, selectedSession);
     }
   }, [selectedSession, employeeUser]);
-
-  // useEffect(() => {
-  //   if (selectedSession && courseId) {
-  //     const fetchEmployeeCoursePerformance = async (employeeID, sessionID, courseID) => {
-  //       try {
-  //         const data = await EmployeeCoursePerformanceService.getEmployeeCoursePerformance(
-  //           employeeID,
-  //           sessionID,
-  //           courseID,
-  //         );
-  //         setEmployeeKpiPerformance(data.employeeQuestionScores || []);
-  //       } catch (error) {
-  //         Alert.alert('Error', error.message);
-  //       }
-  //     };
-
-  //     fetchEmployeeCoursePerformance(
-  //       employeeUser.employee.id,
-  //       selectedSession,
-  //       courseId,
-  //     );
-  //   }
-  // }, [selectedSession, courseId]);
 
   useEffect(() => {
     if (employeeUser && employeeUser.employee) {
@@ -143,7 +116,6 @@ const PerformanceFragment = () => {
             employeeID,
             sessionID,
           );
-          console.log('new data : ' + data);
           setEmployeeKpiPerformance(data || []);
         } catch (error) {
           console.log(error);
@@ -155,14 +127,9 @@ const PerformanceFragment = () => {
     }
   }, [selectedSession]);
 
-  // console.log('Employee ID:', employeeUser.employee.id);
-  console.log('Selected Session:', selectedSession);
-  console.log('Employee KPI Performance:', employeeKpiPerformance);
-  console.log('Filtered Performance:', filteredPerformance);
-
   const FirstRoute = () => (
     <View>
-      <Text>Session Route</Text>
+      <Text>Course Route</Text>
       <Text style={styles.label}>Session</Text>
       <View style={styles.showPerformance}>
         <Picker
@@ -184,15 +151,8 @@ const PerformanceFragment = () => {
           )}
         </Picker>
       </View>
-      <Text>Course Route</Text>
       {courseList.map((course, index) => (
-        <EmployeeCourseBarChartComponent
-          key={index}
-          data={course.employeeQuestionScores.map(score => ({
-            kpi_title: course.title, 
-            score: score.obtainedScore,
-          }))}
-        />
+        <EmployeeCourseBarChartComponent key={index} course={course} />
       ))}
     </View>
   );
@@ -233,7 +193,6 @@ const PerformanceFragment = () => {
         return <FirstRoute />;
       case 'second':
         return <SecondRoute />;
-      // Third and Fourth Routes
       default:
         return null;
     }

@@ -19,6 +19,16 @@ const chartConfig = {
   },
 };
 
+// Function to generate a random color
+const getRandomColor = () => {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+};
+
 export const BarChartComponent = ({ data = [] }) => {
   console.log(data);
   const chartData = {
@@ -29,7 +39,10 @@ export const BarChartComponent = ({ data = [] }) => {
       },
     ],
   };
-  
+
+  // Generate random colors for each bar
+  const barColors = data.map(() => getRandomColor());
+
   return (
     <View style={styles.container}>
       {data.length > 0 ? (
@@ -38,8 +51,22 @@ export const BarChartComponent = ({ data = [] }) => {
           width={screenWidth}
           height={390}
           yAxisLabel=""
-          chartConfig={chartConfig}
+          chartConfig={{
+            ...chartConfig,
+            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // Default color for other elements
+          }}
           verticalLabelRotation={30}
+          fromZero={true}
+          showValuesOnTopOfBars={true}
+          renderBar={({ index, ...rest }) => (
+            <View
+              key={index}
+              style={{
+                backgroundColor: barColors[index],
+                ...rest,
+              }}
+            />
+          )}
         />
       ) : (
         <Text>No data available</Text>
@@ -47,6 +74,7 @@ export const BarChartComponent = ({ data = [] }) => {
     </View>
   );
 };
+
 export const SessionBarChartComponent = ({ data = [] }) => {
   console.log(data);
   const chartData = {
@@ -57,33 +85,8 @@ export const SessionBarChartComponent = ({ data = [] }) => {
       },
     ],
   };
-  
-  return (
-    <View style={styles.container}>
-      {data.length > 0 ? (
-        <BarChart
-          data={chartData}
-          width={screenWidth - 16} 
-          height={390}
-          yAxisLabel=""
-          chartConfig={chartConfig}
-          verticalLabelRotation={30}
-        />
-      ) : (
-        <Text>No data available</Text>
-      )}
-    </View>
-  );
-};
-export const EmployeeCourseBarChartComponent = ({ data = [] }) => {
-  const chartData = {
-    labels: data.length > 0 ? data.map(item => item.kpi_title) : [],
-    datasets: [
-      {
-        data: data.length > 0 ? data.map(item => item.score) : [],
-      },
-    ],
-  };
+
+  const barColors = data.map(() => getRandomColor());
 
   return (
     <View style={styles.container}>
@@ -93,8 +96,22 @@ export const EmployeeCourseBarChartComponent = ({ data = [] }) => {
           width={screenWidth}
           height={390}
           yAxisLabel=""
-          chartConfig={chartConfig}
+          chartConfig={{
+            ...chartConfig,
+            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, 
+          }}
           verticalLabelRotation={30}
+          fromZero={true}
+          showValuesOnTopOfBars={true}
+          renderBar={({ index, ...rest }) => (
+            <View
+              key={index}
+              style={{
+                backgroundColor: barColors[index],
+                ...rest,
+              }}
+            />
+          )}
         />
       ) : (
         <Text>No data available</Text>
@@ -102,11 +119,56 @@ export const EmployeeCourseBarChartComponent = ({ data = [] }) => {
     </View>
   );
 };
+
+export const EmployeeCourseBarChartComponent = ({ course }) => {
+  const chartData = {
+    labels: [course.title],
+    datasets: [
+      {
+        data: [course.obtainedScore],
+      },
+    ],
+  };
+
+  // Generate a random color for the bar
+  const barColor = getRandomColor();
+
+  return (
+    <View style={styles.container}>
+      <BarChart
+        data={chartData}
+        width={screenWidth}
+        height={390}
+        yAxisLabel=""
+        chartConfig={{
+          ...chartConfig,
+          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // Default color for other elements
+        }}
+        verticalLabelRotation={30}
+        fromZero={true}
+        showValuesOnTopOfBars={true}
+        renderBar={({ index, ...rest }) => (
+          <View
+            key={index}
+            style={{
+              backgroundColor: barColor,
+              ...rest,
+            }}
+          />
+        )}
+      />
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 50,
+    paddingTop: 20,
     flexDirection: 'column',
     alignItems: 'center',
+    marginBottom: 8,
   },
 });
+
+export default { BarChartComponent, SessionBarChartComponent, EmployeeCourseBarChartComponent };
