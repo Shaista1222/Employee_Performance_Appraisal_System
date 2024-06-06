@@ -13,6 +13,7 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
   const [sessionID, setSessionId] = useState('');
   const [studentID, setStudentId] = useState('');
   const [employeeID, setEmployeeId] = useState('');
+  const [isEvaluated, setEvaluated] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,6 +58,7 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
       }
     };
     retrieveData();
+    retrieveStudentData();
   }, []);
 
   const retrieveStudentData = async () => {
@@ -85,6 +87,10 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
     }));
   };
 
+  const areAllQuestionsAnswered = () => {
+    return questionsList.every(question => selectedAnswers.hasOwnProperty(question.id));
+  };
+
   const calculateScore = (selectedOption, optionWeightage) => {
     const selectedOptionData = optionWeightage.find(
       option => option.name === selectedOption,
@@ -108,6 +114,7 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
           course_id: courseID,
         };
       });
+      console.log(studentEvaluations);
       const evaluate = await EvaluationService.postStudentEvaluation(studentEvaluations);
       if (evaluate) {
         Alert.alert('Successfully Evaluated');
@@ -120,6 +127,10 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
   };
 
   const handleDirectorEvaluation = async () => {
+    if (isEvaluated) {
+      Alert.alert('You have already Evaluated');
+      return;
+    }
     try {
       const optionWeightage = await QuestionaireServiceListner.getOptionsWeightages();
       const directorEvaluations = questionsList.map(item => {
@@ -136,6 +147,7 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
       const evaluate = await EvaluationService.postDirectorEvaluation(directorEvaluations);
       if (evaluate) {
         Alert.alert('Successfully Evaluated');
+        setEvaluated(true);
       }
       console.log('Evaluation response:', evaluate);
       setSelectedAnswers({});
@@ -145,6 +157,10 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
   };
 
   const handlePeerEvaluation = async () => {
+    if (isEvaluated) {
+      Alert.alert('You have already Evaluated');
+      return;
+    }
     try {
       const optionWeightage = await QuestionaireServiceListner.getOptionsWeightages();
       const peerEvaluations = questionsList.map(item => {
@@ -161,6 +177,7 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
       const evaluate = await EvaluationService.postPeerEvaluation(peerEvaluations);
       if (evaluate) {
         Alert.alert('Successfully Evaluated');
+        setEvaluated(true);
       }
       console.log('Evaluation response:', evaluate);
       setSelectedAnswers({});
@@ -170,6 +187,10 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
   };
 
   const handleJuniorEvaluation = async () => {
+    if (isEvaluated) {
+      Alert.alert('You have already Evaluated');
+      return;
+    }
     try {
       const optionWeightage = await QuestionaireServiceListner.getOptionsWeightages();
       const juniorEvaluations = questionsList.map(item => {
@@ -188,6 +209,7 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
       const evaluate = await EvaluationService.postSeniorTeacherEvaluation(juniorEvaluations);
       if (evaluate) {
         Alert.alert('Successfully evaluated');
+        setEvaluated(true);
       }
       console.log('Evaluation response:', evaluate);
       setSelectedAnswers({});
@@ -229,7 +251,12 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
             contentContainerStyle={styles.listContent}
           />
           <View style={styles.buttonContainer}>
-            <Button onPress={handleSubmit} title="Submit" color="#6360DC" />
+            <Button
+              onPress={handleSubmit}
+              title="Submit"
+              color="#6360DC"
+              disabled={!areAllQuestionsAnswered()}
+            />
           </View>
         </>
       )}

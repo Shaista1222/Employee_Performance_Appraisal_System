@@ -60,6 +60,7 @@ const StudentCourse = ({ navigation }) => {
   };
 
   const handleCoursePress = (courseID) => {
+    console.log(studentUser.id);
     navigation.navigate('CourseTeacher', {
       studentID: studentUser.id,
       sessionID: currentSessionData.id,

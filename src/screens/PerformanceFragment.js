@@ -129,7 +129,7 @@ const PerformanceFragment = () => {
 
   const FirstRoute = () => (
     <View>
-      <Text>Course Route</Text>
+     
       <Text style={styles.label}>Session</Text>
       <View style={styles.showPerformance}>
         <Picker
@@ -159,7 +159,6 @@ const PerformanceFragment = () => {
 
   const SecondRoute = () => (
     <View>
-      <Text>Session Route</Text>
       <Text style={styles.label}>Session</Text>
       <View style={styles.showPerformance}>
         <Picker
