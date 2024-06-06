@@ -1,3 +1,4 @@
+import { Alert } from "react-native";
 import IPAddress from "../../../IPAddress";
 const handleResponse = async (response) => {
   if (!response.ok) {
@@ -9,7 +10,7 @@ const handleResponse = async (response) => {
 
 export const isEvaluationTime = async (sessionID, evaluationType) => {
   try {
-    const response = await fetch(`${IPAddress}/EvaluationTime/isEvaluationTime/${sessionID}/${evaluationType}`);
+    const response = await fetch(`${IPAddress}/EvaluationTime/isEvaluationTime?sessionID=${sessionID}&evaluationType${evaluationType}`);
     return handleResponse(response);
   } catch (error) {
     throw new Error(error.message);
@@ -18,16 +19,17 @@ export const isEvaluationTime = async (sessionID, evaluationType) => {
 
 export const checkDegreeExitEligibility = async (studentID) => {
   try {
-    const response = await fetch(`${IPAddress}/EvaluationTime/checkDegreeExitEligibility/${studentID}`);
+    const response = await fetch(`${IPAddress}/EvaluationTime/checkDegreeExitEligibility?studentID=${studentID}`);
+    // return JSON.parse(response);
     return handleResponse(response);
   } catch (error) {
-    throw new Error(error.message + ': You are not eligible for degree exit evaluation');
+    Alert(' You are not eligible for degree exit evaluation');
   }
 };
 
 export const checkConfidentialPin = async (sessionID, pin) => {
   try {
-    const response = await fetch(`${IPAddress}/EvaluationTime/checkConfidentialPin/${sessionID}/${pin}`);
+    const response = await fetch(`${IPAddress}/EvaluationTime/checkConfidentialPin?sessionID=${sessionID}&pin=${pin}`);
     return handleResponse(response);
   } catch (error) {
     throw new Error(error.message);

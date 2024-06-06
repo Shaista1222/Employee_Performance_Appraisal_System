@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Button, Alert, FlatList, StyleSheet } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {View, Text, Button, Alert, FlatList, StyleSheet} from 'react-native';
 import QuestionaireServiceListner from './Services/QuestionaireServiceListner';
 import EvaluationQuestionnaireAdapter from './Adapter/EvaluationQuestionnaireAdapter';
 import EvaluationService from './Services/EvaluationService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const EvaluationQuestionnaireFragment = ({ route }) => {
-  const { evaluateeID, questionByType, courseID, teacherId } = route.params;
+const EvaluationQuestionnaireFragment = ({route}) => {
+  const {evaluateeID, questionByType, courseID, teacherId} = route.params;
   const [questionsList, setQuestionsList] = useState([]);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -20,12 +20,18 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
       try {
         setIsLoading(true);
         console.log('Fetching questions for type:', questionByType);
-        const questions = await QuestionaireServiceListner.getQuestionnaireByType(questionByType);
+        const questions =
+          await QuestionaireServiceListner.getQuestionnaireByType(
+            questionByType,
+          );
         setQuestionsList(questions);
         console.log('Fetched questions:', questions);
       } catch (error) {
         console.error('Error fetching questions:', error);
-        Alert.alert('Error', 'Failed to fetch questions. Please try again later.');
+        Alert.alert(
+          'Error',
+          'Failed to fetch questions. Please try again later.',
+        );
       } finally {
         setIsLoading(false);
       }
@@ -38,7 +44,7 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
       try {
         const sessionData = await AsyncStorage.getItem('currentSession');
         const user = await AsyncStorage.getItem('employee');
-        console.log('Retrieved data from AsyncStorage', { sessionData, user });
+        console.log('Retrieved data from AsyncStorage', {sessionData, user});
 
         if (sessionData && user) {
           const parsedSessionData = JSON.parse(sessionData);
@@ -47,9 +53,9 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
           setSessionId(parsedSessionData);
           setEmployeeId(parsedUser);
 
-          console.log('Parsed Data', { parsedSessionData, parsedUser });
+          console.log('Parsed Data', {parsedSessionData, parsedUser});
         } else {
-          console.log('Data not found in AsyncStorage', { sessionData, user });
+          console.log('Data not found in AsyncStorage', {sessionData, user});
           Alert.alert('Error', 'Student, session or employee ID not found');
         }
       } catch (error) {
@@ -69,7 +75,7 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
         const parsedStudent = JSON.parse(studentUser);
         setStudentId(parsedStudent);
 
-        console.log('Parsed Data', { parsedStudent });
+        console.log('Parsed Data', {parsedStudent});
       } else {
         console.log('Data not found in AsyncStorage');
         Alert.alert('Error', 'Student ID not found');
@@ -88,7 +94,9 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
   };
 
   const areAllQuestionsAnswered = () => {
-    return questionsList.every(question => selectedAnswers.hasOwnProperty(question.id));
+    return questionsList.every(question =>
+      selectedAnswers.hasOwnProperty(question.id),
+    );
   };
 
   const calculateScore = (selectedOption, optionWeightage) => {
@@ -101,7 +109,8 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
   const handleStudentEvaluation = async () => {
     try {
       await retrieveStudentData();
-      const optionWeightage = await QuestionaireServiceListner.getOptionsWeightages();
+      const optionWeightage =
+        await QuestionaireServiceListner.getOptionsWeightages();
       const studentEvaluations = questionsList.map(item => {
         const selectedOption = selectedAnswers[item.id];
         const score = calculateScore(selectedOption, optionWeightage);
@@ -115,7 +124,39 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
         };
       });
       console.log(studentEvaluations);
-      const evaluate = await EvaluationService.postStudentEvaluation(studentEvaluations);
+      const evaluate = await EvaluationService.postStudentEvaluation(
+        studentEvaluations,
+      );
+      if (evaluate) {
+        Alert.alert('Successfully Evaluated');
+      }
+      console.log('Evaluation response:', evaluate);
+      setSelectedAnswers({});
+    } catch (err) {
+      console.error('Error during student evaluation:', err);
+    }
+  };
+
+  const handleDegreeExitEvaluation = async () => {
+    try {
+      await retrieveStudentData();
+      const optionWeightage =
+        await QuestionaireServiceListner.getOptionsWeightages();
+      const studentEvaluations = questionsList.map(item => {
+        const selectedOption = selectedAnswers[item.id];
+        const score = calculateScore(selectedOption, optionWeightage);
+        return {
+          student_id: studentID.id,
+          supervisor_id: evaluateeID,
+          question_id: item.id,
+          session_id: sessionID.id,
+          score,
+        };
+      });
+      console.log(studentEvaluations);
+      const evaluate = await EvaluationService.postDegreeExitEvaluation(
+        studentEvaluations,
+      );
       if (evaluate) {
         Alert.alert('Successfully Evaluated');
       }
@@ -132,19 +173,23 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
       return;
     }
     try {
-      const optionWeightage = await QuestionaireServiceListner.getOptionsWeightages();
+      const optionWeightage =
+        await QuestionaireServiceListner.getOptionsWeightages();
       const directorEvaluations = questionsList.map(item => {
         const selectedOption = selectedAnswers[item.id];
         const score = calculateScore(selectedOption, optionWeightage);
         return {
-          evaluator_id: employeeID.employee.id,
-          evaluatee_id: evaluateeID,
-          question_id: item.id,
+          student_id: studentID.id,
           session_id: sessionID.id,
+          teacher_id: evaluateeID,
+          question_id: item.id,
           score,
+          course_id: courseID,
         };
       });
-      const evaluate = await EvaluationService.postDirectorEvaluation(directorEvaluations);
+      const evaluate = await EvaluationService.postDirectorEvaluation(
+        directorEvaluations,
+      );
       if (evaluate) {
         Alert.alert('Successfully Evaluated');
         setEvaluated(true);
@@ -162,7 +207,8 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
       return;
     }
     try {
-      const optionWeightage = await QuestionaireServiceListner.getOptionsWeightages();
+      const optionWeightage =
+        await QuestionaireServiceListner.getOptionsWeightages();
       const peerEvaluations = questionsList.map(item => {
         const selectedOption = selectedAnswers[item.id];
         const score = calculateScore(selectedOption, optionWeightage);
@@ -174,7 +220,9 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
           score,
         };
       });
-      const evaluate = await EvaluationService.postPeerEvaluation(peerEvaluations);
+      const evaluate = await EvaluationService.postPeerEvaluation(
+        peerEvaluations,
+      );
       if (evaluate) {
         Alert.alert('Successfully Evaluated');
         setEvaluated(true);
@@ -192,7 +240,8 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
       return;
     }
     try {
-      const optionWeightage = await QuestionaireServiceListner.getOptionsWeightages();
+      const optionWeightage =
+        await QuestionaireServiceListner.getOptionsWeightages();
       const juniorEvaluations = questionsList.map(item => {
         const selectedOption = selectedAnswers[item.id];
         const score = calculateScore(selectedOption, optionWeightage);
@@ -206,7 +255,9 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
         };
       });
       console.log('Junior evaluations:', juniorEvaluations);
-      const evaluate = await EvaluationService.postSeniorTeacherEvaluation(juniorEvaluations);
+      const evaluate = await EvaluationService.postSeniorTeacherEvaluation(
+        juniorEvaluations,
+      );
       if (evaluate) {
         Alert.alert('Successfully evaluated');
         setEvaluated(true);
@@ -223,6 +274,7 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
     else if (questionByType === 'director') handleDirectorEvaluation();
     else if (questionByType === 'peer') handlePeerEvaluation();
     else if (questionByType === 'senior') handleJuniorEvaluation();
+    else if (questionByType === 'degree exit') handleDegreeExitEvaluation();
     else {
       Alert.alert('Please Login');
     }
@@ -232,7 +284,7 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
     <View style={styles.container}>
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <Text style={{ color: 'black' }}>Loading...</Text>
+          <Text style={{color: 'black'}}>Loading...</Text>
         </View>
       ) : (
         <>
@@ -242,7 +294,7 @@ const EvaluationQuestionnaireFragment = ({ route }) => {
           <FlatList
             data={questionsList}
             keyExtractor={item => item.id.toString()}
-            renderItem={({ item }) => (
+            renderItem={({item}) => (
               <EvaluationQuestionnaireAdapter
                 question={item}
                 onAnswerSelection={handleAnswerSelection}

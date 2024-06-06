@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -6,14 +6,22 @@ import {
   TouchableOpacity,
   Alert,
   StyleSheet,
+  Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
 import CourseServiceListener from '../Services/CourseServiceListener';
+import {checkDegreeExitEligibility} from '../Services/EvaluationTimeServices';
 
-const StudentCourse = ({ navigation }) => {
+const StudentCourse = ({navigation}) => {
   const [studentCourseList, setStudentCourseList] = useState([]);
   const [studentUser, setStudentUser] = useState(null);
   const [currentSessionData, setCurrentSessionData] = useState(null);
+  const [index, setIndex] = useState(0);
+  const [routes] = useState([
+    {key: 'student', title: 'Student'},
+    {key: 'degreeExit', title: 'Degree Exit'},
+  ]);
 
   useEffect(() => {
     const retrieveStudentData = async () => {
@@ -39,17 +47,18 @@ const StudentCourse = ({ navigation }) => {
 
   useEffect(() => {
     if (studentUser && currentSessionData) {
-      console.log(studentUser.name, currentSessionData.id)
       fetchStudentCourses(studentUser.id, currentSessionData.id);
     }
   }, [studentUser, currentSessionData]);
 
   const fetchStudentCourses = async (studentID, sessionID) => {
     try {
-      const courses = await CourseServiceListener.getStudentCourses(studentID, sessionID);
+      const courses = await CourseServiceListener.getStudentCourses(
+        studentID,
+        sessionID,
+      );
       if (courses && courses.length > 0) {
         setStudentCourseList(courses);
-        console.log('Student')
       } else {
         console.log('No courses found for the student.');
       }
@@ -59,8 +68,7 @@ const StudentCourse = ({ navigation }) => {
     }
   };
 
-  const handleCoursePress = (courseID) => {
-    console.log(studentUser.id);
+  const handleCoursePress = courseID => {
     navigation.navigate('CourseTeacher', {
       studentID: studentUser.id,
       sessionID: currentSessionData.id,
@@ -68,37 +76,89 @@ const StudentCourse = ({ navigation }) => {
     });
   };
 
+  const checkEligibilityAndNavigate = async () => {
+    if (!studentUser) return;
+    try {
+      const eligibility = await checkDegreeExitEligibility(studentUser.id);
+      console.log(eligibility);
+      if (eligibility && eligibility.supervisor_id) {
+        navigation.navigate('EvaluationQuestionnaire', {
+          evaluateeID: eligibility.supervisor_id,
+          questionByType: 'degree exit',
+        });
+      } else {
+        Alert.alert('Notice', 'You are not eligible for degree exit evaluation.');
+      }
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
+
+  const StudentRoute = () => (
+    <View style={styles.container}>
+      <FlatList
+        data={studentCourseList}
+        keyExtractor={item => item.id.toString()}
+        renderItem={({item}) => (
+          <TouchableOpacity
+            style={styles.onClick}
+            onPress={() => handleCoursePress(item.id)}>
+            <Text style={styles.courseList}>
+              {item.course_code} - {item.title}
+            </Text>
+          </TouchableOpacity>
+        )}
+      />
+    </View>
+  );
+
+  const DegreeExitRoute = () => (
+    <View style={styles.container}>
+      <Text style={{color: 'black', fontSize: 23, marginBottom: 10}}>
+        Checking eligibility...
+      </Text>
+    </View>
+  );
+
+  const renderScene = SceneMap({
+    student: StudentRoute,
+    degreeExit: DegreeExitRoute,
+  });
+
   return (
     <>
       <View style={styles.title}>
         <Text style={styles.titleText}>Course</Text>
       </View>
-      <View style={{ backgroundColor: 'brown' }}>
+      <View style={{backgroundColor: 'brown'}}>
         {studentUser && (
           <>
             <Text style={styles.student}>{studentUser.name}</Text>
             <Text style={styles.student}>{studentUser.arid_no}</Text>
-            <Text style={styles.student}>{studentUser.discipline}-{studentUser.section}</Text>
+            <Text style={styles.student}>
+              {studentUser.discipline}-{studentUser.section}
+            </Text>
           </>
         )}
       </View>
-
-      <View style={styles.container}>
-        <FlatList
-          data={studentCourseList}
-          keyExtractor={(item) => item.id.toString()} // Ensure id is converted to string
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.onClick}
-              onPress={() => handleCoursePress(item.id)}
-            >
-              <Text style={styles.courseList}>
-                {item.course_code} - {item.title}
-              </Text>
-            </TouchableOpacity>
-          )}
-        />
-      </View>
+      <TabView
+        navigationState={{index, routes}}
+        renderScene={renderScene}
+        onIndexChange={(newIndex) => {
+          setIndex(newIndex);
+          if (routes[newIndex].key === 'degreeExit') {
+            checkEligibilityAndNavigate();
+          }
+        }}
+        initialLayout={{width: Dimensions.get('window').width}}
+        renderTabBar={props => (
+          <TabBar
+            {...props}
+            indicatorStyle={{backgroundColor: 'white'}}
+            style={{backgroundColor: '#6360DC'}}
+          />
+        )}
+      />
     </>
   );
 };

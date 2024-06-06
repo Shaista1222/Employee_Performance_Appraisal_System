@@ -22,7 +22,7 @@ const Login = () => {
       console.log('Response from employee login:', response);
 
       if (response.ok) {
-        const user = response.data; // Assuming the user data is in response.data
+        const user = response.data; 
         if (user) {
           if (user.designation.name === 'Director') {
             navigation.navigate('DirectorMain', { screen: 'DirectorMain' });
