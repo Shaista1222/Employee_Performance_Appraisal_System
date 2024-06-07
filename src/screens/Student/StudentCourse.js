@@ -12,15 +12,20 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
 import CourseServiceListener from '../Services/CourseServiceListener';
 import {checkDegreeExitEligibility} from '../Services/EvaluationTimeServices';
+import {Student} from '../Services/Student';
 
 const StudentCourse = ({navigation}) => {
   const [studentCourseList, setStudentCourseList] = useState([]);
   const [studentUser, setStudentUser] = useState(null);
   const [currentSessionData, setCurrentSessionData] = useState(null);
+  const [studentSessionTeacherList, setStudentSessionTeacherList] = useState(
+    [],
+  );
   const [index, setIndex] = useState(0);
   const [routes] = useState([
     {key: 'student', title: 'Student'},
     {key: 'degreeExit', title: 'Degree Exit'},
+    {key: 'confidential', title: 'Confidential'},
   ]);
 
   useEffect(() => {
@@ -51,6 +56,23 @@ const StudentCourse = ({navigation}) => {
     }
   }, [studentUser, currentSessionData]);
 
+  useEffect(() => {
+    if (studentUser && currentSessionData) {
+      studentSessionTeacher(studentUser.id, currentSessionData.id);
+    }
+  }, [studentUser, currentSessionData]);
+
+  const studentSessionTeacher = async (studentID, sessionID) => {
+    try {
+      const response = await Student.getStudentSessionTeacher(
+        studentID,
+        sessionID,
+      );
+      setStudentSessionTeacherList(response);
+    } catch (error) {
+      Alert(error.message);
+    }
+  };
   const fetchStudentCourses = async (studentID, sessionID) => {
     try {
       const courses = await CourseServiceListener.getStudentCourses(
@@ -75,7 +97,12 @@ const StudentCourse = ({navigation}) => {
       courseID: courseID,
     });
   };
-
+  const handlePress = id => {
+    navigation.navigate('EvaluationQuestionnaire', {
+      questionByType: 'confidential',
+      evaluateeID: id,
+    });
+  };
   const checkEligibilityAndNavigate = async () => {
     if (!studentUser) return;
     try {
@@ -87,7 +114,10 @@ const StudentCourse = ({navigation}) => {
           questionByType: 'degree exit',
         });
       } else {
-        Alert.alert('Notice', 'You are not eligible for degree exit evaluation.');
+        Alert.alert(
+          'Notice',
+          'You are not eligible for degree exit evaluation.',
+        );
       }
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -119,10 +149,25 @@ const StudentCourse = ({navigation}) => {
       </Text>
     </View>
   );
-
+  const ConfidentialRoute = () => (
+    <View style={styles.container}>
+      <FlatList
+        data={studentSessionTeacherList}
+        keyExtractor={item => item.id.toString()}
+        renderItem={({item}) => (
+          <TouchableOpacity
+            style={styles.onClick}
+            onPress={() => handlePress(item.id)}>
+            <Text style={styles.courseList}>{item.name}</Text>
+          </TouchableOpacity>
+        )}
+      />
+    </View>
+  );
   const renderScene = SceneMap({
     student: StudentRoute,
     degreeExit: DegreeExitRoute,
+    confidential: ConfidentialRoute,
   });
 
   return (
@@ -144,7 +189,7 @@ const StudentCourse = ({navigation}) => {
       <TabView
         navigationState={{index, routes}}
         renderScene={renderScene}
-        onIndexChange={(newIndex) => {
+        onIndexChange={newIndex => {
           setIndex(newIndex);
           if (routes[newIndex].key === 'degreeExit') {
             checkEligibilityAndNavigate();

@@ -233,7 +233,38 @@ const EvaluationQuestionnaireFragment = ({route}) => {
       console.error('Error during peer evaluation:', err);
     }
   };
-
+  const handleConfidentialEvaluation = async () => {
+    if (isEvaluated) {
+      Alert.alert('You have already Evaluated');
+      return;
+    }
+    try {
+      const optionWeightage =
+        await QuestionaireServiceListner.getOptionsWeightages();
+      const confidentialEvaluations = questionsList.map(item => {
+        const selectedOption = selectedAnswers[item.id];
+        const score = calculateScore(selectedOption, optionWeightage);
+        return {
+          evaluator_id: studentUser.id,
+          evaluatee_id: evaluateeID,
+          question_id: item.id,
+          session_id: sessionID.id,
+          score,
+        };
+      });
+      const evaluate = await EvaluationService.postConfidentialEvaluation(
+        confidentialEvaluations,
+      );
+      if (evaluate) {
+        Alert.alert('Successfully Evaluated');
+        setEvaluated(true);
+      }
+      console.log('Evaluation response:', evaluate);
+      setSelectedAnswers({});
+    } catch (err) {
+      console.error('Error during peer evaluation:', err);
+    }
+  };
   const handleJuniorEvaluation = async () => {
     if (isEvaluated) {
       Alert.alert('You have already Evaluated');
@@ -275,6 +306,7 @@ const EvaluationQuestionnaireFragment = ({route}) => {
     else if (questionByType === 'peer') handlePeerEvaluation();
     else if (questionByType === 'senior') handleJuniorEvaluation();
     else if (questionByType === 'degree exit') handleDegreeExitEvaluation();
+    else if (questionByType === 'confidential') handleConfidentialEvaluation();
     else {
       Alert.alert('Please Login');
     }
