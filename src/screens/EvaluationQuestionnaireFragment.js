@@ -56,7 +56,7 @@ const EvaluationQuestionnaireFragment = ({route}) => {
           console.log('Parsed Data', {parsedSessionData, parsedUser});
         } else {
           console.log('Data not found in AsyncStorage', {sessionData, user});
-          Alert.alert('Error', 'Student, session or employee ID not found');
+          Alert.alert('Error', 'session or employee ID not found');
         }
       } catch (error) {
         Alert.alert('Error', error.message);
@@ -245,7 +245,7 @@ const EvaluationQuestionnaireFragment = ({route}) => {
         const selectedOption = selectedAnswers[item.id];
         const score = calculateScore(selectedOption, optionWeightage);
         return {
-          evaluator_id: studentUser.id,
+          evaluator_id: studentID.id,
           evaluatee_id: evaluateeID,
           question_id: item.id,
           session_id: sessionID.id,
@@ -255,6 +255,7 @@ const EvaluationQuestionnaireFragment = ({route}) => {
       const evaluate = await EvaluationService.postConfidentialEvaluation(
         confidentialEvaluations,
       );
+      
       if (evaluate) {
         Alert.alert('Successfully Evaluated');
         setEvaluated(true);
@@ -262,7 +263,7 @@ const EvaluationQuestionnaireFragment = ({route}) => {
       console.log('Evaluation response:', evaluate);
       setSelectedAnswers({});
     } catch (err) {
-      console.error('Error during peer evaluation:', err);
+      console.error('Error during Confidential evaluation:', err);
     }
   };
   const handleJuniorEvaluation = async () => {

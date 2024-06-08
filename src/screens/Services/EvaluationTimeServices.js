@@ -26,15 +26,19 @@ export const checkDegreeExitEligibility = async (studentID) => {
     Alert(' You are not eligible for degree exit evaluation');
   }
 };
-
 export const checkConfidentialPin = async (sessionID, pin) => {
   try {
     const response = await fetch(`${IPAddress}/EvaluationTime/checkConfidentialPin?sessionID=${sessionID}&pin=${pin}`);
-    return handleResponse(response);
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
   } catch (error) {
     throw new Error(error.message);
   }
 };
+
 
 export const postEvaluationTime = async (evaluationTime) => {
   try {

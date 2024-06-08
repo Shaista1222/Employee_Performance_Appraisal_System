@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,25 +7,26 @@ import {
   Alert,
   StyleSheet,
   Dimensions,
+  TextInput,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
+import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import CourseServiceListener from '../Services/CourseServiceListener';
-import {checkDegreeExitEligibility} from '../Services/EvaluationTimeServices';
-import {Student} from '../Services/Student';
+import { checkConfidentialPin, checkDegreeExitEligibility } from '../Services/EvaluationTimeServices';
+import { Student } from '../Services/Student';
 
-const StudentCourse = ({navigation}) => {
+const StudentCourse = ({ navigation }) => {
   const [studentCourseList, setStudentCourseList] = useState([]);
   const [studentUser, setStudentUser] = useState(null);
   const [currentSessionData, setCurrentSessionData] = useState(null);
-  const [studentSessionTeacherList, setStudentSessionTeacherList] = useState(
-    [],
-  );
+  const [userEvaluationPin, setUserEvaluationPin] = useState('');
+  const [verifiedPin, setVerifiedPin] = useState(false);
+  const [studentSessionTeacherList, setStudentSessionTeacherList] = useState([]);
   const [index, setIndex] = useState(0);
   const [routes] = useState([
-    {key: 'student', title: 'Student'},
-    {key: 'degreeExit', title: 'Degree Exit'},
-    {key: 'confidential', title: 'Confidential'},
+    { key: 'student', title: 'Student' },
+    { key: 'degreeExit', title: 'Degree Exit' },
+    { key: 'confidential', title: 'Confidential' },
   ]);
 
   useEffect(() => {
@@ -64,21 +65,16 @@ const StudentCourse = ({navigation}) => {
 
   const studentSessionTeacher = async (studentID, sessionID) => {
     try {
-      const response = await Student.getStudentSessionTeacher(
-        studentID,
-        sessionID,
-      );
+      const response = await Student.getStudentSessionTeacher(studentID, sessionID);
       setStudentSessionTeacherList(response);
     } catch (error) {
-      Alert(error.message);
+      Alert.alert('Error', error.message);
     }
   };
+
   const fetchStudentCourses = async (studentID, sessionID) => {
     try {
-      const courses = await CourseServiceListener.getStudentCourses(
-        studentID,
-        sessionID,
-      );
+      const courses = await CourseServiceListener.getStudentCourses(studentID, sessionID);
       if (courses && courses.length > 0) {
         setStudentCourseList(courses);
       } else {
@@ -90,19 +86,21 @@ const StudentCourse = ({navigation}) => {
     }
   };
 
-  const handleCoursePress = courseID => {
+  const handleCoursePress = (courseID) => {
     navigation.navigate('CourseTeacher', {
       studentID: studentUser.id,
       sessionID: currentSessionData.id,
       courseID: courseID,
     });
   };
-  const handlePress = id => {
+
+  const handlePress = (id) => {
     navigation.navigate('EvaluationQuestionnaire', {
       questionByType: 'confidential',
       evaluateeID: id,
     });
   };
+
   const checkEligibilityAndNavigate = async () => {
     if (!studentUser) return;
     try {
@@ -114,13 +112,37 @@ const StudentCourse = ({navigation}) => {
           questionByType: 'degree exit',
         });
       } else {
-        Alert.alert(
-          'Notice',
-          'You are not eligible for degree exit evaluation.',
-        );
+        Alert.alert('Notice', 'You are not eligible for degree exit evaluation.');
       }
     } catch (error) {
       Alert.alert('Error', error.message);
+    }
+  };
+
+  const confidentialPin = async () => {
+    if (!userEvaluationPin) {
+      Alert.alert('Error', 'Please enter a PIN');
+      return;
+    }
+    try {
+      console.log('Sending PIN:', userEvaluationPin);
+      const evaluationPin = await checkConfidentialPin(currentSessionData.id, userEvaluationPin);
+      console.log('Received response:', evaluationPin);
+
+      if (evaluationPin) {
+        if (evaluationPin === true) {
+          setVerifiedPin(true);
+          console.log('PIN verified successfully');
+          setUserEvaluationPin('');
+        } else {
+          Alert.alert('Error', 'Incorrect PIN');
+        }
+      } else {
+        Alert.alert('Error', 'Invalid response from server');
+      }
+    } catch (error) {
+      console.error('Error in confidentialPin:', error);
+      Alert.alert('Error', error.message || 'Network request failed');
     }
   };
 
@@ -128,14 +150,10 @@ const StudentCourse = ({navigation}) => {
     <View style={styles.container}>
       <FlatList
         data={studentCourseList}
-        keyExtractor={item => item.id.toString()}
-        renderItem={({item}) => (
-          <TouchableOpacity
-            style={styles.onClick}
-            onPress={() => handleCoursePress(item.id)}>
-            <Text style={styles.courseList}>
-              {item.course_code} - {item.title}
-            </Text>
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <TouchableOpacity style={styles.onClick} onPress={() => handleCoursePress(item.id)}>
+            <Text style={styles.courseList}>{item.course_code} - {item.title}</Text>
           </TouchableOpacity>
         )}
       />
@@ -144,26 +162,41 @@ const StudentCourse = ({navigation}) => {
 
   const DegreeExitRoute = () => (
     <View style={styles.container}>
-      <Text style={{color: 'black', fontSize: 23, marginBottom: 10}}>
-        Checking eligibility...
-      </Text>
+      <Text style={{ color: 'black', fontSize: 23, marginBottom: 10 }}>Checking eligibility...</Text>
     </View>
   );
+
   const ConfidentialRoute = () => (
     <View style={styles.container}>
-      <FlatList
-        data={studentSessionTeacherList}
-        keyExtractor={item => item.id.toString()}
-        renderItem={({item}) => (
-          <TouchableOpacity
-            style={styles.onClick}
-            onPress={() => handlePress(item.id)}>
-            <Text style={styles.courseList}>{item.name}</Text>
+      {!verifiedPin ? (
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter pin"
+            keyboardType="numeric"
+            placeholderTextColor="gray"
+            value={userEvaluationPin}
+            onChangeText={(text) => setUserEvaluationPin(text)}
+            maxLength={6}
+          />
+          <TouchableOpacity style={styles.button} onPress={confidentialPin}>
+            <Text style={styles.buttonText}>Submit</Text>
           </TouchableOpacity>
-        )}
-      />
+        </View>
+      ) : (
+        <FlatList
+          data={studentSessionTeacherList}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <TouchableOpacity style={styles.onClick} onPress={() => handlePress(item.id)}>
+              <Text style={styles.courseList}>{item.name}</Text>
+            </TouchableOpacity>
+          )}
+        />
+      )}
     </View>
   );
+
   const renderScene = SceneMap({
     student: StudentRoute,
     degreeExit: DegreeExitRoute,
@@ -175,32 +208,30 @@ const StudentCourse = ({navigation}) => {
       <View style={styles.title}>
         <Text style={styles.titleText}>Course</Text>
       </View>
-      <View style={{backgroundColor: 'brown'}}>
+      <View style={{ backgroundColor: 'brown', padding: 4 }}>
         {studentUser && (
           <>
             <Text style={styles.student}>{studentUser.name}</Text>
             <Text style={styles.student}>{studentUser.arid_no}</Text>
-            <Text style={styles.student}>
-              {studentUser.discipline}-{studentUser.section}
-            </Text>
+            <Text style={styles.student}>{studentUser.discipline}-{studentUser.section}</Text>
           </>
         )}
       </View>
       <TabView
-        navigationState={{index, routes}}
+        navigationState={{ index, routes }}
         renderScene={renderScene}
-        onIndexChange={newIndex => {
+        onIndexChange={(newIndex) => {
           setIndex(newIndex);
           if (routes[newIndex].key === 'degreeExit') {
             checkEligibilityAndNavigate();
           }
         }}
-        initialLayout={{width: Dimensions.get('window').width}}
-        renderTabBar={props => (
+        initialLayout={{ width: Dimensions.get('window').width }}
+        renderTabBar={(props) => (
           <TabBar
             {...props}
-            indicatorStyle={{backgroundColor: 'white'}}
-            style={{backgroundColor: '#6360DC'}}
+            indicatorStyle={{ backgroundColor: 'white' }}
+            style={{ backgroundColor: '#6360DC' }}
           />
         )}
       />
@@ -210,9 +241,31 @@ const StudentCourse = ({navigation}) => {
 
 const styles = StyleSheet.create({
   container: {
+    marginTop: 100,
     flex: 1,
-    marginTop: 150,
     backgroundColor: '#f5f5f5',
+  },
+  input: {
+    height: 50,
+    width: '70%',
+    borderColor: 'gray',
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    borderRadius: 4,
+    backgroundColor: '#fff',
+    color: 'black',
+  },
+  button: {
+    width: '26%',
+    borderRadius: 4,
+    backgroundColor: 'orange',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 9,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 20,
   },
   student: {
     fontSize: 20,

@@ -18,7 +18,7 @@ const PerformanceFragment = () => {
   const [index, setIndex] = useState(0);
   const [routes] = useState([
     {key: 'first', title: 'Course'},
-    {key: 'second', title: 'Session'},
+    {key: 'second', title: 'kpi'},
     {key: 'third', title: 'Comparison'},
     {key: 'fourth', title: 'Course-Comparison'},
   ]);

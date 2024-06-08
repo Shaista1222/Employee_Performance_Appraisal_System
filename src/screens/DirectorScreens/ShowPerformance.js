@@ -119,7 +119,62 @@ export const SessionBarChartComponent = ({ data = [] }) => {
     </View>
   );
 };
+export const QuestionScoreBarChartComponent = ({ data = [] }) => {
+  console.log(data);
 
+  const chartData = {
+    labels: data.length > 0 ? data.map(item => `Q${item.question.id}`) : [],
+    datasets: [
+      {
+        data: data.length > 0 ? data.map(item => item.average) : [],
+      },
+    ],
+  };
+
+  const barColors = data.map(() => getRandomColor());
+
+  return (
+    <View style={styles.container}>
+      {data.length > 0 ? (
+        <BarChart
+          data={chartData}
+          width={screenWidth}
+          height={390}
+          yAxisLabel=""
+          chartConfig={{
+            backgroundColor: '#ffffff',
+            backgroundGradientFrom: '#ffffff',
+            backgroundGradientTo: '#ffffff',
+            decimalPlaces: 2,
+            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            style: {
+              borderRadius: 16,
+            },
+          }}
+          verticalLabelRotation={30}
+          fromZero={true}
+          showValuesOnTopOfBars={true}
+          style={{
+            marginVertical: 8,
+            borderRadius: 16,
+          }}
+          renderBar={(props) => (
+            <View
+              key={props.index}
+              style={{
+                backgroundColor: barColors[props.index],
+                ...props,
+              }}
+            />
+          )}
+        />
+      ) : (
+        <Text>No data available</Text>
+      )}
+    </View>
+  );
+}
 export const EmployeeCourseBarChartComponent = ({ course }) => {
   const chartData = {
     labels: [course.title],

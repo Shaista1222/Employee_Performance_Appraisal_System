@@ -1,27 +1,32 @@
-import IPAddress from "../../../IPAddress";
-
-EvaluationPinService = {
-  async postConfidentialEvaluationPin(evaluationPin) {
+import IPAddress from '../../../IPAddress';
+//don't
+const EvaluationPinService = {
+  postConfidentialEvaluationPin: async (pin, sessionID) => {
     try {
       const response = await fetch(
-        `${IPAddress}/EvaluationPin/postConfidentialEvaluationPin`,
+        `${IPAddress}/EvaluationPin/PostConfidentialEvaluationPin`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(evaluationPin),
+          body: JSON.stringify({
+            pin,
+            sessionID,
+          }),
         },
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to post evaluation PIN');
+        const errorResponse = await response.json();
+        throw new Error(
+          `Server error: ${errorResponse.message || response.status}`,
+        );
       }
-
-      const responseData = await response.json();
-      return responseData;
+      const data = await response.json();
+      return data;
     } catch (error) {
+      console.error('Error fetching pin:', error.message);
       throw error;
     }
   },
