@@ -123,11 +123,11 @@ export const QuestionScoreBarChartComponent = ({ data = [] }) => {
   console.log(data);
 
   const chartData = {
-    labels: data.length > 0 ? data.map(item => `Q${item.question.id}`) : [],
+    labels: data.length > 0 ? data.map((item,index )=> `Q${index+1}`) : [],
     datasets: [
       {
-        data: data.length > 0 ? data.map(item => item.average) : [],
-      },
+        data: data.length > 0 ? data.map(item => parseFloat(item.average.toFixed(2))) : [],
+     },
     ],
   };
 
@@ -170,7 +170,7 @@ export const QuestionScoreBarChartComponent = ({ data = [] }) => {
           )}
         />
       ) : (
-        <Text>No data available</Text>
+        <Text style={{color:'black'}}>No data available</Text>
       )}
     </View>
   );
