@@ -52,34 +52,17 @@ const Performance = ({route}) => {
 
     fetchSessions();
   }, []);
-
   useEffect(() => {
     if (selectedSession && employee) {
       const fetchTeacherCourses = async (teacherID, sessionID) => {
         try {
-          const courses = await CourseServiceListener.getTeacherCourses(
-            teacherID,
-            sessionID,
-          );
-          const coursesWithPerformance = await Promise.all(
-            courses.map(async course => {
-              const performanceData =
-                await EmployeeCoursePerformanceService.getEmployeeCoursesPerformance(
-                  employee.id,
-                  sessionID,
-                  [course.id],
-                );
-
-              const obtainedScore =
-                performanceData.length > 0 ? performanceData[0].average : 0;
-
-              return {
-                ...course,
-                obtainedScore: obtainedScore,
-              };
-            }),
-          );
-          setCourseList(coursesWithPerformance || []);
+          const courses =
+            await EmployeeCoursePerformanceService.getEmployeeCoursesPerformance(
+              teacherID,
+              sessionID,
+            );
+          setCourseList(courses || []);
+          console.log('courses', courses);
         } catch (error) {
           Alert.alert('Error', error.message);
         }
@@ -191,36 +174,33 @@ const Performance = ({route}) => {
   );
   const ThirdRoute = () => (
     <View>
-      <View style={{backgroundColor: 'brown', padding: 6}}>
-        <Text style={{fontSize: 20, color: 'white', fontWeight: 'bold'}}>
-          {employee.name}
-        </Text>
-      </View>
-      <Text style={styles.label}>Session</Text>
-      <View style={styles.showPerformance}>
-        <Picker
-          selectedValue={selectedSession}
-          onValueChange={itemValue => setSelectedSession(itemValue)}
-          style={styles.picker}
-          dropdownIconColor="black"
-          mode="dropdown">
-          {sessionList.length > 0 ? (
-            sessionList.map((session, index) => (
-              <Picker.Item
-                key={index}
-                label={session.title}
-                value={session.id}
-              />
-            ))
-          ) : (
-            <Picker.Item label="No sessions available" value="" />
-          )}
-        </Picker>
-      </View>
-      {courseList.map((course, index) => (
-        <EmployeeCourseBarChartComponent key={index} course={course} />
-      ))}
+    <View style={{backgroundColor: 'brown', padding: 6}}>
+      <Text style={{fontSize: 20, color: 'white', fontWeight: 'bold'}}>
+        {employee ? employee.name : 'Loading...'}
+      </Text>
     </View>
+    <View style={styles.showPerformance}>
+      <Picker
+        selectedValue={selectedSession}
+        onValueChange={itemValue => setSelectedSession(itemValue)}
+        style={styles.picker}
+        dropdownIconColor="black"
+        mode="dropdown">
+        {sessionList.length > 0 ? (
+          sessionList.map((session, index) => (
+            <Picker.Item key={index} label={session.title} value={session.id} />
+          ))
+        ) : (
+          <Picker.Item label="No sessions available" value="" />
+        )}
+      </Picker>
+    </View>
+    {courseList.length > 0 ? (
+      <EmployeeCourseBarChartComponent courses={courseList} />
+    ) : (
+      <Text>No courses available</Text>
+    )}
+  </View>
   );
 
   const FourthRoute = () => (
