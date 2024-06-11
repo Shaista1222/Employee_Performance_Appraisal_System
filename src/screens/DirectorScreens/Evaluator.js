@@ -4,7 +4,7 @@ import {Picker} from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EvaluatorService from '../Services/EvaluatorService';
 import EmployeeService from '../Services/EmployeeService';
-import {CheckBox} from 'react-native-elements'; // Make sure to install this package
+import {CheckBox} from 'react-native-elements'; 
 
 const Evaluator = () => {
   const [employeeList, setEmployeeList] = useState([]);
