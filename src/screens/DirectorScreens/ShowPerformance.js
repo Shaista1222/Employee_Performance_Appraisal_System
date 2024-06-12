@@ -4,15 +4,6 @@ import {BarChart} from 'react-native-chart-kit';
 
 const screenWidth = Dimensions.get('window').width;
 
-const getRandomColor = () => {
-  const letters = '0123456789ABCDEF';
-  let color = '#';
-  for (let i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-};
-
 export const BarChartComponent = ({data = []}) => {
   console.log(data);
   const chartData = {
@@ -294,9 +285,6 @@ export const MultipleEmployeeKPIBarChartComponent = ({
     </View>
   );
 };
-
-const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
- 
 const chartConfig = {
   backgroundGradientFrom: '#ffffff',
   backgroundGradientTo: '#ffffff',
@@ -308,6 +296,17 @@ const chartConfig = {
   },
 };
 
+// Function to generate a random color
+const getRandomColor = () => {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+};
+
+
 export const MultipleEmployeeQuestionPerformanceChart = ({ data }) => {
   if (!Array.isArray(data) || data.length === 0) {
     return <Text>No data available</Text>;
@@ -316,83 +315,98 @@ export const MultipleEmployeeQuestionPerformanceChart = ({ data }) => {
   const employeeNames = data.map(item => item.employee.name);
   const questionScores = data.map(item => item.questionScores || []);
 
-  const labels = employeeNames;
-  const datasets = [];
-
+  const questionColors = [];
   const numQuestions = questionScores.reduce((max, scores) => Math.max(max, scores.length), 0);
 
   for (let i = 0; i < numQuestions; i++) {
-    const questionData = {
-      data: questionScores.map(scores => scores[i]?.average || 0),
-      color: () => colors[i % colors.length],
-    };
-    datasets.push(questionData);
+    questionColors.push(getRandomColor());
   }
 
-  const unifiedData = {
-    labels: labels,
-    datasets: datasets,
-  };
+  // Flattened bar data and color assignment
+  const barData = [];
+  const labels = [];
+
+  employeeNames.forEach((employee, index) => {
+    const scores = questionScores[index];
+    scores.forEach((score, questionIndex) => {
+      barData.push({
+        value: Math.round(score?.average || 0), // Round off to the nearest integer
+        color: questionColors[questionIndex],
+      });
+    });
+    labels.push(employee);
+    if (index < employeeNames.length - 1) {
+      barData.push({
+        value: 0, 
+        color: 'transparent', 
+      });
+      labels.push(''); 
+    }
+  });
 
   return (
-    <View style={styles.container}>
-      <BarChart
-        data={{
-          labels: unifiedData.labels,
-          datasets: [
-            {
-              data: datasets.flatMap(dataset => dataset.data),
-            },
-          ],
-        }}
-        width={screenWidth - 20}
-        height={320}
-        chartConfig={{
-          ...chartConfig,
-          barColors: colors,
-        }}
-        verticalLabelRotation={30}
-        fromZero={true}
-        showValuesOnTopOfBars={true}
-        withCustomBarColorFromData={true}
-        flatColor={true}
-      />
-      <View style={styles.legendContainer}>
-        {datasets.map((dataset, index) => (
-          <View key={index} style={styles.legendItem}>
-            <View style={[styles.legendColor, { backgroundColor: colors[index % colors.length] }]} />
-            <Text style={styles.legendText}>Q{index + 1}</Text>
-          </View>
-        ))}
+    <ScrollView horizontal>
+      <View style={styles.container}>
+        <BarChart
+          data={{
+            labels: labels,
+            datasets: [
+              {
+                data: barData.map(item => item.value),
+                colors: barData.map(item => (opacity = 1) => item.color),
+              },
+            ],
+          }}
+          width={screenWidth - 20}
+          height={320}
+          chartConfig={{
+            ...chartConfig,
+            barPercentage: 0.5,
+          }}
+          verticalLabelRotation={30}
+          fromZero={true}
+          showValuesOnTopOfBars={true}
+          withCustomBarColorFromData={true}
+          flatColor={true}
+        />
+        <View style={styles.legendContainer}>
+          {questionColors.map((color, index) => (
+            <View key={index} style={styles.legendItem}>
+              <View style={[styles.legendColor, { backgroundColor: color }]} />
+              <Text style={styles.legendText}>Q{index + 1}</Text>
+            </View>
+          ))}
+        </View>
       </View>
-    </View>
+    </ScrollView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'column',
     alignItems: 'center',
-    marginBottom: 8
+    marginBottom: 8,
   },
   legendContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 10
+    marginTop: 10,
   },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 5
+    marginHorizontal: 5,
   },
   legendColor: {
     width: 10,
     height: 10,
-    marginRight: 5
+    marginRight: 5,
   },
   legendText: {
     fontSize: 12,
-    color: 'black'
-  }
+    color: 'black',
+  },
 });
