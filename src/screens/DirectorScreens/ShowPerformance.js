@@ -1,18 +1,38 @@
-import React, {useState, useEffect} from 'react';
-import {
-  View,
-  ScrollView,
-  StyleSheet,
-  Dimensions,
-  Text,
-  Alert,
-} from 'react-native';
+import React from 'react';
+import {View, Text, StyleSheet, Dimensions} from 'react-native';
 import {BarChart} from 'react-native-chart-kit';
 
 const screenWidth = Dimensions.get('window').width;
 
+const chartConfig = {
+  backgroundColor: '#e26a00',
+  backgroundGradientFrom: '#fb8c00',
+  backgroundGradientTo: '#ffa726',
+  decimalPlaces: 2,
+  color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+  labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+  style: {
+    borderRadius: 16,
+  },
+  propsForDots: {
+    r: '6',
+    strokeWidth: '2',
+    stroke: '#ffa726',
+  },
+};
+
+const getRandomColor = () => {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+};
+
 export const BarChartComponent = ({data = []}) => {
   console.log(data);
+
   const chartData = {
     labels: data.length > 0 ? data.map(item => item.kpi_title) : [],
     datasets: [
@@ -39,12 +59,16 @@ export const BarChartComponent = ({data = []}) => {
           verticalLabelRotation={30}
           fromZero={true}
           showValuesOnTopOfBars={true}
-          renderBar={({index, ...rest}) => (
+          renderBar={({index, x, y, width, height, ...rest}) => (
             <View
               key={index}
               style={{
+                position: 'absolute',
+                left: x,
+                top: y,
+                width,
+                height,
                 backgroundColor: barColors[index],
-                ...rest,
               }}
             />
           )}
@@ -58,6 +82,7 @@ export const BarChartComponent = ({data = []}) => {
 
 export const SessionBarChartComponent = ({data = []}) => {
   console.log(data);
+
   const chartData = {
     labels: data.length > 0 ? data.map(item => item.kpi_title) : [],
     datasets: [
@@ -84,12 +109,16 @@ export const SessionBarChartComponent = ({data = []}) => {
           verticalLabelRotation={30}
           fromZero={true}
           showValuesOnTopOfBars={true}
-          renderBar={({index, ...rest}) => (
+          renderBar={({index, x, y, width, height, ...rest}) => (
             <View
               key={index}
               style={{
+                position: 'absolute',
+                left: x,
+                top: y,
+                width,
+                height,
                 backgroundColor: barColors[index],
-                ...rest,
               }}
             />
           )}
@@ -124,32 +153,25 @@ export const QuestionScoreBarChartComponent = ({data = []}) => {
         <BarChart
           data={chartData}
           width={screenWidth}
-          height={390}
+          height={490}
           yAxisLabel=""
           chartConfig={{
-            backgroundColor: '#ffffff',
-            backgroundGradientFrom: '#ffffff',
-            backgroundGradientTo: '#ffffff',
-            decimalPlaces: 2,
+            ...chartConfig,
             color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-            labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-            style: {
-              borderRadius: 16,
-            },
           }}
           verticalLabelRotation={30}
           fromZero={true}
           showValuesOnTopOfBars={true}
-          style={{
-            marginVertical: 8,
-            borderRadius: 16,
-          }}
-          renderBar={props => (
+          renderBar={({index, x, y, width, height, ...rest}) => (
             <View
-              key={props.index}
+              key={index}
               style={{
-                backgroundColor: barColors[props.index],
-                ...props,
+                position: 'absolute',
+                left: x,
+                top: y,
+                width,
+                height,
+                backgroundColor: barColors[index],
               }}
             />
           )}
@@ -183,20 +205,23 @@ export const EmployeeCourseBarChartComponent = ({courses = []}) => {
         data={chartData}
         width={screenWidth - 16}
         height={400}
-        chartConfig={chartConfig}
+        chartConfig={{
+          ...chartConfig,
+          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+        }}
         verticalLabelRotation={30}
         fromZero={true}
         showValuesOnTopOfBars={true}
-        style={{
-          marginVertical: 8,
-          borderRadius: 16,
-        }}
-        renderBar={({index, ...rest}) => (
+        renderBar={({index, x, y, width, height, ...rest}) => (
           <View
             key={index}
             style={{
+              position: 'absolute',
+              left: x,
+              top: y,
+              width,
+              height,
               backgroundColor: barColors[index],
-              ...rest,
             }}
           />
         )}
@@ -204,6 +229,7 @@ export const EmployeeCourseBarChartComponent = ({courses = []}) => {
     </View>
   );
 };
+
 export const MultipleEmployeeCourseBarChartComponent = ({courses = []}) => {
   if (!courses || courses.length === 0) {
     return <Text style={{color: 'black'}}>No data available</Text>;
@@ -226,20 +252,23 @@ export const MultipleEmployeeCourseBarChartComponent = ({courses = []}) => {
         data={chartData}
         width={screenWidth - 16}
         height={350}
-        chartConfig={chartConfig}
+        chartConfig={{
+          ...chartConfig,
+          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+        }}
         verticalLabelRotation={30}
         fromZero={true}
         showValuesOnTopOfBars={true}
-        style={{
-          marginVertical: 8,
-          borderRadius: 16,
-        }}
-        renderBar={({index, ...rest}) => (
+        renderBar={({index, x, y, width, height, ...rest}) => (
           <View
             key={index}
             style={{
+              position: 'absolute',
+              left: x,
+              top: y,
+              width,
+              height,
               backgroundColor: barColors[index],
-              ...rest,
             }}
           />
         )}
@@ -247,6 +276,7 @@ export const MultipleEmployeeCourseBarChartComponent = ({courses = []}) => {
     </View>
   );
 };
+
 export const MultipleEmployeeKPIBarChartComponent = ({
   kpiPerformanceData = [],
 }) => {
@@ -271,20 +301,23 @@ export const MultipleEmployeeKPIBarChartComponent = ({
         data={chartData}
         width={screenWidth - 16}
         height={350}
-        chartConfig={chartConfig}
+        chartConfig={{
+          ...chartConfig,
+          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+        }}
         verticalLabelRotation={30}
         fromZero={true}
         showValuesOnTopOfBars={true}
-        style={{
-          marginVertical: 8,
-          borderRadius: 16,
-        }}
-        renderBar={({index, ...rest}) => (
+        renderBar={({index, x, y, width, height, ...rest}) => (
           <View
             key={index}
             style={{
+              position: 'absolute',
+              left: x,
+              top: y,
+              width,
+              height,
               backgroundColor: barColors[index],
-              ...rest,
             }}
           />
         )}
@@ -292,101 +325,55 @@ export const MultipleEmployeeKPIBarChartComponent = ({
     </View>
   );
 };
-const chartConfig = {
-  backgroundGradientFrom: '#ffffff',
-  backgroundGradientTo: '#ffffff',
-  decimalPlaces: 2,
-  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-  labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-  style: {
-    borderRadius: 16,
-  },
-};
-const getRandomColor = () => {
-  const letters = '0123456789ABCDEF';
-  let color = '#';
-  for (let i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-};
-export const MultipleEmployeeQuestionPerformanceChart = ({ data }) => {
-  if (!Array.isArray(data) || data.length === 0) {
-    return <Text>No data available</Text>;
+
+export const EmployeeSubKpiBarChartComponent = ({
+  kpiPerformanceData = [],
+}) => {
+  console.log('Received kpiPerformanceData:', kpiPerformanceData);
+
+  if (!kpiPerformanceData || kpiPerformanceData.length === 0) {
+    return <Text style={{color: 'black'}}>No data available</Text>;
   }
 
-  const employeeNames = data.map(item => item.employee.name);
-  const questionScores = data.map(item => item.questionScores || []);
+  const chartData = {
+    labels: kpiPerformanceData.map(kpi => kpi.name),
+    datasets: [
+      {
+        data: kpiPerformanceData.map(kpi => kpi.score),
+      },
+    ],
+  };
 
-  const questionColors = [];
-  const numQuestions = questionScores.reduce(
-    (max, scores) => Math.max(max, scores.length),
-    0,
-  );
-
-  for (let i = 0; i < numQuestions; i++) {
-    questionColors.push(getRandomColor());
-  }
-  const barData = [];
-  const labels = [];
-
-  employeeNames.forEach((employee, index) => {
-    const scores = questionScores[index];
-    scores.forEach((score, questionIndex) => {
-      barData.push({
-        value: Math.round(score?.average || 0),
-        color: questionColors[questionIndex],
-      });
-    });
-    labels.push(employee);
-    if (index < employeeNames.length - 1) {
-      barData.push({
-        value: 0,
-        color: 'transparent',
-      });
-      labels.push('');
-    }
-  });
+  const barColors = kpiPerformanceData.map(() => getRandomColor());
 
   return (
-    <ScrollView horizontal>
-      <View style={styles.container}>
-        <BarChart
-          data={{
-            labels: labels,
-            datasets: [
-              {
-                data: barData.map(item => item.value),
-                colors: barData.map(
-                  item =>
-                    (opacity = 1) =>
-                      item.color,
-                ),
-              },
-            ],
-          }}
-          width={screenWidth - 20}
-          height={345}
-          chartConfig={{
-            ...chartConfig,
-            barPercentage: 0.5,
-          }}
-          verticalLabelRotation={15}
-          fromZero={true}
-          showValuesOnTopOfBars={true}
-          withCustomBarColorFromData={true}
-          flatColor={true}
-        />
-        <View style={styles.legendContainer}>
-          {questionColors.map((color, index) => (
-            <View key={index} style={styles.legendItem}>
-              <View style={[styles.legendColor, { backgroundColor: color }]} />
-              <Text style={styles.legendText}>Q{index + 1}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-    </ScrollView>
+    <View style={styles.container}>
+      <BarChart
+        data={chartData}
+        width={screenWidth - 16}
+        height={450}
+        chartConfig={{
+          ...chartConfig,
+          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+        }}
+        verticalLabelRotation={30}
+        fromZero={true}
+        showValuesOnTopOfBars={true}
+        renderBar={({index, x, y, width, height, ...rest}) => (
+          <View
+            key={index}
+            style={{
+              position: 'absolute',
+              left: x,
+              top: y,
+              width,
+              height,
+              backgroundColor: barColors[index],
+            }}
+          />
+        )}
+      />
+    </View>
   );
 };
 
@@ -394,26 +381,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'column',
     alignItems: 'center',
-  },
-  legendContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 10,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 5,
-  },
-  legendColor: {
-    width: 10,
-    height: 10,
-    marginRight: 5,
-  },
-  legendText: {
-    fontSize: 12,
-    color: 'black',
-    fontWeight: 'bold',
-    fontSize: 15,
+    marginTop: 30,
   },
 });

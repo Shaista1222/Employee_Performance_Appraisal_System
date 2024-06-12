@@ -1,3 +1,4 @@
+import { Alert } from "react-native";
 import IPAddress from "../../../IPAddress";
 
 export const getAvailableSubKpis = async (sessionID) => {
@@ -31,6 +32,19 @@ export const getSubKPIsOfKpi = async (kpi_id, sessionID) => {
     const response = await fetch(`${IPAddress}/SubKpi/getSubKPIsOfKpi?kpi_id=${kpi_id}&sessionID=${sessionID}`);
     if (!response.ok) {
       throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getSubKpiEmployeePerformance = async (employeeID, sessionID) => {
+  try {
+    const response = await fetch(`${IPAddress}/EmployeeSubKpiPerformance/GetSubKpiEmployeePerformance?employeeID=${employeeID}&sessionID=${sessionID}`);
+    if (!response.ok) {
+      Alert('Network response was not ok');
     }
     const data = await response.json();
     return data;

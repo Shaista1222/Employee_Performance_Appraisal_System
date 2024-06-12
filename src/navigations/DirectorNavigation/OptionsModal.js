@@ -43,9 +43,9 @@ const OptionsModal = ({ visible, onClose }) => {
           <TouchableOpacity
             style={styles.button}
             onPress={() => {
-              navigation.navigate('Scores'); // Ensure 'Scores' is correctly registered in your navigator
+              navigation.navigate('PerformanceComparison'); // Ensure 'Scores' is correctly registered in your navigator
             }}>
-            <Text style={styles.buttonText}>Scores</Text>
+            <Text style={styles.buttonText}>Performance Comparison</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.button}

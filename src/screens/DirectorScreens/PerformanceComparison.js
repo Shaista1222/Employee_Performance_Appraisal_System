@@ -19,8 +19,9 @@ import EmployeeCoursePerformanceService from '../Services/EmployeeCoursePerforma
 import {
   MultipleEmployeeCourseBarChartComponent,
   MultipleEmployeeKPIBarChartComponent,
-  MultipleEmployeeQuestionPerformanceChart,
+  // MultipleEmployeeQuestionPerformanceChart,
 } from './ShowPerformance';
+import {MultipleEmployeeQuestionPerformanceChart} from './ComparisonBarChart';
 import EmployeeKPIPerformance from '../Services/EmployeeKPIPerformance';
 import EvaluationService from '../Services/EvaluationService';
 import QuestionaireServiceListner from '../Services/QuestionaireServiceListner';

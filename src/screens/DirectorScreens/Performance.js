@@ -3,17 +3,18 @@ import React, {useState, useEffect} from 'react';
 import {Picker} from '@react-native-picker/picker';
 import {View, Text, StyleSheet, Alert, useWindowDimensions} from 'react-native';
 import {TabView, TabBar} from 'react-native-tab-view';
-import CourseServiceListener from '../Services/CourseServiceListener';
 import SessionService from '../Services/SessionService';
 import {
   EmployeeCourseBarChartComponent,
   SessionBarChartComponent,
   QuestionScoreBarChartComponent,
+  EmployeeSubKpiBarChartComponent,
 } from './ShowPerformance';
 import EmployeeKPIPerformance from '../Services/EmployeeKPIPerformance';
 import EmployeeCoursePerformanceService from '../Services/EmployeeCoursePerformanceService';
-import QuestionsScores from '../Services/QuestionsScores';
+import {getQuestionsScores} from '../Services/QuestionsScores';
 import QuestionaireServiceListner from '../Services/QuestionaireServiceListner';
+import {getSubKpiEmployeePerformance} from '../Services/SubKpiServices';
 
 const Performance = ({route}) => {
   const {employee} = route.params;
@@ -31,11 +32,17 @@ const Performance = ({route}) => {
   const [sessionList, setSessionList] = useState([]);
   const [selectedSession, setSelectedSession] = useState('');
   const [filteredPerformance, setFilteredPerformance] = useState([]);
+  const [filteredSubKpiPerformance, setFilteredSubKpiPerformance] = useState(
+    [],
+  );
   const [evaluationQuestionScore, setEvaluationQuestionScore] = useState([]);
   const [employeeKpiPerformance, setEmployeeKpiPerformance] = useState([]);
   const [evaluationTypeId, setEvaluationTypeId] = useState('');
   const [selectedEvaluationType, setSelectedEvaluationType] = useState('');
   const [evaluationTypeList, setEvaluationTypeList] = useState([]);
+  const [employeeSubKpiPerformance, setEmployeeSubKpiPerformance] = useState(
+    [],
+  );
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -62,7 +69,7 @@ const Performance = ({route}) => {
               sessionID,
             );
           setCourseList(courses || []);
-          console.log('courses', courses);
+          // console.log('courses', courses);
         } catch (error) {
           Alert.alert('Error', error.message);
         }
@@ -98,6 +105,35 @@ const Performance = ({route}) => {
       fetchEmployeeKpiPerformance(employee.id, selectedSession);
     }
   }, [selectedSession]);
+  useEffect(() => {
+    if (selectedSession) {
+      const fetchEmployeeSubKpiPerformance = async (employeeID, sessionID) => {
+        try {
+          const data = await getSubKpiEmployeePerformance(
+            employeeID,
+            sessionID,
+          );
+          setEmployeeSubKpiPerformance(data || []);
+          console.log('Data of SubKPI', data);
+        } catch (error) {
+          console.log(error);
+          Alert.alert('Error ..', error.message);
+        }
+      };
+
+      fetchEmployeeSubKpiPerformance(employee.id, selectedSession);
+    }
+  }, [selectedSession]);
+
+  useEffect(() => {
+    if (employee) {
+      const filtered = employeeSubKpiPerformance.filter(
+        item => item.employee_id == employee.id,
+      );
+      console.log('Filtered Sub KPI Performance:', filtered);
+      setFilteredSubKpiPerformance(filtered);
+    }
+  }, [employeeSubKpiPerformance, selectedSession]);
 
   useEffect(() => {
     const fetchEvaluationType = async () => {
@@ -120,9 +156,9 @@ const Performance = ({route}) => {
   }, [selectedEvaluationType]);
 
   useEffect(() => {
-    const fetchEvaluations = async () => {
+    const fetchQuestionScores = async () => {
       try {
-        const data = await QuestionsScores.getQuestionsScores(
+        const data = await getQuestionsScores(
           employee.id,
           selectedSession,
           evaluationTypeId,
@@ -133,7 +169,7 @@ const Performance = ({route}) => {
       }
     };
 
-    fetchEvaluations();
+    fetchQuestionScores();
   }, [employee.id, selectedSession, evaluationTypeId]);
 
   const FirstRoute = () => (
@@ -170,37 +206,74 @@ const Performance = ({route}) => {
     </View>
   );
   const SecondRoute = () => (
-    <View style={{flex: 1, backgroundColor: '#ff4081'}} />
+    <View>
+      <View style={{backgroundColor: 'brown', padding: 6}}>
+        <Text style={{fontSize: 20, color: 'white', fontWeight: 'bold'}}>
+          {employee.name}
+        </Text>
+      </View>
+      <Text style={styles.label}>Session</Text>
+      <View style={styles.showPerformance}>
+        <Picker
+          selectedValue={selectedSession}
+          onValueChange={itemValue => setSelectedSession(itemValue)}
+          style={styles.picker}
+          dropdownIconColor="black"
+          mode="dropdown">
+          {sessionList.length > 0 ? (
+            sessionList.map((session, index) => (
+              <Picker.Item
+                key={index}
+                label={session.title}
+                value={session.id}
+              />
+            ))
+          ) : (
+            <Picker.Item label="No sessions available" value="" />
+          )}
+        </Picker>
+      </View>
+      {selectedSession && (
+        <EmployeeSubKpiBarChartComponent
+          kpiPerformanceData={filteredSubKpiPerformance}
+        />
+      )}
+    </View>
   );
+
   const ThirdRoute = () => (
     <View>
-    <View style={{backgroundColor: 'brown', padding: 6}}>
-      <Text style={{fontSize: 20, color: 'white', fontWeight: 'bold'}}>
-        {employee ? employee.name : 'Loading...'}
-      </Text>
+      <View style={{backgroundColor: 'brown', padding: 6}}>
+        <Text style={{fontSize: 20, color: 'white', fontWeight: 'bold'}}>
+          {employee ? employee.name : 'Loading...'}
+        </Text>
+      </View>
+      <View style={styles.showPerformance}>
+        <Picker
+          selectedValue={selectedSession}
+          onValueChange={itemValue => setSelectedSession(itemValue)}
+          style={styles.picker}
+          dropdownIconColor="black"
+          mode="dropdown">
+          {sessionList.length > 0 ? (
+            sessionList.map((session, index) => (
+              <Picker.Item
+                key={index}
+                label={session.title}
+                value={session.id}
+              />
+            ))
+          ) : (
+            <Picker.Item label="No sessions available" value="" />
+          )}
+        </Picker>
+      </View>
+      {courseList.length > 0 ? (
+        <EmployeeCourseBarChartComponent courses={courseList} />
+      ) : (
+        <Text>No courses available</Text>
+      )}
     </View>
-    <View style={styles.showPerformance}>
-      <Picker
-        selectedValue={selectedSession}
-        onValueChange={itemValue => setSelectedSession(itemValue)}
-        style={styles.picker}
-        dropdownIconColor="black"
-        mode="dropdown">
-        {sessionList.length > 0 ? (
-          sessionList.map((session, index) => (
-            <Picker.Item key={index} label={session.title} value={session.id} />
-          ))
-        ) : (
-          <Picker.Item label="No sessions available" value="" />
-        )}
-      </Picker>
-    </View>
-    {courseList.length > 0 ? (
-      <EmployeeCourseBarChartComponent courses={courseList} />
-    ) : (
-      <Text>No courses available</Text>
-    )}
-  </View>
   );
 
   const FourthRoute = () => (
