@@ -1,5 +1,12 @@
-import React,{useState,useEffect} from 'react';
-import {View,ScrollView, StyleSheet, Dimensions, Text, Alert} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {
+  View,
+  ScrollView,
+  StyleSheet,
+  Dimensions,
+  Text,
+  Alert,
+} from 'react-native';
 import {BarChart} from 'react-native-chart-kit';
 
 const screenWidth = Dimensions.get('window').width;
@@ -295,8 +302,6 @@ const chartConfig = {
     borderRadius: 16,
   },
 };
-
-// Function to generate a random color
 const getRandomColor = () => {
   const letters = '0123456789ABCDEF';
   let color = '#';
@@ -305,8 +310,6 @@ const getRandomColor = () => {
   }
   return color;
 };
-
-
 export const MultipleEmployeeQuestionPerformanceChart = ({ data }) => {
   if (!Array.isArray(data) || data.length === 0) {
     return <Text>No data available</Text>;
@@ -316,13 +319,14 @@ export const MultipleEmployeeQuestionPerformanceChart = ({ data }) => {
   const questionScores = data.map(item => item.questionScores || []);
 
   const questionColors = [];
-  const numQuestions = questionScores.reduce((max, scores) => Math.max(max, scores.length), 0);
+  const numQuestions = questionScores.reduce(
+    (max, scores) => Math.max(max, scores.length),
+    0,
+  );
 
   for (let i = 0; i < numQuestions; i++) {
     questionColors.push(getRandomColor());
   }
-
-  // Flattened bar data and color assignment
   const barData = [];
   const labels = [];
 
@@ -330,17 +334,17 @@ export const MultipleEmployeeQuestionPerformanceChart = ({ data }) => {
     const scores = questionScores[index];
     scores.forEach((score, questionIndex) => {
       barData.push({
-        value: Math.round(score?.average || 0), // Round off to the nearest integer
+        value: Math.round(score?.average || 0),
         color: questionColors[questionIndex],
       });
     });
     labels.push(employee);
     if (index < employeeNames.length - 1) {
       barData.push({
-        value: 0, 
-        color: 'transparent', 
+        value: 0,
+        color: 'transparent',
       });
-      labels.push(''); 
+      labels.push('');
     }
   });
 
@@ -353,17 +357,21 @@ export const MultipleEmployeeQuestionPerformanceChart = ({ data }) => {
             datasets: [
               {
                 data: barData.map(item => item.value),
-                colors: barData.map(item => (opacity = 1) => item.color),
+                colors: barData.map(
+                  item =>
+                    (opacity = 1) =>
+                      item.color,
+                ),
               },
             ],
           }}
           width={screenWidth - 20}
-          height={320}
+          height={345}
           chartConfig={{
             ...chartConfig,
             barPercentage: 0.5,
           }}
-          verticalLabelRotation={30}
+          verticalLabelRotation={15}
           fromZero={true}
           showValuesOnTopOfBars={true}
           withCustomBarColorFromData={true}
@@ -382,13 +390,10 @@ export const MultipleEmployeeQuestionPerformanceChart = ({ data }) => {
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     flexDirection: 'column',
     alignItems: 'center',
-    marginBottom: 8,
   },
   legendContainer: {
     flexDirection: 'row',
@@ -408,5 +413,7 @@ const styles = StyleSheet.create({
   legendText: {
     fontSize: 12,
     color: 'black',
+    fontWeight: 'bold',
+    fontSize: 15,
   },
 });
