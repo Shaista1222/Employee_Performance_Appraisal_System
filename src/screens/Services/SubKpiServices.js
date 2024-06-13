@@ -52,3 +52,28 @@ export const getSubKpiEmployeePerformance = async (employeeID, sessionID) => {
     throw error;
   }
 };
+
+export const getSubKpiMultiEmployeePerformance = async (employeeIDs, sessionID) => {
+  try {
+    // Create URLSearchParams object to handle multiple query parameters
+    const params = new URLSearchParams();
+    employeeIDs.forEach(id => params.append('employeeIDs', id));
+    params.append('sessionID', sessionID);
+
+    // Construct the full URL with query parameters
+    const url = `${IPAddress}/EmployeeSubKpiPerformance/GetSubKpiMultiEmployeePerformance?${params.toString()}`;
+
+    const response = await fetch(url);
+    console.log(response);
+    if (!response.ok) {
+      Alert.alert('Network response was not ok');
+      return [];
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching sub-KPI performance data:', error);
+    Alert.alert('Error', error.message);
+    return [];
+  }
+};

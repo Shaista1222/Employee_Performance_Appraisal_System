@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   ScrollView,
@@ -7,7 +7,7 @@ import {
   Text,
   Alert,
 } from 'react-native';
-import { BarChart } from 'react-native-chart-kit';
+import {BarChart} from 'react-native-chart-kit';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -30,13 +30,13 @@ const getRandomColor = () => {
   }
   return color;
 };
-export const MultipleEmployeeKPIBarChartComponent = ({ kpiPerformanceData }) => {
+export const MultipleEmployeeSubKpiBarChartComponent = ({ kpiPerformanceData }) => {
   if (!Array.isArray(kpiPerformanceData) || kpiPerformanceData.length === 0) {
     return <Text>No data available</Text>;
   }
 
   const kpis = Array.from(
-    new Set(kpiPerformanceData.flatMap(emp => emp.map(kpi => kpi.kpi_title)))
+    new Set(kpiPerformanceData.flatMap(emp => (emp.subKpiPerformances || []).map(subKpi => subKpi.name))),
   );
 
   const kpiColors = kpis.reduce((acc, kpi) => {
@@ -44,19 +44,19 @@ export const MultipleEmployeeKPIBarChartComponent = ({ kpiPerformanceData }) => 
     return acc;
   }, {});
 
-  const employeeNames = kpiPerformanceData.map((empData, index) => `Employee ${index + 1}`);
+  const employeeNames = kpiPerformanceData.map(empData => empData.employee.name);
   const kpiScores = kpiPerformanceData.map(empData =>
-    kpis.map(kpi =>
-      empData.find(data => data.kpi_title === kpi)?.score || 0
-    )
+    kpis.map(kpi => (empData.subKpiPerformances || []).find(data => data.name === kpi)?.score || 0),
   );
 
   const flattenedBarData = kpiScores.flat();
   const barColors = kpiScores.flatMap(scores =>
-    scores.map((_, index) => kpiColors[kpis[index]])
+    scores.map((_, index) => kpiColors[kpis[index]]),
   );
 
   const labels = employeeNames.flatMap(name => [name, '']).slice(0, -1);
+
+  const { width: screenWidth } = useWindowDimensions();
 
   return (
     <ScrollView horizontal>
@@ -71,9 +71,22 @@ export const MultipleEmployeeKPIBarChartComponent = ({ kpiPerformanceData }) => 
               },
             ],
           }}
-          width={Math.max(screenWidth, flattenedBarData.length * 50)} // Dynamic width based on data
+          width={Math.max(screenWidth, flattenedBarData.length * 20)} // Adjust the width as needed
           height={345}
-          chartConfig={chartConfig}
+          chartConfig={{
+            backgroundColor: '#ffffff',
+            backgroundGradientFrom: '#ffffff',
+            backgroundGradientTo: '#ffffff',
+            decimalPlaces: 0,
+            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            style: {
+              borderRadius: 16,
+            },
+            barPercentage: 0.5, // Adjust bar width
+            barThickness: 8, // Adjust thickness of the bars
+            barSpacing: 2, // Adjust spacing between bars
+          }}
           verticalLabelRotation={15}
           fromZero={true}
           showValuesOnTopOfBars={true}
@@ -92,13 +105,97 @@ export const MultipleEmployeeKPIBarChartComponent = ({ kpiPerformanceData }) => 
     </ScrollView>
   );
 };
-export const MultipleEmployeeCourseBarChartComponent = ({ performanceData }) => {
+
+
+export const MultipleEmployeeKPIBarChartComponent = ({ kpiPerformanceData }) => {
+  if (!Array.isArray(kpiPerformanceData) || kpiPerformanceData.length === 0) {
+    return <Text>No data available</Text>;
+  }
+
+  // Extract unique KPI titles
+  const kpis = Array.from(
+    new Set(kpiPerformanceData.flatMap(emp => emp.kpiScores.map(kpi => kpi.kpi_title)))
+  );
+
+  // Generate a color for each KPI
+  const kpiColors = kpis.reduce((acc, kpi) => {
+    acc[kpi] = getRandomColor();
+    return acc;
+  }, {});
+
+  // Extract employee names and KPI scores
+  const employeeNames = kpiPerformanceData.map(empData => empData.employee.name);
+  const kpiScores = kpiPerformanceData.map(empData =>
+    kpis.map(kpi => empData.kpiScores.find(data => data.kpi_title === kpi)?.score || 0)
+  );
+
+  // Flatten the KPI scores for the bar chart data
+  const flattenedBarData = kpiScores.flat();
+  const barColors = kpiScores.flatMap(scores =>
+    scores.map((_, index) => kpiColors[kpis[index]])
+  );
+
+  // Create labels for the bar chart
+  const labels = employeeNames.flatMap(name => [name, '']).slice(0, -1);
+
+  return (
+    <ScrollView horizontal>
+      <View style={styles.container}>
+        <BarChart
+          data={{
+            labels: labels,
+            datasets: [
+              {
+                data: flattenedBarData,
+                colors: barColors.map(
+                  color =>
+                    (opacity = 1) =>
+                      color,
+                ),
+              },
+            ],
+          }}
+          width={Math.max(screenWidth, flattenedBarData.length * 20)} // Adjust bar width as needed
+          height={345}
+          chartConfig={{
+            ...chartConfig,
+            barPercentage: 0.5, // Adjust bar width
+            barThickness: 8, // Adjust thickness of the bars
+            barSpacing: 2, // Adjust spacing between bars
+          }}
+          verticalLabelRotation={15}
+          fromZero={true}
+          showValuesOnTopOfBars={true}
+          withCustomBarColorFromData={true}
+          flatColor={true}
+        />
+        <View style={styles.legendContainer}>
+          {kpis.map((kpi, index) => (
+            <View key={index} style={styles.legendItem}>
+              <View
+                style={[styles.legendColor, { backgroundColor: kpiColors[kpi] }]}
+              />
+              <Text style={styles.legendText}>{kpi}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    </ScrollView>
+  );
+};
+export const MultipleEmployeeCourseBarChartComponent = ({performanceData}) => {
   if (!Array.isArray(performanceData) || performanceData.length === 0) {
     return <Text>No data available</Text>;
   }
 
   const employeeNames = performanceData.map(item => item.employee.name);
-  const courses = Array.from(new Set(performanceData.flatMap(item => item.performance.map(perf => perf.course.title))));
+  const courses = Array.from(
+    new Set(
+      performanceData.flatMap(item =>
+        item.performance.map(perf => perf.course.title),
+      ),
+    ),
+  );
 
   const barData = [];
   const labels = [];
@@ -107,7 +204,9 @@ export const MultipleEmployeeCourseBarChartComponent = ({ performanceData }) => 
     const employeeScores = [];
 
     courses.forEach(course => {
-      const courseData = employeeData.performance.find(perf => perf.course.title === course);
+      const courseData = employeeData.performance.find(
+        perf => perf.course.title === course,
+      );
       if (courseData) {
         employeeScores.push(courseData.average);
       } else {
@@ -120,7 +219,9 @@ export const MultipleEmployeeCourseBarChartComponent = ({ performanceData }) => 
   });
 
   const flattenedBarData = barData.flat();
-  const colors = Array.from({ length: flattenedBarData.length }, () => getRandomColor());
+  const colors = Array.from({length: flattenedBarData.length}, () =>
+    getRandomColor(),
+  );
 
   console.log('Employee Names:', employeeNames);
   console.log('Courses:', courses);
@@ -137,7 +238,11 @@ export const MultipleEmployeeCourseBarChartComponent = ({ performanceData }) => 
             datasets: [
               {
                 data: flattenedBarData,
-                colors: colors.map(color => (opacity = 1) => color),
+                colors: colors.map(
+                  color =>
+                    (opacity = 1) =>
+                      color,
+                ),
               },
             ],
           }}
@@ -153,7 +258,12 @@ export const MultipleEmployeeCourseBarChartComponent = ({ performanceData }) => 
         <View style={styles.legendContainer}>
           {courses.map((course, index) => (
             <View key={index} style={styles.legendItem}>
-              <View style={[styles.legendColor, { backgroundColor: colors[index % colors.length] }]} />
+              <View
+                style={[
+                  styles.legendColor,
+                  {backgroundColor: colors[index % colors.length]},
+                ]}
+              />
               <Text style={styles.legendText}>{course}</Text>
             </View>
           ))}
@@ -163,7 +273,7 @@ export const MultipleEmployeeCourseBarChartComponent = ({ performanceData }) => 
   );
 };
 
-export const MultipleEmployeeQuestionPerformanceChart = ({ data }) => {
+export const MultipleEmployeeQuestionPerformanceChart = ({data}) => {
   if (!Array.isArray(data) || data.length === 0) {
     return <Text>No data available</Text>;
   }
@@ -233,7 +343,7 @@ export const MultipleEmployeeQuestionPerformanceChart = ({ data }) => {
         <View style={styles.legendContainer}>
           {questionColors.map((color, index) => (
             <View key={index} style={styles.legendItem}>
-              <View style={[styles.legendColor, { backgroundColor: color }]} />
+              <View style={[styles.legendColor, {backgroundColor: color}]} />
               <Text style={styles.legendText}>Q{index + 1}</Text>
             </View>
           ))}

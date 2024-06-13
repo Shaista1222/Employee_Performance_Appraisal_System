@@ -12,11 +12,11 @@ const EmployeeKPIPerformance={
           return await response.json();
         });
     },
-    compareEmployeeKpiScore : async (employeeIds, sessionId) => {
+    compareEmployeeKpiScore : async (employeeIds, session_id) => {
       try {
         const payload = {
           employeeIds,
-          sessionId,
+          session_id,
         };
         console.log('Sending request to:', `${IPAddress}/EmployeeKpiPerformance/CompareKpiEmployeePerformance`);
         console.log('Payload:', payload);

@@ -20,10 +20,12 @@ import {
   MultipleEmployeeQuestionPerformanceChart,
   MultipleEmployeeCourseBarChartComponent,
   MultipleEmployeeKPIBarChartComponent,
+  MultipleEmployeeSubKpiBarChartComponent,
 } from './ComparisonBarChart';
 import EmployeeKPIPerformance from '../Services/EmployeeKPIPerformance';
 import QuestionaireServiceListner from '../Services/QuestionaireServiceListner';
 import {getMultiEmployeeQuestionScore} from '../Services/QuestionsScores';
+import { getSubKpiMultiEmployeePerformance } from '../Services/SubKpiServices';
 
 const PerformanceComparison = () => {
   const layout = useWindowDimensions();
@@ -49,6 +51,7 @@ const PerformanceComparison = () => {
   const [performanceData, setPerformanceData] = useState([]);
   const [kpiPerformanceData, setKPIPerformanceData] = useState([]);
   const [questionPerformanceData, setQuestionPerformanceData] = useState([]);
+  const [subKPIPerformanceData,setSubKPIPerformanceData]=useState([])
   useEffect(() => {
     const fetchSessions = async () => {
       try {
@@ -160,6 +163,29 @@ const PerformanceComparison = () => {
       console.log("Response getting",response)
     } catch (error) {
       Alert.alert('Error', error.message);
+    }
+  };
+  const fetchSubKpiPerformanceData = async () => {
+    try {
+      console.log('Fetching Sub KPI Performance Data with:', {
+        selectedEmployees,
+        selectedSession,
+      });
+      const response = await getSubKpiMultiEmployeePerformance(
+        selectedEmployees, selectedSession
+      );
+      console.log('Sub KPI Performance Data Response:', response);
+      if (response && response.length > 0) {
+        setSubKPIPerformanceData(response);
+      } else {
+        console.warn('No Sub KPI Performance Data available for the selected criteria.');
+        Alert.alert('No Data', 'No Sub KPI Performance Data available for the selected criteria.');
+        setSubKPIPerformanceData([]);
+      }
+    } catch (error) {
+      console.error('Error fetching Sub KPI Performance Data:', error);
+      Alert.alert('Error', 'Failed to fetch Sub KPI Performance Data.');
+      setSubKPIPerformanceData([]);
     }
   };
 
@@ -396,14 +422,14 @@ const FirstRoute = () => (
       <View style={styles.showPerformance}>
         <EmployeeDropdown />
       </View>
-      <TouchableOpacity style={styles.button} onPress={fetchKPIPerformanceData}>
+      <TouchableOpacity style={styles.button} onPress={fetchSubKpiPerformanceData}>
         <Text style={styles.buttonText}>Show Performance</Text>
       </TouchableOpacity>
-      {/* {kpiPerformanceData.length > 0 && (
-        <MultipleEmployeeKPIBarChartComponent
-          kpiPerformanceData={kpiPerformanceData}
+      {subKPIPerformanceData.length > 0 && (
+        <MultipleEmployeeSubKpiBarChartComponent
+          subKPIPerformanceData={subKPIPerformanceData}
         />
-      )} */}
+      )}
     </View>
   );
   const renderScene = ({route}) => {
