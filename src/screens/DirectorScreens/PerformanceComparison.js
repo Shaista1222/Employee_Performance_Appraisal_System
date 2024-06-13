@@ -154,10 +154,10 @@ const PerformanceComparison = () => {
   const fetchKPIPerformanceData = async () => {
     try {
       const response = await EmployeeKPIPerformance.compareEmployeeKpiScore(
-        selectedEmployees,
-        selectedSession,
+        selectedEmployees, selectedSession
       );
       setKPIPerformanceData(response);
+      console.log("Response getting",response)
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -359,10 +359,12 @@ const FirstRoute = () => (
       <TouchableOpacity style={styles.button} onPress={fetchKPIPerformanceData}>
         <Text style={styles.buttonText}>Show Performance</Text>
       </TouchableOpacity>
-      {kpiPerformanceData.length > 0 && (
+      {kpiPerformanceData.length > 0 ? (
         <MultipleEmployeeKPIBarChartComponent
           kpiPerformanceData={kpiPerformanceData}
         />
+      ) : (
+        <Text>No KPI performance data available</Text>
       )}
     </View>
   );

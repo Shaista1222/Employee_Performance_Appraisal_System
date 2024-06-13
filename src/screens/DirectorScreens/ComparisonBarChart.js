@@ -35,27 +35,28 @@ export const MultipleEmployeeKPIBarChartComponent = ({ kpiPerformanceData }) => 
     return <Text>No data available</Text>;
   }
 
-  const kpiTitles = Array.from(
-    new Set(kpiPerformanceData.flatMap(item => item.map(kpi => kpi.kpi_title)))
+  const kpis = Array.from(
+    new Set(kpiPerformanceData.flatMap(emp => emp.map(kpi => kpi.kpi_title)))
   );
 
-  const colors = kpiTitles.reduce((acc, title) => {
-    acc[title] = getRandomColor();
+  const kpiColors = kpis.reduce((acc, kpi) => {
+    acc[kpi] = getRandomColor();
     return acc;
   }, {});
 
-  const flattenedBarData = [];
-  const labels = [];
+  const employeeNames = kpiPerformanceData.map((empData, index) => `Employee ${index + 1}`);
+  const kpiScores = kpiPerformanceData.map(empData =>
+    kpis.map(kpi =>
+      empData.find(data => data.kpi_title === kpi)?.score || 0
+    )
+  );
 
-  kpiPerformanceData.forEach(employeeKPIs => {
-    employeeKPIs.forEach(kpi => {
-      flattenedBarData.push({
-        value: kpi.score,
-        color: colors[kpi.kpi_title],
-      });
-    });
-    labels.push(''); // Add empty labels for spacing
-  });
+  const flattenedBarData = kpiScores.flat();
+  const barColors = kpiScores.flatMap(scores =>
+    scores.map((_, index) => kpiColors[kpis[index]])
+  );
+
+  const labels = employeeNames.flatMap(name => [name, '']).slice(0, -1);
 
   return (
     <ScrollView horizontal>
@@ -65,12 +66,12 @@ export const MultipleEmployeeKPIBarChartComponent = ({ kpiPerformanceData }) => 
             labels: labels,
             datasets: [
               {
-                data: flattenedBarData.map(item => item.value),
-                colors: flattenedBarData.map(item => (opacity = 1) => item.color),
+                data: flattenedBarData,
+                colors: barColors.map(color => (opacity = 1) => color),
               },
             ],
           }}
-          width={screenWidth - 20}
+          width={Math.max(screenWidth, flattenedBarData.length * 50)} // Dynamic width based on data
           height={345}
           chartConfig={chartConfig}
           verticalLabelRotation={15}
@@ -80,10 +81,10 @@ export const MultipleEmployeeKPIBarChartComponent = ({ kpiPerformanceData }) => 
           flatColor={true}
         />
         <View style={styles.legendContainer}>
-          {kpiTitles.map((title, index) => (
+          {kpis.map((kpi, index) => (
             <View key={index} style={styles.legendItem}>
-              <View style={[styles.legendColor, { backgroundColor: colors[title] }]} />
-              <Text style={styles.legendText}>{title}</Text>
+              <View style={[styles.legendColor, { backgroundColor: kpiColors[kpi] }]} />
+              <Text style={styles.legendText}>{kpi}</Text>
             </View>
           ))}
         </View>
@@ -91,8 +92,6 @@ export const MultipleEmployeeKPIBarChartComponent = ({ kpiPerformanceData }) => 
     </ScrollView>
   );
 };
-
-
 export const MultipleEmployeeCourseBarChartComponent = ({ performanceData }) => {
   if (!Array.isArray(performanceData) || performanceData.length === 0) {
     return <Text>No data available</Text>;
