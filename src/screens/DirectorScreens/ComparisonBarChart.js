@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   ScrollView,
@@ -7,9 +7,10 @@ import {
   Text,
   Alert,
 } from 'react-native';
-import {BarChart} from 'react-native-chart-kit';
+import { BarChart } from 'react-native-chart-kit';
 
 const screenWidth = Dimensions.get('window').width;
+
 const chartConfig = {
   backgroundGradientFrom: '#ffffff',
   backgroundGradientTo: '#ffffff',
@@ -20,6 +21,7 @@ const chartConfig = {
     borderRadius: 16,
   },
 };
+
 const getRandomColor = () => {
   const letters = '0123456789ABCDEF';
   let color = '#';
@@ -28,6 +30,78 @@ const getRandomColor = () => {
   }
   return color;
 };
+
+export const MultipleEmployeeCourseBarChartComponent = ({ performanceData }) => {
+  if (!Array.isArray(performanceData) || performanceData.length === 0) {
+    return <Text>No data available</Text>;
+  }
+
+  const employeeNames = performanceData.map(item => item.employee.name);
+  const courses = Array.from(new Set(performanceData.flatMap(item => item.performance.map(perf => perf.course.title))));
+
+  const barData = [];
+  const labels = [];
+
+  performanceData.forEach((employeeData, employeeIndex) => {
+    const employeeScores = [];
+
+    courses.forEach(course => {
+      const courseData = employeeData.performance.find(perf => perf.course.title === course);
+      if (courseData) {
+        employeeScores.push(courseData.average);
+      } else {
+        employeeScores.push(0);
+      }
+    });
+
+    labels.push(employeeData.employee.name);
+    barData.push(employeeScores);
+  });
+
+  const flattenedBarData = barData.flat();
+  const colors = Array.from({ length: flattenedBarData.length }, () => getRandomColor());
+
+  console.log('Employee Names:', employeeNames);
+  console.log('Courses:', courses);
+  console.log('Bar Data:', barData);
+  console.log('Flattened Bar Data:', flattenedBarData);
+  console.log('Colors:', colors);
+
+  return (
+    <ScrollView horizontal>
+      <View style={styles.container}>
+        <BarChart
+          data={{
+            labels: labels,
+            datasets: [
+              {
+                data: flattenedBarData,
+                colors: colors.map(color => (opacity = 1) => color),
+              },
+            ],
+          }}
+          width={screenWidth - 20}
+          height={345}
+          chartConfig={chartConfig}
+          verticalLabelRotation={15}
+          fromZero={true}
+          showValuesOnTopOfBars={true}
+          withCustomBarColorFromData={true}
+          flatColor={true}
+        />
+        <View style={styles.legendContainer}>
+          {courses.map((course, index) => (
+            <View key={index} style={styles.legendItem}>
+              <View style={[styles.legendColor, { backgroundColor: colors[index % colors.length] }]} />
+              <Text style={styles.legendText}>{course}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    </ScrollView>
+  );
+};
+
 export const MultipleEmployeeQuestionPerformanceChart = ({ data }) => {
   if (!Array.isArray(data) || data.length === 0) {
     return <Text>No data available</Text>;
@@ -132,6 +206,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: 'black',
     fontWeight: 'bold',
-    fontSize: 15,
   },
 });

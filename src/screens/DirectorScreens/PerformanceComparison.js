@@ -17,13 +17,11 @@ import CheckBox from '@react-native-community/checkbox';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import EmployeeCoursePerformanceService from '../Services/EmployeeCoursePerformanceService';
 import {
+  MultipleEmployeeQuestionPerformanceChart,
   MultipleEmployeeCourseBarChartComponent,
   MultipleEmployeeKPIBarChartComponent,
-  // MultipleEmployeeQuestionPerformanceChart,
-} from './ShowPerformance';
-import {MultipleEmployeeQuestionPerformanceChart} from './ComparisonBarChart';
+} from './ComparisonBarChart';
 import EmployeeKPIPerformance from '../Services/EmployeeKPIPerformance';
-import EvaluationService from '../Services/EvaluationService';
 import QuestionaireServiceListner from '../Services/QuestionaireServiceListner';
 import {getMultiEmployeeQuestionScore} from '../Services/QuestionsScores';
 
@@ -41,11 +39,11 @@ const PerformanceComparison = () => {
   const [employeeList, setEmployeeList] = useState([]);
   const [evaluationTypeList, setEvaluationTypeList] = useState([]);
   const [selectedSession, setSelectedSession] = useState('');
-  const [selectedCourse, setSelectedCourse] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState([]);
   const [selectedEvaluationType, setSelectedEvaluationType] = useState('');
   const [selectedEmployees, setSelectedEmployees] = useState([]);
-  const [isEmployeeDropdownVisible, setIsEmployeeDropdownVisible] =
-    useState(false);
+  const [isEmployeeDropdownVisible, setIsEmployeeDropdownVisible] = useState(false);
+  const [isCourseDropdownVisible, setIsCourseDropdownVisible] = useState(false);
   const [performanceData, setPerformanceData] = useState([]);
   const [kpiPerformanceData, setKPIPerformanceData] = useState([]);
   const [questionPerformanceData, setQuestionPerformanceData] = useState([]);
@@ -69,7 +67,6 @@ const PerformanceComparison = () => {
       try {
         const data = await EmployeeService.getEmployees();
         setEmployeeList(data || []);
-        // console.log(data);
       } catch (error) {
         Alert.alert('Error', error.message);
       }
@@ -83,7 +80,7 @@ const PerformanceComparison = () => {
         const data = await CourseServiceListener.getCourses();
         setCourseList(data || []);
         if (data && data.length > 0) {
-          setSelectedCourse(data[0].id);
+          setSelectedCourse([data[0].id]);
         }
       } catch (error) {
         Alert.alert('Error', error.message);
@@ -116,6 +113,14 @@ const PerformanceComparison = () => {
       setSelectedEmployees([...selectedEmployees, id]);
     }
   };
+
+  const toggleCourseSelection = id => {
+    if (selectedCourse.includes(id)) {
+      setSelectedCourse(selectedCourse.filter(courseId => courseId !== id));
+    } else {
+      setSelectedCourse([...selectedCourse, id]);
+    }
+  };
   const fetchQuestionPerformanceData = async () => {
     try {
       const response = await getMultiEmployeeQuestionScore(
@@ -124,21 +129,22 @@ const PerformanceComparison = () => {
         selectedSession,
       );
       console.log('API response:', response);
-      setQuestionPerformanceData(response || []); 
+      setQuestionPerformanceData(response || []);
     } catch (error) {
       Alert.alert('Error', error.message);
-      setQuestionPerformanceData([]); 
+      setQuestionPerformanceData([]);
     }
   };
+
   const fetchPerformanceData = async () => {
     try {
-      const response =
-        await EmployeeCoursePerformanceService.getMultiEmployeeCoursePerformance(
-          selectedEmployees,
-          selectedCourse,
-          selectedSession,
-        );
+      const response = await EmployeeCoursePerformanceService.getMultiEmployeeCourseScore(
+        selectedEmployees,
+        selectedCourse,
+        selectedSession,
+      );
       setPerformanceData(response);
+      console.log("Response", response);
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -174,7 +180,7 @@ const PerformanceComparison = () => {
           <FlatList
             data={employeeList}
             keyExtractor={item => item.id.toString()}
-            renderItem={({item}) => (
+            renderItem={({ item }) => (
               <View style={styles.checkboxContainer}>
                 <CheckBox
                   value={selectedEmployees.includes(item.id)}
@@ -189,23 +195,50 @@ const PerformanceComparison = () => {
     </View>
   );
 
-  const FirstRoute = () => (
+  const CourseDropdown = () => (
+    <View>
+      <TouchableOpacity
+        style={styles.pickerContainer}
+        onPress={() => setIsCourseDropdownVisible(!isCourseDropdownVisible)}>
+        <Text style={styles.pickerText}>Select Course</Text>
+        <Ionicons
+          name={isCourseDropdownVisible ? 'chevron-up' : 'chevron-down'}
+          size={20}
+          color="#000"
+        />
+      </TouchableOpacity>
+      {isCourseDropdownVisible && (
+        <View style={styles.dropdown}>
+          <FlatList
+            data={courseList}
+            keyExtractor={item => item.id.toString()}
+            renderItem={({ item }) => (
+              <View style={styles.checkboxContainer}>
+                <CheckBox
+                  value={selectedCourse.includes(item.id)}
+                  onValueChange={() => toggleCourseSelection(item.id)}
+                />
+                <Text style={styles.label}>{item.title}</Text>
+              </View>
+            )}
+          />
+        </View>
+      )}
+    </View>
+  );
+const FirstRoute = () => (
     <View style={styles.container}>
       <Text style={styles.label}>Session</Text>
       <View style={styles.showPerformance}>
         <Picker
           selectedValue={selectedSession}
-          onValueChange={itemValue => setSelectedSession(itemValue)}
+          onValueChange={(itemValue) => setSelectedSession(itemValue)}
           style={styles.picker}
           dropdownIconColor="black"
           mode="dropdown">
           {sessionList.length > 0 ? (
             sessionList.map((session, index) => (
-              <Picker.Item
-                key={index}
-                label={session.title}
-                value={session.id}
-              />
+              <Picker.Item key={index} label={session.title} value={session.id} />
             ))
           ) : (
             <Picker.Item label="No sessions available" value="" />
@@ -213,22 +246,8 @@ const PerformanceComparison = () => {
         </Picker>
       </View>
       <Text style={styles.label}>Course</Text>
-
       <View style={styles.showPerformance}>
-        <Picker
-          selectedValue={selectedCourse}
-          onValueChange={itemValue => setSelectedCourse(itemValue)}
-          style={styles.picker}
-          dropdownIconColor="black"
-          mode="dropdown">
-          {courseList.length > 0 ? (
-            courseList.map((course, index) => (
-              <Picker.Item key={index} label={course.title} value={course.id} />
-            ))
-          ) : (
-            <Picker.Item label="No Course available" value="" />
-          )}
-        </Picker>
+        <CourseDropdown />
       </View>
       <Text style={styles.label}>Employee</Text>
       <View style={styles.showPerformance}>
@@ -237,13 +256,15 @@ const PerformanceComparison = () => {
       <TouchableOpacity style={styles.button} onPress={fetchPerformanceData}>
         <Text style={styles.buttonText}>Show Performance</Text>
       </TouchableOpacity>
-      {performanceData.length > 0 && (
-        <MultipleEmployeeCourseBarChartComponent courses={performanceData} />
+      {performanceData.length > 0 ? (
+        <MultipleEmployeeCourseBarChartComponent performanceData={performanceData} />
+      ) : (
+        <Text>No data to display</Text>
       )}
     </View>
   );
 
-  
+
   const ThirdRoute = () => (
     <View style={styles.container}>
       <Text style={styles.label}>Session</Text>
@@ -293,11 +314,15 @@ const PerformanceComparison = () => {
       <View style={styles.showPerformance}>
         <EmployeeDropdown />
       </View>
-      <TouchableOpacity style={styles.button} onPress={fetchQuestionPerformanceData}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={fetchQuestionPerformanceData}>
         <Text style={styles.buttonText}>Show Performance</Text>
       </TouchableOpacity>
       {questionPerformanceData.length > 0 && (
-        <MultipleEmployeeQuestionPerformanceChart data={questionPerformanceData} />
+        <MultipleEmployeeQuestionPerformanceChart
+          data={questionPerformanceData}
+        />
       )}
     </View>
   );
@@ -332,11 +357,11 @@ const PerformanceComparison = () => {
       <TouchableOpacity style={styles.button} onPress={fetchKPIPerformanceData}>
         <Text style={styles.buttonText}>Show Performance</Text>
       </TouchableOpacity>
-      {kpiPerformanceData.length > 0 && (
+      {/* {kpiPerformanceData.length > 0 && (
         <MultipleEmployeeKPIBarChartComponent
           kpiPerformanceData={kpiPerformanceData}
         />
-      )}
+      )} */}
     </View>
   );
   const renderScene = ({route}) => {

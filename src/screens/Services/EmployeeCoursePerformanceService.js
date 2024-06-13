@@ -29,16 +29,23 @@ const EmployeeCoursePerformanceService = {
       throw new Error(error.message);
     }
   },
-  getMultiEmployeeCoursePerformance: async (employeeIds, coursesId, sessionId) => {
+  getMultiEmployeeCourseScore : async (
+    employeeIds,
+    courseIds,
+    sessionId,
+  ) => {
     try {
       const payload = {
         employeeIds,
-        coursesId,
+        courseIds,
         sessionId,
       };
-      console.log('Sending request to:', `${IPAddress}/EmployeeCoursePerformance/GetMultiEmployeeCoursePerformance`);
+      console.log(
+        'Sending request to:',
+        `${IPAddress}/EmployeeCoursePerformance/GetMultiEmployeeCoursePerformance`,
+      );
       console.log('Payload:', payload);
-
+  
       const response = await fetch(
         `${IPAddress}/EmployeeCoursePerformance/GetMultiEmployeeCoursePerformance`,
         {
@@ -49,20 +56,22 @@ const EmployeeCoursePerformanceService = {
           body: JSON.stringify(payload),
         },
       );
-
+  
       if (!response.ok) {
         console.error('Response status:', response.status);
         throw new Error('Network response was not ok');
       }
-
+  
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Error fetching employee Multiple courses performance:', error);
+      console.error(
+        'Error fetching employee Multiple course performance:',
+        error,
+      );
       throw error;
     }
-  },
+  }
 };
-
 
 export default EmployeeCoursePerformanceService;
