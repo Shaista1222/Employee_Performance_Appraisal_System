@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, Button, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { PieChart } from 'react-native-chart-kit';
 import SessionService from '../Services/SessionService';
@@ -51,7 +51,6 @@ const Kpi = ({ navigation }) => {
       setIsLoading(false);
     }
   };
-  
 
   const parseKpiData = (kpiData) => {
     const kpis = [];
@@ -60,7 +59,16 @@ const Kpi = ({ navigation }) => {
       const kpiList = group.kpiList.map((kpi) => ({
         name: kpi.name,
         weightage: kpi.kpiWeightage.weightage,
+        color: getRandomColor(), // Generate color for each KPI
       }));
+      const totalWeightage = kpiList.reduce((sum, kpi) => sum + kpi.weightage, 0);
+      if (totalWeightage < 100) {
+        kpiList.push({
+          name: 'Remaining',
+          weightage: 100 - totalWeightage,
+          color: '#FFFFFF',
+        });
+      }
       kpis.push({ groupKpi, kpiList });
     });
     return kpis;
@@ -87,50 +95,66 @@ const Kpi = ({ navigation }) => {
     );
   }
 
-    return (
-      <View style={styles.container}>
-        <Text style={styles.title}>KPI Fragment</Text>
-        <Button title="Add KPI" onPress={handleAddKpi} />
-        <Picker
-          selectedValue={selectedSessionId}
-          style={styles.picker}
-          onValueChange={(itemValue) => handleSessionSelection(itemValue)}
-        >
-          {sessionList.map((session) => (
-            <Picker.Item key={session.id} label={session.title} value={session.id} />
-          ))}
-        </Picker>
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>KPI Fragment</Text>
+      <Button title="Add KPI" onPress={handleAddKpi} />
+      <Picker
+        selectedValue={selectedSessionId}
+        dropdownIconColor='black'
+        style={styles.picker}
+        onValueChange={(itemValue) => handleSessionSelection(itemValue)}
+      >
+        {sessionList.map((session) => (
+          <Picker.Item key={session.id} label={session.title} value={session.id} />
+        ))}
+      </Picker>
+      <ScrollView>
         {kpis.map((group, index) => {
           console.log(`Group ${index} KPI Count:`, group.kpiList.length); 
           return (
             <View key={index}>
               <Text style={styles.groupTitle}>Group: {group.groupKpi ? group.groupKpi.name : 'Ungrouped'}</Text>
               {group.kpiList.length > 0 && (
-                <PieChart
-                  data={group.kpiList.map((kpi) => ({
-                    name: kpi.name,
-                    population: kpi.weightage,
-                    color: getRandomColor(),
-                    legendFontColor: '#7F7F7F',
-                    legendFontSize: 15,
-                  }))}
-                  width={300}
-                  height={200}
-                  chartConfig={{
-                    backgroundGradientFrom: '#1E2923',
-                    backgroundGradientTo: '#08130D',
-                    color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
-                  }}
-                  accessor="population"
-                  backgroundColor="transparent"
-                  paddingLeft="15"
-                />
+                <ScrollView horizontal>
+                  <View>
+                    <PieChart
+                      data={group.kpiList.map((kpi) => ({
+                        name: kpi.name,
+                        population: kpi.weightage,
+                        color: kpi.color,
+                        legendFontColor: '#7F7F7F',
+                        legendFontSize: 15,
+                      }))}
+                      width={600} // Increased width for horizontal scroll
+                      height={400} // Increased height for vertical scroll
+                      chartConfig={{
+                        backgroundGradientFrom: '#1E2923',
+                        backgroundGradientTo: '#08130D',
+                        color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
+                      }}
+                      accessor="population"
+                      backgroundColor="transparent"
+                      paddingLeft="15"
+                      hasLegend={false} // Disable default legend
+                    />
+                    <View style={styles.legendContainer}>
+                      {group.kpiList.map((kpi, kpiIndex) => (
+                        <View key={kpiIndex} style={styles.legendItem}>
+                          <View style={[styles.legendColorBox, { backgroundColor: kpi.color }]} />
+                          <Text style={styles.legendText}>{kpi.name} ({kpi.weightage}%)</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                </ScrollView>
               )}
             </View>
           );
         })}
-      </View>
-    );
+      </ScrollView>
+    </View>
+  );
 }
 
 const getRandomColor = () => {
@@ -170,6 +194,27 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
     marginTop: 20,
+  },
+  legendContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    marginTop: 16,
+    paddingRight: 500,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    margin: 4,
+  },
+  legendColorBox: {
+    width: 16,
+    height: 16,
+    marginRight: 8,
+  },
+  legendText: {
+    fontSize: 14,
+    color: '#7F7F7F',
   },
 });
 

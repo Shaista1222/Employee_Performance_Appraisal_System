@@ -32,6 +32,8 @@ const PerformanceComparison = () => {
     {key: 'first', title: 'Course Comparison'},
     {key: 'second', title: 'KPI Comparison'},
     {key: 'third', title: 'Question Comparison'},
+    {key: 'fourth', title: 'Sub KPI Comparison'},
+
   ]);
 
   const [courseList, setCourseList] = useState([]);
@@ -357,6 +359,44 @@ const FirstRoute = () => (
       <TouchableOpacity style={styles.button} onPress={fetchKPIPerformanceData}>
         <Text style={styles.buttonText}>Show Performance</Text>
       </TouchableOpacity>
+      {kpiPerformanceData.length > 0 && (
+        <MultipleEmployeeKPIBarChartComponent
+          kpiPerformanceData={kpiPerformanceData}
+        />
+      )}
+    </View>
+  );
+  
+  const FourthRoute = () => (
+    <View style={styles.container}>
+      <Text style={styles.label}>Session</Text>
+      <View style={styles.showPerformance}>
+        <Picker
+          selectedValue={selectedSession}
+          onValueChange={itemValue => setSelectedSession(itemValue)}
+          style={styles.picker}
+          dropdownIconColor="black"
+          mode="dropdown">
+          {sessionList.length > 0 ? (
+            sessionList.map((session, index) => (
+              <Picker.Item
+                key={index}
+                label={session.title}
+                value={session.id}
+              />
+            ))
+          ) : (
+            <Picker.Item label="No sessions available" value="" />
+          )}
+        </Picker>
+      </View>
+      <Text style={styles.label}>Employee</Text>
+      <View style={styles.showPerformance}>
+        <EmployeeDropdown />
+      </View>
+      <TouchableOpacity style={styles.button} onPress={fetchKPIPerformanceData}>
+        <Text style={styles.buttonText}>Show Performance</Text>
+      </TouchableOpacity>
       {/* {kpiPerformanceData.length > 0 && (
         <MultipleEmployeeKPIBarChartComponent
           kpiPerformanceData={kpiPerformanceData}
@@ -372,6 +412,8 @@ const FirstRoute = () => (
         return <SecondRoute />;
       case 'third':
         return <ThirdRoute />;
+        case 'fourth':
+        return <FourthRoute />;
       default:
         return null;
     }

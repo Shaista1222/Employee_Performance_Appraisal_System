@@ -30,6 +30,68 @@ const getRandomColor = () => {
   }
   return color;
 };
+export const MultipleEmployeeKPIBarChartComponent = ({ kpiPerformanceData }) => {
+  if (!Array.isArray(kpiPerformanceData) || kpiPerformanceData.length === 0) {
+    return <Text>No data available</Text>;
+  }
+
+  const kpiTitles = Array.from(
+    new Set(kpiPerformanceData.flatMap(item => item.map(kpi => kpi.kpi_title)))
+  );
+
+  const colors = kpiTitles.reduce((acc, title) => {
+    acc[title] = getRandomColor();
+    return acc;
+  }, {});
+
+  const flattenedBarData = [];
+  const labels = [];
+
+  kpiPerformanceData.forEach(employeeKPIs => {
+    employeeKPIs.forEach(kpi => {
+      flattenedBarData.push({
+        value: kpi.score,
+        color: colors[kpi.kpi_title],
+      });
+    });
+    labels.push(''); // Add empty labels for spacing
+  });
+
+  return (
+    <ScrollView horizontal>
+      <View style={styles.container}>
+        <BarChart
+          data={{
+            labels: labels,
+            datasets: [
+              {
+                data: flattenedBarData.map(item => item.value),
+                colors: flattenedBarData.map(item => (opacity = 1) => item.color),
+              },
+            ],
+          }}
+          width={screenWidth - 20}
+          height={345}
+          chartConfig={chartConfig}
+          verticalLabelRotation={15}
+          fromZero={true}
+          showValuesOnTopOfBars={true}
+          withCustomBarColorFromData={true}
+          flatColor={true}
+        />
+        <View style={styles.legendContainer}>
+          {kpiTitles.map((title, index) => (
+            <View key={index} style={styles.legendItem}>
+              <View style={[styles.legendColor, { backgroundColor: colors[title] }]} />
+              <Text style={styles.legendText}>{title}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    </ScrollView>
+  );
+};
+
 
 export const MultipleEmployeeCourseBarChartComponent = ({ performanceData }) => {
   if (!Array.isArray(performanceData) || performanceData.length === 0) {
