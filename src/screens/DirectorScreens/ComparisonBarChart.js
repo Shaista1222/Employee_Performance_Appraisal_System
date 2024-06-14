@@ -58,8 +58,6 @@ export const MultipleEmployeeSubKpiBarChartComponent = ({ subKPIPerformanceData 
 
   const { width: screenWidth } = useWindowDimensions();
 
-  const chartWidth = screenWidth; // Adjust as needed based on your layout
-
   return (
     <View style={styles.container}>
       <BarChart
@@ -72,9 +70,13 @@ export const MultipleEmployeeSubKpiBarChartComponent = ({ subKPIPerformanceData 
             },
           ],
         }}
-        width={chartWidth}
+        width={screenWidth}
         height={345}
-        chartConfig={chartConfig}
+        chartConfig={{
+          ...chartConfig,
+          barPercentage: 0.5, 
+          fillShadowGradient: '#000000',
+        }}
         verticalLabelRotation={15}
         fromZero={true}
         showValuesOnTopOfBars={true}
@@ -92,6 +94,7 @@ export const MultipleEmployeeSubKpiBarChartComponent = ({ subKPIPerformanceData 
     </View>
   );
 };
+
 export const MultipleEmployeeKPIBarChartComponent = ({ kpiPerformanceData }) => {
   if (!Array.isArray(kpiPerformanceData) || kpiPerformanceData.length === 0) {
     return <Text>No data available</Text>;
@@ -120,8 +123,6 @@ export const MultipleEmployeeKPIBarChartComponent = ({ kpiPerformanceData }) => 
 
   const { width: screenWidth } = useWindowDimensions();
 
-  const chartWidth = screenWidth; // Adjust as needed based on your layout
-
   return (
     <View style={styles.container}>
       <BarChart
@@ -134,9 +135,13 @@ export const MultipleEmployeeKPIBarChartComponent = ({ kpiPerformanceData }) => 
             },
           ],
         }}
-        width={chartWidth}
+        width={screenWidth}
         height={345}
-        chartConfig={chartConfig}
+        chartConfig={{
+          ...chartConfig,
+          barPercentage: 0.4, // Adjust the width of the bars
+          fillShadowGradient: '#000000', // Color of the bars
+        }}
         verticalLabelRotation={15}
         fromZero={true}
         showValuesOnTopOfBars={true}
