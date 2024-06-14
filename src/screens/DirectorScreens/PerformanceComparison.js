@@ -4,7 +4,7 @@ import {
   Text,
   StyleSheet,
   Alert,
-  useWindowDimensions,
+  useWindowDimensions, // Ensure this is imported correctly,
   FlatList,
   TouchableOpacity,
 } from 'react-native';
@@ -178,7 +178,6 @@ const PerformanceComparison = () => {
       if (response && response.length > 0) {
         setSubKPIPerformanceData(response);
       } else {
-        console.warn('No Sub KPI Performance Data available for the selected criteria.');
         Alert.alert('No Data', 'No Sub KPI Performance Data available for the selected criteria.');
         setSubKPIPerformanceData([]);
       }
