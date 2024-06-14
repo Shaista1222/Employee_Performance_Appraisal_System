@@ -200,7 +200,7 @@ export const MultipleEmployeeCourseBarChartComponent = ({ performanceData }) => 
     getRandomColor(),
   );
 
-  const chartWidth = Math.max(screenWidth, labels.length * 60); // Adjust multiplier as needed
+  const chartWidth = Math.max(screenWidth, labels.length * 50); // Adjust multiplier as needed
 
   return (
     <ScrollView horizontal>

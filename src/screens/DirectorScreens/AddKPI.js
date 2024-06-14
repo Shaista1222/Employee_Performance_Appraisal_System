@@ -1,37 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Alert,
+  FlatList,
+  TouchableOpacity,
+} from 'react-native';
 import { TextInput } from 'react-native-paper';
 import DepartmentService from '../Services/DepartmentService';
 import { getSubKPIs } from '../Services/SubKpiServices';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
+import KpiService from '../Services/KpiService';
 
 export default function AddKpi() {
   const [departmentList, setDepartmentList] = useState([]);
   const [subKpiList, setSubKpiList] = useState([]);
   const [sessionId, setSessionId] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
-  const [selectedSubKpi, setSelectedSubKpi] = useState('');
+  const [selectedSubKpis, setSelectedSubKpis] = useState([]);
   const [kpiTitle, setKpiTitle] = useState('');
-  const [kpiWeightage, setKpiWeightage] = useState('');
+  const [KpiWeightage, setKpiWeightage] = useState('');
 
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
         const departmentData = await DepartmentService.getDepartments();
-        setDepartmentList(departmentData);
+        setDepartmentList(departmentData || []);
+        if (departmentData && departmentData.length > 0) {
+          setSelectedDepartment(departmentData[0].id);
+        }
       } catch (error) {
         console.error(error);
         Alert.alert('Error', 'Failed to fetch departments');
       }
     };
+
     const retrieveSessionData = async () => {
       try {
         const sessionData = await AsyncStorage.getItem('currentSession');
         if (sessionData) {
           const parsedSessionData = JSON.parse(sessionData);
-          setSessionId(parsedSessionData);
-          await fetchSubKPIs(parsedSessionData);
+          setSessionId(parsedSessionData.id);
         } else {
           console.log('Data not found in AsyncStorage', { sessionData });
           Alert.alert('Error', 'Session not found');
@@ -41,19 +52,77 @@ export default function AddKpi() {
         console.error('Error retrieving data:', error);
       }
     };
-    const fetchSubKPIs = async () => {
-      try {
-        const subKpi = await getSubKPIs(sessionId);
-        setSubKpiList(subKpi);
-      } catch (error) {
-        console.error(error);
-        Alert.alert('Error', 'Failed to fetch sub KPIs');
-      }
-    };
 
     retrieveSessionData();
     fetchDepartments();
   }, []);
+
+  useEffect(() => {
+    const fetchSubKPIs = async () => {
+      if (sessionId) {
+        try {
+          const subKpi = await getSubKPIs(sessionId);
+          setSubKpiList(subKpi);
+        } catch (error) {
+          console.error(error);
+          Alert.alert('Error', 'Failed to fetch sub KPIs');
+        }
+      }
+    };
+
+    fetchSubKPIs();
+  }, [sessionId]);
+
+  const updateSelectedSubKpi = (itemValue) => {
+    const subKpi = subKpiList.find((item) => item.id === itemValue);
+    if (subKpi && !selectedSubKpis.find((item) => item.id === subKpi.id)) {
+      setSelectedSubKpis([...selectedSubKpis, { ...subKpi, weightage: '' }]);
+    }
+  };
+
+  const updateWeightage = (id, weightage) => {
+    setSelectedSubKpis((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, weightage } : item
+      )
+    );
+  };
+
+  const deleteSubKpi = (id) => {
+    setSelectedSubKpis((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleAddKpi = async () => {
+    const kpiData = {
+      kpi: {
+        name: kpiTitle,
+        department_id: selectedDepartment,
+      },
+      weightage: {
+        session_id: sessionId,
+        weightage: Number(KpiWeightage),
+      },
+      subKpiWeightages: selectedSubKpis.map((subKpi) => ({
+        ...subKpi,
+        weightage: Number(subKpi.weightage),
+      })),
+    };
+
+    try {
+      if (!selectedDepartment || !kpiTitle || !KpiWeightage || selectedSubKpis.length === 0) {
+        Alert.alert('Please fill out all fields.');
+        return;
+      }
+
+      console.log('KPI Data:', JSON.stringify(kpiData, null, 2));
+      const newKpi = await KpiService.postKpi(kpiData);
+      console.log('New KPI added:', newKpi);
+      Alert.alert('Success', 'New KPI added successfully!');
+    } catch (error) {
+      console.error('Failed to add KPI:', error);
+      Alert.alert('Error', `Failed to add KPI: ${error.message}`);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -68,11 +137,10 @@ export default function AddKpi() {
       <View style={styles.showPerformance}>
         <Picker
           selectedValue={selectedDepartment}
-          onValueChange={itemValue => setSelectedDepartment(itemValue)}
+          onValueChange={(itemValue) => setSelectedDepartment(itemValue)}
           style={styles.picker}
           dropdownIconColor="black"
-          mode="dropdown"
-        >
+          mode="dropdown">
           {departmentList.length > 0 ? (
             departmentList.map((department, index) => (
               <Picker.Item
@@ -89,12 +157,11 @@ export default function AddKpi() {
       <Text style={styles.label}>Select Sub KPI</Text>
       <View style={styles.showPerformance}>
         <Picker
-          selectedValue={selectedSubKpi}
-          onValueChange={itemValue => setSelectedSubKpi(itemValue)}
+          selectedValue={selectedSubKpis}
+          onValueChange={(itemValue) => updateSelectedSubKpi(itemValue)}
           style={styles.picker}
           dropdownIconColor="black"
-          mode="dropdown"
-        >
+          mode="dropdown">
           {subKpiList.length > 0 ? (
             subKpiList.map((subKpi, index) => (
               <Picker.Item key={index} label={subKpi.name} value={subKpi.id} />
@@ -108,15 +175,34 @@ export default function AddKpi() {
         placeholderTextColor="gray"
         style={styles.input}
         onChangeText={setKpiWeightage}
-        value={kpiWeightage}
-        placeholder="Enter weightage"
+        value={KpiWeightage}
+        placeholder="Enter KPI weightage"
+        keyboardType="numeric"
       />
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => console.log('saved')}
-      >
+      <TouchableOpacity style={styles.button} onPress={handleAddKpi}>
         <Text style={styles.buttonText}>Save</Text>
       </TouchableOpacity>
+      <FlatList
+        data={selectedSubKpis}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.subKpiContainer}>
+            <Text style={styles.label}>{item.name}</Text>
+            <TextInput
+              placeholder="weightage"
+              value={item.weightage}
+              onChangeText={(text) => updateWeightage(item.id, text)}
+              style={styles.listInput}
+              keyboardType="numeric"
+            />
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => deleteSubKpi(item.id)}>
+              <Text style={styles.buttonText}>Delete</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      />
     </View>
   );
 }
@@ -127,24 +213,17 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: '#f5f5f5',
   },
-  title: {
-    paddingTop: 10,
-    backgroundColor: '#6360DC',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  titleText: {
-    fontSize: 24,
-    color: '#fff',
-  },
-  tabBar: {
-    backgroundColor: '#ffffff',
-    height: 45,
-    marginVertical: -8,
-  },
   input: {
     height: 25,
     width: '100%',
+    marginVertical: 10,
+    borderWidth: 1,
+    padding: 10,
+    color: 'black',
+  },
+  listInput: {
+    height: 20,
+    width: '30%',
     marginVertical: 10,
     borderWidth: 1,
     padding: 10,
@@ -164,27 +243,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: '#ccc',
-  },
-  pickerContainer: {
-    padding: 10,
-    borderRadius: 5,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-  },
-  pickerText: {
-    color: '#000',
-  },
-  dropdown: {
-    maxHeight: 300,
-  },
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    marginBottom: 10,
   },
   button: {
-    marginTop: 20,
     padding: 10,
     backgroundColor: '#6360DC',
     alignItems: 'center',
@@ -193,5 +254,19 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 16,
+  },
+  subKpiContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 5,
+    marginTop:5
+  },
+  deleteButton: {
+    padding: 10,
+    backgroundColor: '#dc6360',
+    borderRadius: 5,
   },
 });

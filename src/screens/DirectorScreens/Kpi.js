@@ -80,7 +80,7 @@ const Kpi = ({ navigation }) => {
   };
 
   const handleAddKpi = () => {
-    console.log('Navigate to Add KPI');
+    navigation.navigate('AddKpi')
   };
 
   if (isLoading) {

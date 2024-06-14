@@ -17,12 +17,17 @@ export const getAvailableSubKpis = async (sessionID) => {
 export const getSubKPIs = async (sessionID) => {
   try {
     const response = await fetch(`${IPAddress}/SubKpi/getSubKPIs?sessionID=${sessionID}`);
+    console.log('Full response:', response);
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      const errorText = await response.text();
+      console.error('Error response text:', errorText);
+      throw new Error(`Network response was not ok: ${response.statusText} (${response.status})`);
     }
     const data = await response.json();
+    console.log('Fetched sub KPIs:', data);
     return data;
   } catch (error) {
+    console.error('Error fetching sub KPIs:', error);
     throw error;
   }
 };

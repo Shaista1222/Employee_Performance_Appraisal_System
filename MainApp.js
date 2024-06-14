@@ -24,6 +24,7 @@ import DirectorEvaluation from './src/screens/DirectorScreens/DirectorEvaluation
 import EmployeeDetailsListItem from './src/screens/EmployeeDetailsListItem';
 import Kpi from './src/screens/DirectorScreens/Kpi';
 import PerformanceComparison from './src/screens/DirectorScreens/PerformanceComparison';
+import AddKpi from './src/screens/DirectorScreens/AddKpi';
 const Stack = createStackNavigator();
 const MainApp = () => {
   return (
@@ -52,6 +53,7 @@ const MainApp = () => {
         <Stack.Screen name="EvaluateeList" component={EvaluateeListFragment} />
         <Stack.Screen name="Kpi" component={Kpi} />
         <Stack.Screen name="PerformanceComparison" component={PerformanceComparison} />
+        <Stack.Screen name="AddKpi" component={AddKpi} />
 
         <Stack.Screen
           name="EvaluationQuestionnaire"
