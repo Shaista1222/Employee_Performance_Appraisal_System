@@ -1,6 +1,5 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, StyleSheet, Modal, TextInput, Alert} from 'react-native';
-import CommonData from '../DirectorScreens/CommonData';
 import {Picker} from '@react-native-picker/picker';
 import {Button} from 'react-native-paper';
 import DesignationService from '../Services/DesignationService';

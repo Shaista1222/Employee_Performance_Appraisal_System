@@ -1,35 +1,18 @@
-import React from 'react';
-import { View, Text, Spinner } from 'react-native';
-import { CommonData } from './CommonData';
+// import React from 'react';
+// import { View, Text, ActivityIndicator } from 'react-native';
+// const AddIndividualKpiFragment = () => {
+//     const [names, setNames] = React.useState([]);
+//     const [isLoading, setIsLoading] = React.useState(true);
 
-const AddIndividualKpiFragment = () => {
-    const [names, setNames] = React.useState([]);
-    const [isLoading, setIsLoading] = React.useState(true);
+//     if (isLoading) {
+//         return <ActivityIndicator />;
+//     }
 
-    React.useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const commonData = new CommonData();
-                const generatedNames = await commonData.generateNames();
-                setNames(generatedNames);
-                setIsLoading(false);
-            } catch (error) {
-                console.error(error);
-            }
-        };
-        fetchData();
-    }, []);
+//     return (
+//         <View>
+//             <Text>Individual KPI Fragment</Text>
+//         </View>
+//     );
+// };
 
-    if (isLoading) {
-        return <Spinner />;
-    }
-
-    return (
-        <View>
-            <Text>Individual KPI Fragment</Text>
-            {/* Render your spinner here with data from state */}
-        </View>
-    );
-};
-
-export default AddIndividualKpiFragment;
+// export default AddIndividualKpiFragment;

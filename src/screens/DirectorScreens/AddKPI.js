@@ -1,84 +1,184 @@
-import * as React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { TabView, TabBar } from 'react-native-tab-view';
-import { Text } from 'react-native-paper';
-import AddGeneralKpi from './AddGeneralKpi';
+import React, {useState, useEffect} from 'react';
+import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {TextInput} from 'react-native-paper';
+import DepartmentService from '../Services/DepartmentService';
+import {getSubKPIs} from '../Services/SubKpiServices';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {Picker} from '@react-native-picker/picker';
 
-const GeneralRoute = () => (
-    <View style={[styles.scene, { backgroundColor: '#673ab7' }]}><Text>Group Content</Text></View>
+export default function AddKpi() {
+  const [departmentList, setDepartmentList] = useState([]);
+  const [subKpiList, setSubKpiList] = useState([]);
+  const [sessionId, setSessionId] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [selectedSubKpi, setSelectedSubKpi] = useState('');
+  const [kpiTitle, setKpiTitle] = useState('');
+  const [kpiWeighatge, setKpiWeightage] = useState('');
 
-);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const departmentData = await DepartmentService.getDepartments();
+        const subKpi = await getSubKPIs(sessionId);
+        setSubKpiList(subKpi);
+        setDepartmentList(departmentData);
+        setIsLoading(false);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    const retrieveData = async () => {
+      try {
+        const sessionData = await AsyncStorage.getItem('currentSession');
+        console.log('Retrieved data from AsyncStorage', {sessionData});
 
-const GroupRoute = () => (
-  <View style={[styles.scene, { backgroundColor: '#673ab7' }]}><Text>Group Content</Text></View>
-);
-
-const EmployeeRoute = () => (
-  <View style={[styles.scene, { backgroundColor: '#2196f3' }]}><Text>Employee Content</Text></View>
-);
-
-const renderScene = ({ route }) => {
-  switch (route.key) {
-    case 'general':
-      return <GeneralRoute />;
-    case 'group':
-      return <GroupRoute />;
-    case 'employee':
-      return <EmployeeRoute />;
-    default:
-      return null;
-  }
-};
-
-const renderTabBar = (props) => (
-  <TabBar
-    {...props}
-    indicatorStyle={styles.indicator}
-    style={styles.tabBar}
-    renderLabel={({ route, focused, color }) => (
-      <Text style={[styles.label, { color }]}>{route.title}</Text>
-    )}
-  />
-);
-
-const AddKpi = () => {
-  const [index, setIndex] = React.useState(0);
-  const [routes] = React.useState([
-    { key: 'general', title: 'General' },
-    { key: 'group', title: 'Group' },
-    { key: 'employee', title: 'Employee' },
-  ]);
-
+        if (sessionData) {
+          const parsedSessionData = JSON.parse(sessionData);
+          setSessionId(parsedSessionData);
+        } else {
+          console.log('Data not found in AsyncStorage', {sessionData});
+          Alert.alert('Error', 'session not found');
+        }
+      } catch (error) {
+        Alert.alert('Error', error.message);
+        console.error('Error retrieving data:', error);
+      }
+    };
+    retrieveData();
+    fetchData();
+  }, []);
   return (
-    <TabView
-      navigationState={{ index, routes }}
-      renderScene={renderScene}
-      onIndexChange={setIndex}
-      renderTabBar={renderTabBar}
-    />
+    <View style={styles.container}>
+      <TextInput
+        placeholderTextColor="gray"
+        style={styles.input}
+        onChangeText={setKpiTitle}
+        value={kpiTitle}
+        placeholder="Enter Kpi title"
+      />
+      <Text style={styles.label}>Select Department</Text>
+      <View style={styles.showPerformance}>
+        <Picker
+          selectedValue={selectedDepartment}
+          onValueChange={itemValue => setSelectedDepartment(itemValue)}
+          style={styles.picker}
+          dropdownIconColor="black"
+          mode="dropdown">
+          {departmentList.length > 0 ? (
+            departmentList.map((department, index) => (
+              <Picker.Item
+                key={index}
+                label={department.name}
+                value={department.id}
+              />
+            ))
+          ) : (
+            <Picker.Item label="No department available" value="" />
+          )}
+        </Picker>
+      </View>
+      <Text style={styles.label}>Select Sub KPI</Text>
+      <View style={styles.showPerformance}>
+        <Picker
+          selectedValue={selectedSubKpi}
+          onValueChange={itemValue => setSelectedSubKpi(itemValue)}
+          style={styles.picker}
+          dropdownIconColor="black"
+          mode="dropdown">
+          {subKpiList.length > 0 ? (
+            subKpiList.map((subKpi, index) => (
+              <Picker.Item key={index} label={subKpi.name} value={subKpi.id} />
+            ))
+          ) : (
+            <Picker.Item label="No sub KPI available" value="" />
+          )}
+        </Picker>
+      </View>
+      <TextInput
+        placeholderTextColor="gray"
+        style={styles.input}
+        onChangeText={setKpiWeightage}
+        value={kpiWeighatge}
+        placeholder="Enter weightage"
+      />
+      <TouchableOpacity style={styles.button} onPress={console.log('saved')}>
+        <Text style={styles.buttonText}>Save</Text>
+      </TouchableOpacity>
+    </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  scene: {
+  container: {
     flex: 1,
+    padding: 12,
+    backgroundColor: '#f5f5f5',
+  },
+  title: {
+    paddingTop: 10,
+    backgroundColor: '#6360DC',
     alignItems: 'center',
     justifyContent: 'center',
-    
+  },
+  titleText: {
+    fontSize: 24,
+    color: '#fff',
   },
   tabBar: {
-    backgroundColor: 'gray',
-    color:'black'
+    backgroundColor: '#ffffff',
+    height: 45,
+    marginVertical: -8,
   },
-  indicator: {
-    backgroundColor: '#6360DC',
-    color:'black'
+  input: {
+    height: 25,
+    width: '100%',
+    marginVertical: 10,
+    borderWidth: 1,
+    padding: 10,
+    color: 'black',
   },
   label: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color:'black'
+    fontSize: 16,
+    color: 'black',
+  },
+  picker: {
+    color: 'black',
+    width: '100%',
+  },
+  showPerformance: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  pickerContainer: {
+    padding: 10,
+    borderRadius: 5,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+  },
+  pickerText: {
+    color: '#000',
+  },
+  dropdown: {
+    maxHeight: 300,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  button: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: '#6360DC',
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
-
-export default AddKpi;

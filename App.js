@@ -24,11 +24,12 @@ import DirectorEvaluation from './src/screens/DirectorScreens/DirectorEvaluation
 import EmployeeDetailsListItem from './src/screens/EmployeeDetailsListItem';
 import Kpi from './src/screens/DirectorScreens/Kpi';
 import PerformanceComparison from './src/screens/DirectorScreens/PerformanceComparison';
+import AddKpi from './src/screens/DirectorScreens/AddKpi';
 const Stack = createStackNavigator();
 
 const App = () => {
   return (
-    <PerformanceComparison/>
+    <AddKpi/>
   );
 };
 

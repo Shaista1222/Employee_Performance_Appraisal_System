@@ -25,7 +25,7 @@ import {
 import EmployeeKPIPerformance from '../Services/EmployeeKPIPerformance';
 import QuestionaireServiceListner from '../Services/QuestionaireServiceListner';
 import {getMultiEmployeeQuestionScore} from '../Services/QuestionsScores';
-import { getSubKpiMultiEmployeePerformance } from '../Services/SubKpiServices';
+import {getSubKpiMultiEmployeePerformance} from '../Services/SubKpiServices';
 
 const PerformanceComparison = () => {
   const layout = useWindowDimensions();
@@ -35,7 +35,6 @@ const PerformanceComparison = () => {
     {key: 'second', title: 'KPI Comparison'},
     {key: 'third', title: 'Question Comparison'},
     {key: 'fourth', title: 'Sub KPI Comparison'},
-
   ]);
 
   const [courseList, setCourseList] = useState([]);
@@ -46,12 +45,13 @@ const PerformanceComparison = () => {
   const [selectedCourse, setSelectedCourse] = useState([]);
   const [selectedEvaluationType, setSelectedEvaluationType] = useState('');
   const [selectedEmployees, setSelectedEmployees] = useState([]);
-  const [isEmployeeDropdownVisible, setIsEmployeeDropdownVisible] = useState(false);
+  const [isEmployeeDropdownVisible, setIsEmployeeDropdownVisible] =
+    useState(false);
   const [isCourseDropdownVisible, setIsCourseDropdownVisible] = useState(false);
   const [performanceData, setPerformanceData] = useState([]);
   const [kpiPerformanceData, setKPIPerformanceData] = useState([]);
   const [questionPerformanceData, setQuestionPerformanceData] = useState([]);
-  const [subKPIPerformanceData,setSubKPIPerformanceData]=useState([])
+  const [subKPIPerformanceData, setSubKPIPerformanceData] = useState([]);
   useEffect(() => {
     const fetchSessions = async () => {
       try {
@@ -143,13 +143,14 @@ const PerformanceComparison = () => {
 
   const fetchPerformanceData = async () => {
     try {
-      const response = await EmployeeCoursePerformanceService.getMultiEmployeeCourseScore(
-        selectedEmployees,
-        selectedCourse,
-        selectedSession,
-      );
+      const response =
+        await EmployeeCoursePerformanceService.getMultiEmployeeCourseScore(
+          selectedEmployees,
+          selectedCourse,
+          selectedSession,
+        );
       setPerformanceData(response);
-      console.log("Response", response);
+      console.log('Response', response);
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -157,10 +158,11 @@ const PerformanceComparison = () => {
   const fetchKPIPerformanceData = async () => {
     try {
       const response = await EmployeeKPIPerformance.compareEmployeeKpiScore(
-        selectedEmployees, selectedSession
+        selectedEmployees,
+        selectedSession,
       );
       setKPIPerformanceData(response);
-      console.log("Response getting",response)
+      console.log('Response getting', response);
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -172,13 +174,17 @@ const PerformanceComparison = () => {
         selectedSession,
       });
       const response = await getSubKpiMultiEmployeePerformance(
-        selectedEmployees, selectedSession
+        selectedEmployees,
+        selectedSession,
       );
       console.log('Sub KPI Performance Data Response:', response);
       if (response && response.length > 0) {
         setSubKPIPerformanceData(response);
       } else {
-        Alert.alert('No Data', 'No Sub KPI Performance Data available for the selected criteria.');
+        Alert.alert(
+          'No Data',
+          'No Sub KPI Performance Data available for the selected criteria.',
+        );
         setSubKPIPerformanceData([]);
       }
     } catch (error) {
@@ -207,7 +213,7 @@ const PerformanceComparison = () => {
           <FlatList
             data={employeeList}
             keyExtractor={item => item.id.toString()}
-            renderItem={({ item }) => (
+            renderItem={({item}) => (
               <View style={styles.checkboxContainer}>
                 <CheckBox
                   value={selectedEmployees.includes(item.id)}
@@ -239,7 +245,7 @@ const PerformanceComparison = () => {
           <FlatList
             data={courseList}
             keyExtractor={item => item.id.toString()}
-            renderItem={({ item }) => (
+            renderItem={({item}) => (
               <View style={styles.checkboxContainer}>
                 <CheckBox
                   value={selectedCourse.includes(item.id)}
@@ -253,19 +259,23 @@ const PerformanceComparison = () => {
       )}
     </View>
   );
-const FirstRoute = () => (
+  const FirstRoute = () => (
     <View style={styles.container}>
       <Text style={styles.label}>Session</Text>
       <View style={styles.showPerformance}>
         <Picker
           selectedValue={selectedSession}
-          onValueChange={(itemValue) => setSelectedSession(itemValue)}
+          onValueChange={itemValue => setSelectedSession(itemValue)}
           style={styles.picker}
           dropdownIconColor="black"
           mode="dropdown">
           {sessionList.length > 0 ? (
             sessionList.map((session, index) => (
-              <Picker.Item key={index} label={session.title} value={session.id} />
+              <Picker.Item
+                key={index}
+                label={session.title}
+                value={session.id}
+              />
             ))
           ) : (
             <Picker.Item label="No sessions available" value="" />
@@ -284,13 +294,14 @@ const FirstRoute = () => (
         <Text style={styles.buttonText}>Show Performance</Text>
       </TouchableOpacity>
       {performanceData.length > 0 ? (
-        <MultipleEmployeeCourseBarChartComponent performanceData={performanceData} />
+        <MultipleEmployeeCourseBarChartComponent
+          performanceData={performanceData}
+        />
       ) : (
         <Text>No data to display</Text>
       )}
     </View>
   );
-
 
   const ThirdRoute = () => (
     <View style={styles.container}>
@@ -393,7 +404,7 @@ const FirstRoute = () => (
       )}
     </View>
   );
-  
+
   const FourthRoute = () => (
     <View style={styles.container}>
       <Text style={styles.label}>Session</Text>
@@ -421,7 +432,9 @@ const FirstRoute = () => (
       <View style={styles.showPerformance}>
         <EmployeeDropdown />
       </View>
-      <TouchableOpacity style={styles.button} onPress={fetchSubKpiPerformanceData}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={fetchSubKpiPerformanceData}>
         <Text style={styles.buttonText}>Show Performance</Text>
       </TouchableOpacity>
       {subKPIPerformanceData.length > 0 && (
@@ -439,7 +452,7 @@ const FirstRoute = () => (
         return <SecondRoute />;
       case 'third':
         return <ThirdRoute />;
-        case 'fourth':
+      case 'fourth':
         return <FourthRoute />;
       default:
         return null;
