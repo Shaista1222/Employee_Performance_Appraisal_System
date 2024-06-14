@@ -1,10 +1,10 @@
-import React, {useState, useEffect} from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import {TextInput} from 'react-native-paper';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { TextInput } from 'react-native-paper';
 import DepartmentService from '../Services/DepartmentService';
-import {getSubKPIs} from '../Services/SubKpiServices';
+import { getSubKPIs } from '../Services/SubKpiServices';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Picker} from '@react-native-picker/picker';
+import { Picker } from '@react-native-picker/picker';
 
 export default function AddKpi() {
   const [departmentList, setDepartmentList] = useState([]);
@@ -13,40 +13,48 @@ export default function AddKpi() {
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [selectedSubKpi, setSelectedSubKpi] = useState('');
   const [kpiTitle, setKpiTitle] = useState('');
-  const [kpiWeighatge, setKpiWeightage] = useState('');
+  const [kpiWeightage, setKpiWeightage] = useState('');
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchDepartments = async () => {
       try {
         const departmentData = await DepartmentService.getDepartments();
-        const subKpi = await getSubKPIs(sessionId);
-        setSubKpiList(subKpi);
         setDepartmentList(departmentData);
-        setIsLoading(false);
       } catch (error) {
         console.error(error);
+        Alert.alert('Error', 'Failed to fetch departments');
       }
     };
-    const retrieveData = async () => {
+    const retrieveSessionData = async () => {
       try {
         const sessionData = await AsyncStorage.getItem('currentSession');
-        console.log('Retrieved data from AsyncStorage', {sessionData});
-
         if (sessionData) {
           const parsedSessionData = JSON.parse(sessionData);
           setSessionId(parsedSessionData);
+          await fetchSubKPIs(parsedSessionData);
         } else {
-          console.log('Data not found in AsyncStorage', {sessionData});
-          Alert.alert('Error', 'session not found');
+          console.log('Data not found in AsyncStorage', { sessionData });
+          Alert.alert('Error', 'Session not found');
         }
       } catch (error) {
         Alert.alert('Error', error.message);
         console.error('Error retrieving data:', error);
       }
     };
-    retrieveData();
-    fetchData();
+    const fetchSubKPIs = async () => {
+      try {
+        const subKpi = await getSubKPIs(sessionId);
+        setSubKpiList(subKpi);
+      } catch (error) {
+        console.error(error);
+        Alert.alert('Error', 'Failed to fetch sub KPIs');
+      }
+    };
+
+    retrieveSessionData();
+    fetchDepartments();
   }, []);
+
   return (
     <View style={styles.container}>
       <TextInput
@@ -54,7 +62,7 @@ export default function AddKpi() {
         style={styles.input}
         onChangeText={setKpiTitle}
         value={kpiTitle}
-        placeholder="Enter Kpi title"
+        placeholder="Enter KPI title"
       />
       <Text style={styles.label}>Select Department</Text>
       <View style={styles.showPerformance}>
@@ -63,7 +71,8 @@ export default function AddKpi() {
           onValueChange={itemValue => setSelectedDepartment(itemValue)}
           style={styles.picker}
           dropdownIconColor="black"
-          mode="dropdown">
+          mode="dropdown"
+        >
           {departmentList.length > 0 ? (
             departmentList.map((department, index) => (
               <Picker.Item
@@ -84,7 +93,8 @@ export default function AddKpi() {
           onValueChange={itemValue => setSelectedSubKpi(itemValue)}
           style={styles.picker}
           dropdownIconColor="black"
-          mode="dropdown">
+          mode="dropdown"
+        >
           {subKpiList.length > 0 ? (
             subKpiList.map((subKpi, index) => (
               <Picker.Item key={index} label={subKpi.name} value={subKpi.id} />
@@ -98,10 +108,13 @@ export default function AddKpi() {
         placeholderTextColor="gray"
         style={styles.input}
         onChangeText={setKpiWeightage}
-        value={kpiWeighatge}
+        value={kpiWeightage}
         placeholder="Enter weightage"
       />
-      <TouchableOpacity style={styles.button} onPress={console.log('saved')}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => console.log('saved')}
+      >
         <Text style={styles.buttonText}>Save</Text>
       </TouchableOpacity>
     </View>
