@@ -95,7 +95,7 @@ export default function AddKpi() {
   const handleAddKpi = async () => {
     const kpiData = {
       kpi: {
-        name: kpiTitle,
+        name: kpiTitle.trim(),
         department_id: selectedDepartment,
       },
       weightage: {
@@ -103,17 +103,18 @@ export default function AddKpi() {
         weightage: Number(KpiWeightage),
       },
       subKpiWeightages: selectedSubKpis.map((subKpi) => ({
-        ...subKpi,
+        sub_kpi_id: subKpi.id, 
         weightage: Number(subKpi.weightage),
+        session_id:sessionId
       })),
     };
-
+  
     try {
-      if (!selectedDepartment || !kpiTitle || !KpiWeightage || selectedSubKpis.length === 0) {
+      if (!selectedDepartment || !kpiTitle.trim() || !KpiWeightage || selectedSubKpis.length === 0) {
         Alert.alert('Please fill out all fields.');
         return;
       }
-
+  
       console.log('KPI Data:', JSON.stringify(kpiData, null, 2));
       const newKpi = await KpiService.postKpi(kpiData);
       console.log('New KPI added:', newKpi);
@@ -123,7 +124,6 @@ export default function AddKpi() {
       Alert.alert('Error', `Failed to add KPI: ${error.message}`);
     }
   };
-
   return (
     <View style={styles.container}>
       <TextInput

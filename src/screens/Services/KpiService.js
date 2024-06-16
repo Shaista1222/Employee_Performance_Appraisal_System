@@ -158,7 +158,7 @@ KpiService = {
   async postKpi(kpiWithSubKpis) {
     try {
       console.log('Sending KPI Data:', JSON.stringify(kpiWithSubKpis, null, 2));
-
+  
       const response = await fetch(`${IPAddress}/KPI/PostKpi`, {
         method: 'POST',
         headers: {
@@ -166,15 +166,15 @@ KpiService = {
         },
         body: JSON.stringify(kpiWithSubKpis),
       });
-
+  
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Error response:', errorText);
         throw new Error(
-          `Network response was not ok: ${response.status} - ${response.statusText}`,
+          `Network response was not ok: ${response.status} - ${response.statusText} - ${errorText}`
         );
       }
-
+  
       const data = await response.json();
       console.log('Response data:', data);
       return data;
@@ -182,6 +182,6 @@ KpiService = {
       console.error('Error posting KPI:', error);
       throw error;
     }
-  },
-};
+  }
+}  
 export default KpiService;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Button, ActivityIndicator, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { PieChart } from 'react-native-chart-kit';
 import SessionService from '../Services/SessionService';
@@ -96,19 +96,27 @@ const Kpi = ({ navigation }) => {
   }
 
   return (
+    <>
+    <View style={styles.title}>
+      <Text style={styles.titleText}>KPI</Text>
+    </View>
     <View style={styles.container}>
-      <Text style={styles.title}>KPI Fragment</Text>
-      <Button title="Add KPI" onPress={handleAddKpi} />
+    <TouchableOpacity style={styles.button} onPress={handleAddKpi}>
+        <Text style={styles.buttonText}>Add KPI</Text>
+      </TouchableOpacity>
+      <View style={styles.showPerformance}>
       <Picker
         selectedValue={selectedSessionId}
         dropdownIconColor='black'
         style={styles.picker}
         onValueChange={(itemValue) => handleSessionSelection(itemValue)}
       >
+      <Picker.Item label='--Select Session--'/>
         {sessionList.map((session) => (
           <Picker.Item key={session.id} label={session.title} value={session.id} />
         ))}
       </Picker>
+      </View>
       <ScrollView>
         {kpis.map((group, index) => {
           console.log(`Group ${index} KPI Count:`, group.kpiList.length); 
@@ -154,6 +162,7 @@ const Kpi = ({ navigation }) => {
         })}
       </ScrollView>
     </View>
+    </>
   );
 }
 
@@ -173,15 +182,37 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   title: {
+    paddingTop: 10,
+    backgroundColor: '#6360DC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleText: {
     fontSize: 24,
-    marginBottom: 16,
-    color: 'black',
+    color: '#fff',
+    marginBottom: 10,
   },
   picker: {
-    height: 50,
-    width: '100%',
-    marginBottom: 16,
     color: 'black',
+    width: '100%',
+  },
+  showPerformance: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    marginTop: 10,
+  },
+  button: {
+    padding: 10,
+    backgroundColor: '#6360DC',
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
   },
   groupTitle: {
     fontSize: 20,
