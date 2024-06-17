@@ -254,7 +254,7 @@ export const EmployeeSubKpiBarChartComponent = ({
       <BarChart
         data={chartData}
         width={screenWidth - 16}
-        height={450}
+        height={300}
         chartConfig={{
           ...chartConfig,
           color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
@@ -284,6 +284,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'column',
     alignItems: 'center',
-    marginTop: 30,
+    marginTop: 57
   },
 });

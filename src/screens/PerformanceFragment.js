@@ -6,13 +6,15 @@ import {Picker} from '@react-native-picker/picker';
 import SessionService from './Services/SessionService';
 import EmployeeKPIPerformance from './Services/EmployeeKPIPerformance';
 import EmployeeCoursePerformanceService from './Services/EmployeeCoursePerformanceService';
-import QuestionsScores from './Services/QuestionsScores';
+import QuestionsScores, { getQuestionsScores } from './Services/QuestionsScores';
 import QuestionaireServiceListner from './Services/QuestionaireServiceListner';
 import {
   QuestionScoreBarChartComponent,
   SessionBarChartComponent,
   EmployeeCourseBarChartComponent,
+  EmployeeSubKpiBarChartComponent,
 } from './DirectorScreens/ShowPerformance';
+import { getSubKpiEmployeePerformance } from './Services/SubKpiServices';
 
 const PerformanceFragment = () => {
   const layout = useWindowDimensions();
@@ -34,6 +36,12 @@ const PerformanceFragment = () => {
   const [evaluationTypeId, setEvaluationTypeId] = useState('');
   const [selectedEvaluationType, setSelectedEvaluationType] = useState('');
   const [evaluationTypeList, setEvaluationTypeList] = useState([]);
+  const [filteredSubKpiPerformance, setFilteredSubKpiPerformance] = useState(
+    [],
+  );
+  const [employeeSubKpiPerformance, setEmployeeSubKpiPerformance] = useState(
+    [],
+  );
 
   useEffect(() => {
     const retrieveEmployeeData = async () => {
@@ -134,7 +142,7 @@ const PerformanceFragment = () => {
     if (selectedSession && evaluationTypeId) {
       const fetchEvaluations = async () => {
         try {
-          const data = await QuestionsScores.getQuestionsScores(
+          const data = await getQuestionsScores(
             employeeUser.employee.id,
             selectedSession,
             evaluationTypeId,
@@ -147,6 +155,34 @@ const PerformanceFragment = () => {
       fetchEvaluations();
     }
   }, [selectedSession, evaluationTypeId]);
+  useEffect(() => {
+    if (selectedSession) {
+      const fetchEmployeeSubKpiPerformance = async (employeeID, sessionID) => {
+        try {
+          const data = await getSubKpiEmployeePerformance(
+            employeeID,
+            sessionID,
+          );
+          setEmployeeSubKpiPerformance(data || []);
+          console.log('Data of SubKPI', data);
+        } catch (error) {
+          console.log(error);
+          Alert.alert('Error ..', error.message);
+        }
+      };
+
+      fetchEmployeeSubKpiPerformance(employeeUser.employee.id, selectedSession);
+    }
+  }, [selectedSession]);
+  useEffect(() => {
+    if (employeeUser) {
+      const filtered = employeeSubKpiPerformance.filter(
+        item => item.employee_id == employeeUser.employee.id,
+      );
+      console.log('Filtered Sub KPI Performance:', filtered);
+      setFilteredSubKpiPerformance(filtered);
+    }
+  }, [employeeSubKpiPerformance, selectedSession]);
 
   const FirstRoute = () => (
     <View>
@@ -164,7 +200,11 @@ const PerformanceFragment = () => {
           mode="dropdown">
           {sessionList.length > 0 ? (
             sessionList.map((session, index) => (
-              <Picker.Item key={index} label={session.title} value={session.id} />
+              <Picker.Item
+                key={index}
+                label={session.title}
+                value={session.id}
+              />
             ))
           ) : (
             <Picker.Item label="No sessions available" value="" />
@@ -178,13 +218,8 @@ const PerformanceFragment = () => {
       )}
     </View>
   );
-  
 
   const SecondRoute = () => (
-    <View style={{flex: 1, backgroundColor: '#ff4081'}} />
-  );
-
-  const ThirdRoute = () => (
     <View>
       <View style={{backgroundColor: 'brown', padding: 6}}>
         <Text style={{fontSize: 20, color: 'white', fontWeight: 'bold'}}>
@@ -213,6 +248,42 @@ const PerformanceFragment = () => {
       </View>
       {selectedSession && (
         <SessionBarChartComponent data={filteredPerformance} />
+      )}
+    </View>
+  );
+
+  const ThirdRoute = () => (
+    <View>
+      <View style={{backgroundColor: 'brown', padding: 6}}>
+        {/* <Text style={{fontSize: 20, color: 'white', fontWeight: 'bold'}}>
+          {employeeUser.employee.name}
+        </Text> */}
+      </View>
+      <Text style={styles.label}>Session</Text>
+      <View style={styles.showPerformance}>
+        <Picker
+          selectedValue={selectedSession}
+          onValueChange={itemValue => setSelectedSession(itemValue)}
+          style={styles.picker}
+          dropdownIconColor="black"
+          mode="dropdown">
+          {sessionList.length > 0 ? (
+            sessionList.map((session, index) => (
+              <Picker.Item
+                key={index}
+                label={session.title}
+                value={session.id}
+              />
+            ))
+          ) : (
+            <Picker.Item label="No sessions available" value="" />
+          )}
+        </Picker>
+      </View>
+      {selectedSession && (
+        <EmployeeSubKpiBarChartComponent
+          kpiPerformanceData={filteredSubKpiPerformance}
+        />
       )}
     </View>
   );

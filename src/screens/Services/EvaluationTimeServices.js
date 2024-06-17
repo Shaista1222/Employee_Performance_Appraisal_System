@@ -38,8 +38,6 @@ export const checkConfidentialPin = async (sessionID, pin) => {
     throw new Error(error.message);
   }
 };
-
-
 export const postEvaluationTime = async (evaluationTime) => {
   try {
     const response = await fetch(`${IPAddress}/EvaluationTime/PostEvaluationTime`, {

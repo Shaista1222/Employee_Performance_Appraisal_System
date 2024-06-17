@@ -5,12 +5,7 @@ import {useTabMenu} from '../../context/TabContext';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontIcon from 'react-native-vector-icons/FontAwesome5';
 import MatCommunity from 'react-native-vector-icons/MaterialCommunityIcons';
-import Report from '../../screens/DirectorScreens/Report';
-import Task from '../../screens/DirectorScreens/Tasks';
-import OptionsModal from './OptionsModal'; // Import OptionsModal
 import {COLORS} from '../../theme/theme';
-import Evaluator from '../../screens/DirectorScreens/Evaluator';
-import OptionWeightage from '../../screens/DirectorScreens/OptionsWeightage';
 import EvaluateeListFragment from '../../screens/EvaluateeListFragment';
 import MyTasksFragment from '../../screens/MyTasksFragment';
 import PerformanceFragment from '../../screens/PerformanceFragment';

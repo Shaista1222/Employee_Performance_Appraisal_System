@@ -7,7 +7,6 @@ import FontIcon from 'react-native-vector-icons/FontAwesome5';
 import MatCommunity from 'react-native-vector-icons/MaterialCommunityIcons';
 import Task from '../../screens/Task'
 import {COLORS} from '../../theme/theme';
-import OptionWeightage from '../../screens/DirectorScreens/OptionsWeightage';
 import MyTasksFragment from '../../screens/MyTasksFragment';
 import EvaluateeListFragment from '../../screens/EvaluateeListFragment';
 import PerformanceFragment from '../../screens/PerformanceFragment';
