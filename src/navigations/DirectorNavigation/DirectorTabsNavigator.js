@@ -66,9 +66,10 @@ const DirectorTabsNavigator = () => {
             tabPress: e => opened && e.preventDefault(),
           }}
         />
+
         <Tab.Screen
           name="Settings"
-          component={() => null} // Render an empty component for the plus button
+          component={OptionsModal}
           options={{
             tabBarButton: ({focused}) => (
               <TouchableOpacity
