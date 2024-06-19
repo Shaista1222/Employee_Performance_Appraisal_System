@@ -25,10 +25,10 @@ import EmployeeDetailsListItem from './src/screens/EmployeeDetailsListItem';
 import Kpi from './src/screens/DirectorScreens/Kpi';
 import PerformanceComparison from './src/screens/DirectorScreens/PerformanceComparison';
 import AddKpi from './src/screens/DirectorScreens/AddKpi';
+import Session from './src/screens/DirectorScreens/Session';
 const Stack = createStackNavigator();
 const MainApp = () => {
   return (
-   
     <NavigationContainer>
       <Stack.Navigator screenOptions={{headerShown: false}}>
         <Stack.Screen name="Login" component={Login} />
@@ -52,7 +52,10 @@ const MainApp = () => {
         <Stack.Screen name="Performance" component={Performance} />
         <Stack.Screen name="EvaluateeList" component={EvaluateeListFragment} />
         <Stack.Screen name="Kpi" component={Kpi} />
-        <Stack.Screen name="PerformanceComparison" component={PerformanceComparison} />
+        <Stack.Screen
+          name="PerformanceComparison"
+          component={PerformanceComparison}
+        />
         <Stack.Screen name="AddKpi" component={AddKpi} />
 
         <Stack.Screen
@@ -65,6 +68,7 @@ const MainApp = () => {
           name="DirectorEvaluation"
           component={DirectorEvaluation}
         />
+        <Stack.Screen name="Session" component={Session} />
         <Stack.Screen
           name="QuestionnaireFragment"
           component={QuestionnaireFragment}
@@ -75,8 +79,8 @@ const MainApp = () => {
           component={ConfidentialEvaluationSetting}
         />
       </Stack.Navigator>
-    </NavigationContainer> 
-  )
-}
+    </NavigationContainer>
+  );
+};
 
-export default MainApp
+export default MainApp;

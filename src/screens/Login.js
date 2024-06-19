@@ -1,13 +1,7 @@
-import React, { useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  TextInput,
-  Text,
-  Alert,
-} from 'react-native';
-import { Button } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
+import React, {useState} from 'react';
+import {View, StyleSheet, TextInput, Text, Alert} from 'react-native';
+import {Button} from 'react-native-paper';
+import {useNavigation} from '@react-navigation/native';
 import LoginService from './Services/LoginService';
 
 const Login = () => {
@@ -17,15 +11,15 @@ const Login = () => {
 
   const loginToEmployee = async (emailOrAridNo, password) => {
     try {
-      console.log('Attempting to log in as employee:', emailOrAridNo);
-      const response = await LoginService.loginEmployee(emailOrAridNo, password);
-      console.log('Response from employee login:', response);
-
-      if (response.ok) {
-        const user = response.data; 
+      const response = await LoginService.loginEmployee(
+        emailOrAridNo,
+        password,
+      );
+      if (response.status === 200) {
+        const user = response.data;
         if (user) {
           if (user.designation.name === 'Director') {
-            navigation.navigate('DirectorMain', { screen: 'DirectorMain' });
+            navigation.navigate('DirectorMain', {screen: 'DirectorMain'});
           } else if (user.designation.name === 'HOD') {
             navigation.navigate('HODMain');
           } else if (user.designation.name === 'Teacher') {
@@ -36,9 +30,10 @@ const Login = () => {
           ) {
             navigation.navigate('AdminMain');
           }
+        } else {
+          Alert.alert('Email or password are not correct');
+          console.log('Email or password are not correct');
         }
-      } else {
-        Alert.alert('Login failed');
       }
     } catch (error) {
       Alert.alert('Login failed');
@@ -52,15 +47,15 @@ const Login = () => {
       const response = await LoginService.loginStudent(emailOrAridNo, password);
       console.log('Response from student login:', response);
 
-      if (response.status == 200) {
+      if (response.status === 200) {
         const data = response.data;
-        console.log('Student data:', data);
-        navigation.navigate('StudentMain');
-      } else {
-        Alert.alert(response.status);
+        if (data) navigation.navigate('StudentMain');
+        else {
+          Alert.alert('Email or password are not correct');
+        }
       }
     } catch (error) {
-      Alert.alert(error.message);
+      Alert.alert('Login failed');
       console.error('Error:', error);
     }
   };
@@ -111,8 +106,7 @@ const Login = () => {
             style={styles.button}
             textColor="white"
             labelStyle={styles.buttonText}
-            onPress={handleLogin}
-          >
+            onPress={handleLogin}>
             Login
           </Button>
         </View>

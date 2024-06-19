@@ -1,13 +1,9 @@
 import React from 'react';
-import { View, Modal, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {View, Modal, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import MatIcon from 'react-native-vector-icons/MaterialIcons';
-import { useNavigation } from '@react-navigation/native';
-import Evaluation from '../../screens/DirectorScreens/Evaluation';
-import Scores from '../../screens/Scores';
-import DirectorEvaluation from '../../screens/DirectorScreens/DirectorEvaluation';
-import QuestionnaireFragment from '../../screens/QuestionaireFragment';
+import {useNavigation} from '@react-navigation/native';
 
-const OptionsModal = ({ visible, onClose }) => {
+const OptionsModal = ({visible, onClose}) => {
   const navigation = useNavigation();
   return (
     <Modal
@@ -17,47 +13,45 @@ const OptionsModal = ({ visible, onClose }) => {
       onRequestClose={onClose}>
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
-          {/* Add your options here */}
           <TouchableOpacity
             style={styles.button}
             onPress={() => {
-              navigation.navigate('Evaluation'); // Ensure 'Evaluation' is correctly registered in your navigator
+              navigation.navigate('Evaluation');
             }}>
             <Text style={styles.buttonText}>Evaluation</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.button}
             onPress={() => {
-              navigation.navigate('QuestionnaireFragment'); // Ensure 'QuestionnaireFragment' is correctly registered in your navigator
+              navigation.navigate('QuestionnaireFragment');
             }}>
-            
             <Text style={styles.buttonText}>Questionaire</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.button}
             onPress={() => {
-              navigation.navigate('Kpi')
+              navigation.navigate('Kpi');
             }}>
             <Text style={styles.buttonText}>KPI</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.button}
             onPress={() => {
-              navigation.navigate('PerformanceComparison'); // Ensure 'Scores' is correctly registered in your navigator
+              navigation.navigate('PerformanceComparison');
             }}>
             <Text style={styles.buttonText}>Performance Comparison</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.button}
             onPress={() => {
-              navigation.navigate('DirectorEvaluation'); // Ensure 'DirectorEvaluation' is correctly registered in your navigator
+              navigation.navigate('DirectorEvaluation');
             }}>
             <Text style={styles.buttonText}>Director Evaluation</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.button}
             onPress={() => {
-              // Add navigation or logic for 'Session' here
+              navigation.navigate('Session');
             }}>
             <Text style={styles.buttonText}>Session</Text>
           </TouchableOpacity>
