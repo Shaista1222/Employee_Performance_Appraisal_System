@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,8 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import {Picker} from '@react-native-picker/picker';
@@ -33,6 +35,20 @@ const Individual = ({
   employeeList = [],
   onClose,
 }) => {
+  const handleDescriptionChange = useCallback(
+    text => {
+      setTaskDescription(text);
+    },
+    [setTaskDescription],
+  );
+
+  const handleWeightageChange = useCallback(
+    text => {
+      setTaskWeightage(text);
+    },
+    [setTaskWeightage],
+  );
+
   return (
     <ScrollView contentContainerStyle={styles.tabContent}>
       <TextInput
@@ -40,7 +56,7 @@ const Individual = ({
         mode="outlined"
         multiline
         style={styles.input}
-        onChangeText={setTaskDescription}
+        onChangeText={handleDescriptionChange}
         value={taskDescription}
         placeholder="Enter Task Description"
       />
@@ -64,7 +80,7 @@ const Individual = ({
         label="Task Weightage"
         mode="outlined"
         style={styles.input}
-        onChangeText={setTaskWeightage}
+        onChangeText={handleWeightageChange}
         value={taskWeightage}
         placeholder="Enter Task Weightage"
         keyboardType="numeric"
@@ -277,24 +293,22 @@ const RoleBased = ({
             }
 
             const taskWithRole = {
-              Task: {
-                assigned_by_id: empid.employee.id,
-                task_description: taskDescription,
-                status: 0,
-                weightage: parseInt(taskWeightage),
-                due_date: startTime,
-                assigned_date: new Date().toISOString(),
-                session_id: sid.id,
-              },
-              Role: {
-                Department: selectedDepartment,
-                Designation: selectedDesignation,
-                EmployeeType: selectedPersonType,
-              },
+              assigned_to_id: 1,
+              assigned_by_id: empid.employee.id,
+              task_description: taskDescription,
+              status: 0,
+              weightage: parseInt(taskWeightage),
+              due_date: startTime,
+              assigned_date: new Date().toISOString(),
+              session_id: sid.id,
+              department_id: departmentId,
+              designation_id: designationId,
+              person_type_id: personTypeId,
             };
+
             console.log(taskWithRole);
 
-            const response = await TaskService.postRoleBasedTask(taskWithRole);
+            const response = await TaskService.postTask(taskWithRole);
             console.log(response);
             if (response) {
               Alert.alert('Success', 'Task saved successfully');
@@ -321,30 +335,38 @@ const RoleBased = ({
   </ScrollView>
 );
 
-const AssignTask = ({visible, onClose}) => {
-  const [selectedPerson, setSelectedPerson] = useState('');
-  const [personId, setPersonId] = useState('');
-  const [departmentId, setDepartmentId] = useState('');
-  const [designationId, setDesignationId] = useState('');
-  const [personTypeId, setPersonTypeId] = useState('');
-  const [selectedDepartment, setSelectedDepartment] = useState('');
-  const [selectedDesignation, setSelectedDesignation] = useState('');
-  const [selectedPersonType, setSelectedPersonType] = useState('');
+const AssignTask = ({
+  isVisible,
+  onClose,
+  // employeeList = [],
+  // designationList = [],
+  // departmentList = [],
+  // employeeTypeList = [],
+}) => {
   const [taskDescription, setTaskDescription] = useState('');
   const [taskWeightage, setTaskWeightage] = useState('');
   const [startTime, setStartTime] = useState('');
   const [day, setDay] = useState('');
+  const [personId, setPersonId] = useState('');
+  const [selectedPerson, setSelectedPerson] = useState(null);
+  const [selectedDesignation, setSelectedDesignation] = useState(null);
+  const [selectedDepartment, setSelectedDepartment] = useState(null);
+  const [selectedPersonType, setSelectedPersonType] = useState(null);
+  const [departmentId, setDepartmentId] = useState(null);
+  const [designationId, setDesignationId] = useState(null);
+  const [personTypeId, setPersonTypeId] = useState(null);
+  const [index, setIndex] = useState(0);
   const [employeeList, setEmployeeList] = useState([]);
   const [departmentList, setDepartmentList] = useState([]);
   const [designationList, setDesignationList] = useState([]);
   const [employeeTypeList, setEmployeeTypeList] = useState([]);
-  const [index, setIndex] = useState(0);
+
   const [isStartTimePickerVisible, setStartTimePickerVisible] = useState(false);
   const [routes] = useState([
-    {key: 'first', title: 'Individual'},
-    {key: 'second', title: 'Role-Based'},
+    {key: 'individual', title: 'Individual'},
+    {key: 'roleBased', title: 'Role Based'},
   ]);
-
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   useEffect(() => {
     fetchEmployees();
     fetchDesignations();
@@ -421,70 +443,74 @@ const AssignTask = ({visible, onClose}) => {
     hideStartTimePicker();
   };
 
-  const renderScene = SceneMap({
-    first: () => (
-      <Individual
-        personId={personId}
-        setPersonId={setPersonId}
-        taskDescription={taskDescription}
-        setTaskDescription={setTaskDescription}
-        taskWeightage={taskWeightage}
-        setTaskWeightage={setTaskWeightage}
-        showStartTimePicker={showStartTimePicker}
-        startTime={startTime}
-        day={day}
-        selectedPerson={selectedPerson}
-        setSelectedPerson={setSelectedPerson}
-        employeeList={employeeList}
-        onClose={onClose}
-      />
-    ),
-    second: () => (
-      <RoleBased
-        departmentId={departmentId}
-        designationId={designationId}
-        personTypeId={personTypeId}
-        setDepartmentId={setDepartmentId}
-        setDesignationId={setDesignationId}
-        setPersonTypeId={setPersonTypeId}
-        taskDescription={taskDescription}
-        setTaskDescription={setTaskDescription}
-        selectedDesignation={selectedDesignation}
-        setSelectedDesignation={setSelectedDesignation}
-        designationList={designationList}
-        selectedDepartment={selectedDepartment}
-        setSelectedDepartment={setSelectedDepartment}
-        departmentList={departmentList}
-        selectedPersonType={selectedPersonType}
-        setSelectedPersonType={setSelectedPersonType}
-        employeeTypeList={employeeTypeList}
-        taskWeightage={taskWeightage}
-        setTaskWeightage={setTaskWeightage}
-        showStartTimePicker={showStartTimePicker}
-        startTime={startTime}
-        day={day}
-        onClose={onClose}
-      />
-    ),
-  });
+  useEffect(() => {
+    // Fetch initial data here if necessary
+  }, []);
+
+  const renderScene = ({route}) => {
+    switch (route.key) {
+      case 'individual':
+        return (
+          <Individual
+            taskDescription={taskDescription}
+            setTaskDescription={setTaskDescription}
+            taskWeightage={taskWeightage}
+            setTaskWeightage={setTaskWeightage}
+            showStartTimePicker={showStartTimePicker}
+            startTime={startTime}
+            day={day}
+            personId={personId}
+            setPersonId={setPersonId}
+            setSelectedPerson={setSelectedPerson}
+            selectedPerson={selectedPerson}
+            employeeList={employeeList}
+            onClose={onClose}
+          />
+        );
+      case 'roleBased':
+        return (
+          <RoleBased
+            taskDescription={taskDescription}
+            setTaskDescription={setTaskDescription}
+            selectedDesignation={selectedDesignation}
+            setSelectedDesignation={setSelectedDesignation}
+            designationList={designationList}
+            selectedDepartment={selectedDepartment}
+            setSelectedDepartment={setSelectedDepartment}
+            departmentList={departmentList}
+            selectedPersonType={selectedPersonType}
+            setSelectedPersonType={setSelectedPersonType}
+            employeeTypeList={employeeTypeList}
+            taskWeightage={taskWeightage}
+            setTaskWeightage={setTaskWeightage}
+            showStartTimePicker={showStartTimePicker}
+            startTime={startTime}
+            day={day}
+            departmentId={departmentId}
+            designationId={designationId}
+            personTypeId={personTypeId}
+            onClose={onClose}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
-    <Modal visible={visible} onRequestClose={onClose} animationType="slide">
+    <Modal visible={isVisible} onRequestClose={onClose} animationType="slide">
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}>
       <View style={styles.container}>
-        <Text style={styles.title}>Assign Task</Text>
         <TabView
-          navigationState={{index, routes}}
+          navigationState={{ index, routes }}
           renderScene={renderScene}
           onIndexChange={setIndex}
-          initialLayout={{width: 300}}
           renderTabBar={props => (
-            <TabBar
-              {...props}
-              indicatorStyle={{backgroundColor: 'blue'}}
-              style={{backgroundColor: 'white'}}
-              labelStyle={{color: 'black'}}
-            />
+            <TabBar {...props} indicatorStyle={styles.tabBarIndicator} />
           )}
+          initialLayout={{ width: '100%' }}
         />
         <DateTimePickerModal
           isVisible={isStartTimePickerVisible}
@@ -493,29 +519,20 @@ const AssignTask = ({visible, onClose}) => {
           onCancel={hideStartTimePicker}
         />
       </View>
-    </Modal>
-  );
+    </KeyboardAvoidingView>
+  </Modal>
+);
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: 'white',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
   },
   tabContent: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
+    padding: 10,
   },
   input: {
-    marginBottom: 20,
+    marginVertical: 10,
   },
   pickerContainer: {
     borderWidth: 1,
@@ -528,26 +545,24 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   datePicker: {
+    marginVertical: 10,
     padding: 10,
-    borderWidth: 1,
-    borderColor: 'gray',
     borderRadius: 5,
-    marginBottom: 20,
-    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginTop: 20,
   },
   cancelButton: {
     backgroundColor: 'red',
-    flex: 1,
-    marginRight: 10,
   },
   saveButton: {
     backgroundColor: 'green',
-    flex: 1,
-    marginLeft: 10,
+  },
+  tabBarIndicator: {
+    backgroundColor: 'black',
   },
 });
 

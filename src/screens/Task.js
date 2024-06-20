@@ -19,7 +19,7 @@ import TaskEditModal from './TaskEditModal';
 const Task = () => {
   const layout = useWindowDimensions();
   const [modalVisible, setModalVisible] = useState(false);
-  const [editModalVisible, setEditModalVisible] = useState(false); // State for edit modal visibility
+  const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [taskList, setTaskList] = useState([]);
   const [employeeList, setEmployeeList] = useState([]);
@@ -27,7 +27,7 @@ const Task = () => {
   const [designationList, setDesignationList] = useState([]);
   const [departmentList, setDepartmentList] = useState([]);
   const [dueDate, setDueDate] = useState(new Date());
-  const [selectedTask, setSelectedTask] = useState(null); // State for selected task
+  const [selectedTask, setSelectedTask] = useState(null);
 
   useEffect(() => {
     fetchTasks();
@@ -126,14 +126,13 @@ const Task = () => {
         error => {
           console.error(error);
           Alert.alert('Error', error.message);
-        }
+        },
       );
     } catch (error) {
       console.error(error);
       Alert.alert('Error', error.message);
     }
   };
-  
 
   const handleEditButtonPress = task => {
     console.log('handleEditButtonPress:', task);
@@ -153,14 +152,14 @@ const Task = () => {
         error => {
           console.error(error);
           Alert.alert('Error', error.message);
-        }
+        },
       );
     } catch (error) {
       console.error(error);
       Alert.alert('Error', error.message);
     }
   };
-  
+
   const handleDeleteButtonPress = async taskId => {
     try {
       await TaskService.deleteTask(taskId);
@@ -232,7 +231,7 @@ const Task = () => {
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
       <AssignTask
-        visible={modalVisible}
+        isVisible={modalVisible}
         onClose={() => setModalVisible(false)}
       />
       {selectedTask && (
