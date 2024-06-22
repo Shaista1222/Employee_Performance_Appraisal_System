@@ -108,7 +108,6 @@ const EvaluateeListFragment = ({navigation}) => {
         sessionID,
       );
       setTeacherCourseList(data);
-      console.log('Teacher courses:', data);
     } catch (error) {
       Alert.alert('Error fetching teacher courses', error.message);
     }
@@ -137,7 +136,7 @@ const EvaluateeListFragment = ({navigation}) => {
 
       console.log('isEvaluated response:', alreadyEvaluated);
 
-      if ((alreadyEvaluated === 'Already Evaluated') && (!alreadyEvaluated==='Not Evaluated Yet')) {
+      if (alreadyEvaluated == true) {
         Alert.alert('You have already evaluated this teacher');
         return;
       } else {

@@ -1,24 +1,29 @@
 import IPAddress from '../../../IPAddress';
 export default EvaluationService = {
-  async isEvaluated(evaluatorId, evaluateeId, courseId, sessionId, evaluationType) {
+  async isEvaluated(
+    evaluatorId,
+    evaluateeId,
+    courseId,
+    sessionId,
+    evaluationType
+  ) {
+    const url = `${IPAddress}/Evaluation/isEvaluated?evaluatorId=${evaluatorId}&evaluateeId=${evaluateeId}&courseId=${courseId}&sessionId=${sessionId}&evaluationType=${evaluationType}`;
+    console.log('Fetching URL:', url);
+  
     try {
-      const url = `${IPAddress}/Evaluation/isEvaluated?evaluatorId=${evaluatorId}&evaluateeId=${evaluateeId}&courseId=${courseId}&sessionId=${sessionId}&evaluationType=${evaluationType}`;
-      console.log('Fetching URL:', url);
       const response = await fetch(url);
-  
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Network response was not ok: ${response.status} - ${errorText}`);
+      if (response.ok) {
+        console.log('Response status is OK:', response.status);
+        return true;
+      } else {
+        console.log('Response status is not OK:', response.status);
+        return false;
       }
-  
-      const responseBody = await response.text();
-      return responseBody;
     } catch (error) {
-      console.error('Error in isEvaluated function:', error.message);
-      throw error; 
-    }
-  }
-,   
+      console.error('Error checking evaluation status:', error);
+      return false;
+    }
+  },
   async postStudentEvaluation(studentEvaluations) {
     try {
       const response = await fetch(

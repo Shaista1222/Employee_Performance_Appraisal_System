@@ -13,7 +13,6 @@ const EvaluationQuestionnaireFragment = ({route}) => {
   const [sessionID, setSessionId] = useState('');
   const [studentID, setStudentId] = useState('');
   const [employeeID, setEmployeeId] = useState('');
-  const [isEvaluated, setEvaluated] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -168,10 +167,6 @@ const EvaluationQuestionnaireFragment = ({route}) => {
   };
 
   const handleDirectorEvaluation = async () => {
-    // if (isEvaluated) {
-    //   Alert.alert('You have already Evaluated');
-    //   return;
-    // }
     try {
       const optionWeightage =
         await QuestionaireServiceListner.getOptionsWeightages();
@@ -179,12 +174,11 @@ const EvaluationQuestionnaireFragment = ({route}) => {
         const selectedOption = selectedAnswers[item.id];
         const score = calculateScore(selectedOption, optionWeightage);
         return {
-          student_id: studentID.id,
+          evaluator_id: studentID.id,
           session_id: sessionID.id,
-          teacher_id: evaluateeID,
+          evaluatee_id: evaluateeID,
           question_id: item.id,
           score,
-          course_id: courseID,
         };
       });
       const evaluate = await EvaluationService.postDirectorEvaluation(
@@ -192,7 +186,6 @@ const EvaluationQuestionnaireFragment = ({route}) => {
       );
       if (evaluate) {
         Alert.alert('Successfully Evaluated');
-        setEvaluated(true);
       }
       console.log('Evaluation response:', evaluate);
       setSelectedAnswers({});
@@ -221,9 +214,8 @@ const EvaluationQuestionnaireFragment = ({route}) => {
       const evaluate = await EvaluationService.postPeerEvaluation(
         peerEvaluations,
       );
-      if (evaluate.status===200) {
+      if (evaluate) {
         Alert.alert('Successfully Evaluated');
-        setEvaluated(true);
       }
       console.log('Evaluation response:', evaluate);
       setSelectedAnswers({});
@@ -253,7 +245,6 @@ const EvaluationQuestionnaireFragment = ({route}) => {
 
       if (evaluate) {
         Alert.alert('Successfully Evaluated');
-        setEvaluated(true);
       }
       console.log('Evaluation response:', evaluate);
       setSelectedAnswers({});
@@ -283,7 +274,6 @@ const EvaluationQuestionnaireFragment = ({route}) => {
       );
       if (evaluate) {
         Alert.alert('Successfully evaluated');
-        setEvaluated(true);
       }
       console.log('Evaluation response:', evaluate);
       setSelectedAnswers({});

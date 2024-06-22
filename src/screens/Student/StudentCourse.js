@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useCallback} from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,27 +9,26 @@ import {
   Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
+import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import CourseServiceListener from '../Services/CourseServiceListener';
 import {
   checkConfidentialPin,
   checkDegreeExitEligibility,
 } from '../Services/EvaluationTimeServices';
-import {Student} from '../Services/Student';
-import {TextInput} from 'react-native-paper';
+import { Student } from '../Services/Student';
+import { TextInput } from 'react-native-paper';
+import EvaluationService from '../Services/EvaluationService';
 
-const StudentCourse = ({navigation}) => {
+const StudentCourse = ({ navigation }) => {
   const [studentCourseList, setStudentCourseList] = useState([]);
   const [studentUser, setStudentUser] = useState(null);
   const [currentSessionData, setCurrentSessionData] = useState(null);
-  const [studentSessionTeacherList, setStudentSessionTeacherList] = useState(
-    [],
-  );
+  const [studentSessionTeacherList, setStudentSessionTeacherList] = useState([]);
   const [index, setIndex] = useState(0);
   const [routes] = useState([
-    {key: 'student', title: 'Student'},
-    {key: 'degreeExit', title: 'Degree Exit'},
-    {key: 'confidential', title: 'Confidential'},
+    { key: 'student', title: 'Student' },
+    { key: 'degreeExit', title: 'Degree Exit' },
+    { key: 'confidential', title: 'Confidential' },
   ]);
 
   const pinInputRef = useRef(null);
@@ -70,10 +69,7 @@ const StudentCourse = ({navigation}) => {
 
   const studentSessionTeacher = async (studentID, sessionID) => {
     try {
-      const response = await Student.getStudentSessionTeacher(
-        studentID,
-        sessionID,
-      );
+      const response = await Student.getStudentSessionTeacher(studentID, sessionID);
       setStudentSessionTeacherList(response);
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -82,10 +78,7 @@ const StudentCourse = ({navigation}) => {
 
   const fetchStudentCourses = async (studentID, sessionID) => {
     try {
-      const courses = await CourseServiceListener.getStudentCourses(
-        studentID,
-        sessionID,
-      );
+      const courses = await CourseServiceListener.getStudentCourses(studentID, sessionID);
       if (courses && courses.length > 0) {
         setStudentCourseList(courses);
       } else {
@@ -105,11 +98,28 @@ const StudentCourse = ({navigation}) => {
     });
   };
 
-  const handlePress = id => {
-    navigation.navigate('EvaluationQuestionnaire', {
-      questionByType: 'confidential',
-      evaluateeID: id,
-    });
+  const evaluateTeacher = async (evaluateeID, type) => {
+    try {
+      const result = await EvaluationService.isEvaluated(
+        studentUser.id,
+        evaluateeID,
+        0,
+        currentSessionData.id,
+        type,
+      );
+      if (result==true) {
+        Alert.alert('You have already evaluated this teacher');
+        return;
+      } else {
+        navigation.navigate('EvaluationQuestionnaire', {
+          evaluateeID,
+          courseID:0,
+          questionByType: type,
+        });
+      }
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
   };
 
   const checkEligibilityAndNavigate = async () => {
@@ -118,10 +128,7 @@ const StudentCourse = ({navigation}) => {
       const eligibility = await checkDegreeExitEligibility(studentUser.id);
       console.log(eligibility);
       if (eligibility && eligibility.supervisor_id) {
-        navigation.navigate('EvaluationQuestionnaire', {
-          evaluateeID: eligibility.supervisor_id,
-          questionByType: 'degree exit',
-        });
+        await evaluateTeacher(eligibility.supervisor_id, 'degree exit');
       } else {
         Alert.alert(
           'Notice',
@@ -133,12 +140,16 @@ const StudentCourse = ({navigation}) => {
     }
   };
 
+  const handlePress = async (id) => {
+    await evaluateTeacher(id, 'confidential');
+  };
+
   const StudentRoute = () => (
     <View style={styles.container}>
       <FlatList
         data={studentCourseList}
         keyExtractor={item => item.id.toString()}
-        renderItem={({item}) => (
+        renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.onClick}
             onPress={() => handleCoursePress(item.id)}>
@@ -153,7 +164,7 @@ const StudentCourse = ({navigation}) => {
 
   const DegreeExitRoute = () => (
     <View style={styles.container}>
-      <Text style={{color: 'black', fontSize: 23, marginBottom: 10}}>
+      <Text style={{ color: 'black', fontSize: 23, marginBottom: 10 }}>
         Checking eligibility...
       </Text>
     </View>
@@ -166,6 +177,7 @@ const StudentCourse = ({navigation}) => {
     const handleInputChange = text => {
       setUserEvaluationPin(text);
     };
+
     const confidentialPin = useCallback(async () => {
       if (!userEvaluationPin) {
         Alert.alert('Error', 'Please enter a PIN');
@@ -193,7 +205,7 @@ const StudentCourse = ({navigation}) => {
     return (
       <View style={styles.container}>
         {!verifiedPin ? (
-          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <TextInput
               style={styles.input}
               value={userEvaluationPin}
@@ -210,7 +222,7 @@ const StudentCourse = ({navigation}) => {
           <FlatList
             data={studentSessionTeacherList}
             keyExtractor={item => item.id.toString()}
-            renderItem={({item}) => (
+            renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.onClick}
                 onPress={() => handlePress(item.id)}>
@@ -222,6 +234,7 @@ const StudentCourse = ({navigation}) => {
       </View>
     );
   };
+
   const renderScene = SceneMap({
     student: StudentRoute,
     degreeExit: DegreeExitRoute,
@@ -233,7 +246,7 @@ const StudentCourse = ({navigation}) => {
       <View style={styles.title}>
         <Text style={styles.titleText}>Course</Text>
       </View>
-      <View style={{backgroundColor: 'brown', padding: 4}}>
+      <View style={{ backgroundColor: 'brown', padding: 4 }}>
         {studentUser && (
           <>
             <Text style={styles.student}>{studentUser.name}</Text>
@@ -245,7 +258,7 @@ const StudentCourse = ({navigation}) => {
         )}
       </View>
       <TabView
-        navigationState={{index, routes}}
+        navigationState={{ index, routes }}
         renderScene={renderScene}
         onIndexChange={newIndex => {
           setIndex(newIndex);
@@ -253,12 +266,12 @@ const StudentCourse = ({navigation}) => {
             checkEligibilityAndNavigate();
           }
         }}
-        initialLayout={{width: Dimensions.get('window').width}}
+        initialLayout={{ width: Dimensions.get('window').width }}
         renderTabBar={props => (
           <TabBar
             {...props}
-            indicatorStyle={{backgroundColor: 'white'}}
-            style={{backgroundColor: '#6360DC'}}
+            indicatorStyle={{ backgroundColor: 'white' }}
+            style={{ backgroundColor: '#6360DC' }}
           />
         )}
       />
@@ -280,45 +293,44 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 4,
     backgroundColor: '#fff',
-    color: 'black',
   },
   button: {
     width: '26%',
     borderRadius: 4,
-    backgroundColor: 'orange',
+    backgroundColor: '#6360DC',
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 10,
   },
   buttonText: {
     color: 'white',
-    fontSize: 20,
-  },
-  student: {
-    fontSize: 20,
-    color: '#fff',
-  },
-  title: {
-    paddingTop: 10,
-    backgroundColor: '#6360DC',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  titleText: {
-    fontSize: 24,
-    color: '#fff',
-    marginBottom: 10,
-  },
-  courseList: {
-    backgroundColor: '#C0C0C0',
-    color: 'black',
-    padding: 7,
-    fontSize: 20,
-    fontFamily: 'sans-serif',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   onClick: {
-    marginTop: 2,
-    width: '100%',
+    backgroundColor: '#bfc5cc',
+    marginVertical: 10,
+    marginHorizontal: 10,
+    padding: 20,
+    borderRadius: 5,
+  },
+  courseList: {
+    color: 'black',
+    fontSize: 20,
+  },
+  title: {
+    backgroundColor: 'brown',
+    padding: 10,
+  },
+  titleText: {
+    fontSize: 25,
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  student: {
+    fontSize: 18,
+    color: 'white',
+    textAlign: 'center',
   },
 });
 

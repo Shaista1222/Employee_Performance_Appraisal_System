@@ -47,8 +47,9 @@ const CourseTeacher = ({route, navigation}) => {
         sessionID,
         'student',
       );
-      if (result) {
+      if (result==true) {
         Alert.alert('You have already evaluated this teacher');
+        return;
       } else {
         navigation.navigate('EvaluationQuestionnaire', {
           evaluateeID,
@@ -60,7 +61,7 @@ const CourseTeacher = ({route, navigation}) => {
       Alert.alert('Error', error.message);
     }
   };
-
+  
   return (
     <>
       <View style={styles.title}>
