@@ -1,44 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, Dimensions } from 'react-native';
-import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
+import React, {useState, useEffect} from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  Dimensions,
+  ScrollView,
+} from 'react-native';
+import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EvaluatorService from './Services/EvaluatorService';
-import { getTeacherJuniors } from './Services/JuniorEmployeeService';
+import {getTeacherJuniors} from './Services/JuniorEmployeeService';
+import EvaluationService from './Services/EvaluationService';
+import CourseServiceListener from './Services/CourseServiceListener';
 
-const EvaluateeList = ({ evaluatees, onPress }) => (
+const EvaluateeList = ({evaluatees, onPress}) => (
   <FlatList
     data={evaluatees}
-    renderItem={({ item }) => (
+    renderItem={({item}) => (
       <TouchableOpacity onPress={() => onPress(item.id)}>
         <View style={styles.itemContainer}>
           <Text style={styles.name}>{item.name}</Text>
         </View>
       </TouchableOpacity>
     )}
-    keyExtractor={item => (item.id ? item.id.toString() : Math.random().toString())}
+    keyExtractor={item =>
+      item.id ? item.id.toString() : Math.random().toString()
+    }
   />
 );
 
-const JuniorEvaluateeList = ({ evaluatees, onPress }) => (
+const JuniorEvaluateeList = ({evaluatees, onPress}) => (
   <FlatList
     data={evaluatees}
-    renderItem={({ item }) => (
-      <TouchableOpacity onPress={() => onPress(item.employee.id, item.course.id)}>
+    renderItem={({item}) => (
+      <TouchableOpacity
+        onPress={() => onPress(item.employee.id, item.course.id)}>
         <View style={styles.itemContainer}>
           <Text style={styles.name}>{item.employee.name}</Text>
-          <Text style={styles.name}> {item.course.title}</Text>
+          <Text style={styles.name}>{item.course.title}</Text>
         </View>
       </TouchableOpacity>
     )}
-    keyExtractor={item => (item.employee.id ? item.employee.id.toString() : Math.random().toString())}
+    keyExtractor={item =>
+      item.employee.id ? item.employee.id.toString() : Math.random().toString()
+    }
   />
 );
 
-const EvaluateeListFragment = ({ navigation }) => {
+const EvaluateeListFragment = ({navigation}) => {
   const [index, setIndex] = useState(0);
   const [routes] = useState([
-    { key: 'peer', title: 'Peer' },
-    { key: 'junior', title: 'Junior' },
+    {key: 'peer', title: 'Peer'},
+    {key: 'junior', title: 'Junior'},
   ]);
 
   const [evaluateeList, setEvaluateeList] = useState([]);
@@ -46,6 +62,8 @@ const EvaluateeListFragment = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [employeeUser, setEmployeeUser] = useState(null);
   const [currentSessionData, setCurrentSessionData] = useState(null);
+  const [teacherCourseList, setTeacherCourseList] = useState([]);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
 
   useEffect(() => {
     const retrieveEmployeeData = async () => {
@@ -53,10 +71,8 @@ const EvaluateeListFragment = ({ navigation }) => {
         const sessionData = await AsyncStorage.getItem('currentSession');
         const user = await AsyncStorage.getItem('employee');
         if (sessionData && user) {
-          const parsedSessionData = JSON.parse(sessionData);
-          const parsedUser = JSON.parse(user);
-          setCurrentSessionData(parsedSessionData);
-          setEmployeeUser(parsedUser);
+          setCurrentSessionData(JSON.parse(sessionData));
+          setEmployeeUser(JSON.parse(user));
         } else {
           Alert.alert('Error', 'Session or employee data not found');
         }
@@ -78,9 +94,23 @@ const EvaluateeListFragment = ({ navigation }) => {
     try {
       const data = await EvaluatorService.getEvaluatees(evaluatorID, sessionID);
       setEvaluateeList(data);
-      setLoading(false);
     } catch (error) {
-      Alert.alert(error.message);
+      Alert.alert('Error fetching evaluatees', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTeacherCourses = async (teacherID, sessionID) => {
+    try {
+      const data = await CourseServiceListener.getTeacherCourses(
+        teacherID,
+        sessionID,
+      );
+      setTeacherCourseList(data);
+      console.log('Teacher courses:', data);
+    } catch (error) {
+      Alert.alert('Error fetching teacher courses', error.message);
     }
   };
 
@@ -88,26 +118,51 @@ const EvaluateeListFragment = ({ navigation }) => {
     try {
       const data = await getTeacherJuniors(evaluatorID, sessionID);
       setJuniorList(data);
-      console.log(data);
-      setLoading(false);
     } catch (error) {
-      Alert.alert(error.message);
+      Alert.alert('Error fetching juniors', error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleItemPress = (evaluateeID, type, courseId, teacherId) => {
-    navigation.navigate('EvaluationQuestionnaire', {
-      evaluateeID,
-      questionByType: type,
-      courseID: courseId,
-      teacherId: 0
-    });
+  const evaluate = async (evaluateeID, type, courseID) => {
+    try {
+      const alreadyEvaluated = await EvaluationService.isEvaluated(
+        employeeUser.employee.id,
+        evaluateeID,
+        courseID,
+        currentSessionData.id,
+        type,
+      );
+
+      console.log('isEvaluated response:', alreadyEvaluated);
+
+      if ((alreadyEvaluated === 'Already Evaluated') && (!alreadyEvaluated==='Not Evaluated Yet')) {
+        Alert.alert('You have already evaluated this teacher');
+        return;
+      } else {
+        navigation.navigate('EvaluationQuestionnaire', {
+          evaluateeID,
+          courseID,
+          teacherId: 0,
+          questionByType: type,
+        });
+      }
+    } catch (error) {
+      console.error('Error in evaluation check:', error);
+      Alert.alert('Error', error.message || 'An unexpected error occurred.');
+    }
+  };
+
+  const handlePeerPress = async id => {
+    setSelectedEmployee(id);
+    fetchTeacherCourses(id, currentSessionData.id);
   };
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={{ color: 'black' }}>Loading...</Text>
+        <Text style={{color: 'black'}}>Loading...</Text>
       </View>
     );
   }
@@ -115,12 +170,28 @@ const EvaluateeListFragment = ({ navigation }) => {
   const renderScene = SceneMap({
     peer: () => (
       <View style={styles.scene}>
-        <EvaluateeList evaluatees={evaluateeList} onPress={(id) => handleItemPress(id, 'peer')} />
+        <EvaluateeList evaluatees={evaluateeList} onPress={handlePeerPress} />
+        {selectedEmployee && teacherCourseList.length > 0 && (
+          <ScrollView>
+            <Text style={styles.name}>Courses for selected employee:</Text>
+            {teacherCourseList.map(course => (
+              <View style={styles.itemContainer} key={course.id}>
+                <TouchableOpacity
+                  onPress={() => evaluate(selectedEmployee, 'peer', course.id)}>
+                  <Text style={styles.name}>{course.title}</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        )}
       </View>
     ),
     junior: () => (
       <View style={styles.scene}>
-        <JuniorEvaluateeList evaluatees={juniorList} onPress={(id, courseId) => handleItemPress(id, 'senior', courseId)} />
+        <JuniorEvaluateeList
+          evaluatees={juniorList}
+          onPress={(id, courseID) => evaluate(id, 'senior', courseID)}
+        />
       </View>
     ),
   });
@@ -136,10 +207,10 @@ const EvaluateeListFragment = ({ navigation }) => {
 
   return (
     <TabView
-      navigationState={{ index, routes }}
+      navigationState={{index, routes}}
       renderScene={renderScene}
       onIndexChange={setIndex}
-      initialLayout={{ width: Dimensions.get('window').width }}
+      initialLayout={{width: Dimensions.get('window').width}}
       renderTabBar={renderTabBar}
     />
   );

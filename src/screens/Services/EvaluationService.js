@@ -1,23 +1,24 @@
 import IPAddress from '../../../IPAddress';
 export default EvaluationService = {
-  async isEvaluated(studentId, teacherId, courseId, sessionId, evaluationType) {
+  async isEvaluated(evaluatorId, evaluateeId, courseId, sessionId, evaluationType) {
     try {
-      const response = await fetch(
-        `${IPAddress}/Evaluation/isEvaluated?studentId=${studentId}&teacherId=${teacherId}&courseId=${courseId}&sessionId=${sessionId}&evaluationType=${evaluationType}`,
-      );
-
+      const url = `${IPAddress}/Evaluation/isEvaluated?evaluatorId=${evaluatorId}&evaluateeId=${evaluateeId}&courseId=${courseId}&sessionId=${sessionId}&evaluationType=${evaluationType}`;
+      console.log('Fetching URL:', url);
+      const response = await fetch(url);
+  
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        const errorText = await response.text();
+        throw new Error(`Network response was not ok: ${response.status} - ${errorText}`);
       }
-
+  
       const responseBody = await response.text();
-      return responseBody === 'true'; 
+      return responseBody;
     } catch (error) {
-      console.error('Error:', error);
-      return false;
+      console.error('Error in isEvaluated function:', error.message);
+      throw error; 
     }
-  },
-
+  }
+,   
   async postStudentEvaluation(studentEvaluations) {
     try {
       const response = await fetch(

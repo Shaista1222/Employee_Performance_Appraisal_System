@@ -168,10 +168,10 @@ const EvaluationQuestionnaireFragment = ({route}) => {
   };
 
   const handleDirectorEvaluation = async () => {
-    if (isEvaluated) {
-      Alert.alert('You have already Evaluated');
-      return;
-    }
+    // if (isEvaluated) {
+    //   Alert.alert('You have already Evaluated');
+    //   return;
+    // }
     try {
       const optionWeightage =
         await QuestionaireServiceListner.getOptionsWeightages();
@@ -202,10 +202,6 @@ const EvaluationQuestionnaireFragment = ({route}) => {
   };
 
   const handlePeerEvaluation = async () => {
-    if (isEvaluated) {
-      Alert.alert('You have already Evaluated');
-      return;
-    }
     try {
       const optionWeightage =
         await QuestionaireServiceListner.getOptionsWeightages();
@@ -215,15 +211,17 @@ const EvaluationQuestionnaireFragment = ({route}) => {
         return {
           evaluator_id: employeeID.employee.id,
           evaluatee_id: evaluateeID,
-          question_id: item.id,
           session_id: sessionID.id,
+          course_id: courseID,
+          question_id: item.id,
           score,
         };
       });
+      console.log(peerEvaluations)
       const evaluate = await EvaluationService.postPeerEvaluation(
         peerEvaluations,
       );
-      if (evaluate) {
+      if (evaluate.status===200) {
         Alert.alert('Successfully Evaluated');
         setEvaluated(true);
       }
@@ -234,10 +232,6 @@ const EvaluationQuestionnaireFragment = ({route}) => {
     }
   };
   const handleConfidentialEvaluation = async () => {
-    if (isEvaluated) {
-      Alert.alert('You have already Evaluated');
-      return;
-    }
     try {
       const optionWeightage =
         await QuestionaireServiceListner.getOptionsWeightages();
@@ -245,17 +239,18 @@ const EvaluationQuestionnaireFragment = ({route}) => {
         const selectedOption = selectedAnswers[item.id];
         const score = calculateScore(selectedOption, optionWeightage);
         return {
-          evaluator_id: studentID.id,
-          evaluatee_id: evaluateeID,
+          student_id: studentID.id,
+          teacher_id: evaluateeID,
           question_id: item.id,
           session_id: sessionID.id,
           score,
         };
       });
+      console.log(confidentialEvaluations)
       const evaluate = await EvaluationService.postConfidentialEvaluation(
         confidentialEvaluations,
       );
-      
+
       if (evaluate) {
         Alert.alert('Successfully Evaluated');
         setEvaluated(true);
@@ -267,10 +262,6 @@ const EvaluationQuestionnaireFragment = ({route}) => {
     }
   };
   const handleJuniorEvaluation = async () => {
-    if (isEvaluated) {
-      Alert.alert('You have already Evaluated');
-      return;
-    }
     try {
       const optionWeightage =
         await QuestionaireServiceListner.getOptionsWeightages();

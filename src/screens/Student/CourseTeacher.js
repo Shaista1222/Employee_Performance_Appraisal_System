@@ -1,10 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, Alert } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  FlatList,
+  Alert,
+} from 'react-native';
 import CourseServiceListener from '../Services/CourseServiceListener';
 import EvaluationService from '../Services/EvaluationService';
 
-const CourseTeacher = ({ route, navigation }) => {
-  const { studentID, sessionID, courseID } = route.params;
+const CourseTeacher = ({route, navigation}) => {
+  const {studentID, sessionID, courseID} = route.params;
   const [TeacherCourseList, setTeacherCourseList] = useState([]);
 
   useEffect(() => {
@@ -13,7 +20,11 @@ const CourseTeacher = ({ route, navigation }) => {
 
   const CourseTeachers = async (studentID, courseID, sessionID) => {
     try {
-      const teachers = await CourseServiceListener.getCourseTeachers(studentID, courseID, sessionID);
+      const teachers = await CourseServiceListener.getCourseTeachers(
+        studentID,
+        courseID,
+        sessionID,
+      );
       console.log('Fetched teachers:', teachers);
       if (teachers && teachers.length > 0) {
         setTeacherCourseList(teachers);
@@ -26,14 +37,24 @@ const CourseTeacher = ({ route, navigation }) => {
     }
   };
 
-  const evaluateTeacher = async (evaluateeID,type) => {
+  const evaluateTeacher = async (evaluateeID, type) => {
     try {
-      console.log(studentID, evaluateeID, courseID, sessionID,);
-      const result = await EvaluationService.isEvaluated(studentID, evaluateeID, courseID, sessionID, 'student');
+      console.log(studentID, evaluateeID, courseID, sessionID);
+      const result = await EvaluationService.isEvaluated(
+        studentID,
+        evaluateeID,
+        courseID,
+        sessionID,
+        'student',
+      );
       if (result) {
         Alert.alert('You have already evaluated this teacher');
       } else {
-        navigation.navigate('EvaluationQuestionnaire', { evaluateeID, courseID, questionByType: type, });
+        navigation.navigate('EvaluationQuestionnaire', {
+          evaluateeID,
+          courseID,
+          questionByType: type,
+        });
       }
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -48,9 +69,11 @@ const CourseTeacher = ({ route, navigation }) => {
       <View style={styles.container}>
         <FlatList
           data={TeacherCourseList}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <TouchableOpacity style={styles.onClick} onPress={() => evaluateTeacher(item.id, "student")}>
+          keyExtractor={item => item.id.toString()}
+          renderItem={({item}) => (
+            <TouchableOpacity
+              style={styles.onClick}
+              onPress={() => evaluateTeacher(item.id, 'student')}>
               <Text style={styles.courseList}>{item.name}</Text>
             </TouchableOpacity>
           )}
