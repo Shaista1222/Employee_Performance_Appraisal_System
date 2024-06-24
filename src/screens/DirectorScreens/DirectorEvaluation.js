@@ -1,4 +1,3 @@
-// src/EmployeeList.js
 import React, {useState, useEffect} from 'react';
 import {
   View,
@@ -7,6 +6,7 @@ import {
   FlatList,
   StyleSheet,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import EmployeeService from '../Services/EmployeeService';
 import EvaluationService from '../Services/EvaluationService';
@@ -16,9 +16,10 @@ const EmployeeList = ({navigation}) => {
   const [employeeDetailsList, setEmployeeDetailsList] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredEmployees, setFilteredEmployees] = useState([]);
-  const [sessionID, setSessionId] = useState('');
-  const [employeeID, setEmployeeId] = useState('');
+  const [sessionData, setSessionData] = useState(null);
+  const [employeeData, setEmployeeData] = useState(null);
   const questionByType = 'director';
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -31,24 +32,21 @@ const EmployeeList = ({navigation}) => {
     };
     fetchData();
   }, []);
+
   useEffect(() => {
     const retrieveData = async () => {
       try {
         const sessionData = await AsyncStorage.getItem('currentSession');
         const user = await AsyncStorage.getItem('employee');
-        console.log('Retrieved data from AsyncStorage', {sessionData, user});
 
         if (sessionData && user) {
           const parsedSessionData = JSON.parse(sessionData);
           const parsedUser = JSON.parse(user);
 
-          setSessionId(parsedSessionData);
-          setEmployeeId(parsedUser);
-
-          console.log('Parsed Data', {parsedSessionData, parsedUser});
+          setSessionData(parsedSessionData);
+          setEmployeeData(parsedUser);
         } else {
-          console.log('Data not found in AsyncStorage', {sessionData, user});
-          Alert.alert('Error', 'session or employee ID not found');
+          Alert.alert('Error', 'Session or employee ID not found');
         }
       } catch (error) {
         Alert.alert('Error', error.message);
@@ -57,6 +55,7 @@ const EmployeeList = ({navigation}) => {
     };
     retrieveData();
   }, []);
+
   const handleSearch = query => {
     setSearchQuery(query);
     if (query) {
@@ -68,21 +67,18 @@ const EmployeeList = ({navigation}) => {
       setFilteredEmployees(employeeDetailsList);
     }
   };
-  // const handleItemPress = (evaluateeID) => {
-  //   navigation.navigate('EvaluationQuestionnaire', {evaluateeID,questionByType});
-  // };
 
   const handleItemPress = async evaluateeID => {
     try {
       const result = await EvaluationService.isEvaluated(
-        employeeID.employee.id,
+        employeeData.employee.id,
         evaluateeID,
         0,
-        sessionID.id,
+        sessionData.id,
         questionByType,
       );
       if (result == true) {
-        Alert.alert('You have already evaluated this teacher');
+        Alert.alert('You have already evaluated this employee');
         return;
       } else {
         navigation.navigate('EvaluationQuestionnaire', {
@@ -94,6 +90,7 @@ const EmployeeList = ({navigation}) => {
       Alert.alert('Error', error.message);
     }
   };
+
   return (
     <>
       <View style={styles.header}>
@@ -138,10 +135,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 10,
     alignItems: 'center',
-  },
-  itemText: {
-    fontSize: 18,
-    color: 'black',
   },
   searchInput: {
     height: 40,

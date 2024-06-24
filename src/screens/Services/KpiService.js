@@ -35,7 +35,25 @@ KpiService = {
       );
     }
   },
-
+  async putKpi(kpiPutRequests) {
+    try {
+      const response = await fetch(`${IPAddress}/KPI/PutKpi`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(kpiPutRequests),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to put KPI');
+      }
+      return await response.json();
+    } catch (error) {
+      throw new Error(
+        `Something went wrong while updating KPI: ${error.message}`,
+      );
+    }
+  },
   async postEmployeeKpi(employeeKpi) {
     try {
       const response = await fetch(`${IPAddress}/KPI/PostEmployeeKpi`, {

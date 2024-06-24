@@ -174,7 +174,7 @@ const EvaluationQuestionnaireFragment = ({route}) => {
         const selectedOption = selectedAnswers[item.id];
         const score = calculateScore(selectedOption, optionWeightage);
         return {
-          evaluator_id: studentID.id,
+          evaluator_id: employeeID.employee.id,
           session_id: sessionID.id,
           evaluatee_id: evaluateeID,
           question_id: item.id,

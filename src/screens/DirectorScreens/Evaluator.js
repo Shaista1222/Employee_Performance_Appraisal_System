@@ -1,10 +1,18 @@
 import React, {useState, useEffect} from 'react';
-import {View, StyleSheet, Alert, Button, Text, ScrollView} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Alert,
+  Button,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EvaluatorService from '../Services/EvaluatorService';
 import EmployeeService from '../Services/EmployeeService';
-import {CheckBox} from 'react-native-elements'; 
+import {CheckBox} from 'react-native-elements';
 
 const Evaluator = () => {
   const [employeeList, setEmployeeList] = useState([]);
@@ -23,11 +31,10 @@ const Evaluator = () => {
         Alert.alert('Error', 'Failed to retrieve session ID');
       }
     };
-  
+
     fetchSessionID();
     fetchEmployees();
   }, []);
-  
 
   const fetchEmployees = async () => {
     try {
@@ -76,47 +83,55 @@ const Evaluator = () => {
       Alert.alert('Error', 'No evaluatees selected');
       return;
     }
-  
+
     try {
       const evaluatorEvaluates = {
         evaluator_id: selectedEvaluator,
         session_id: sessionID,
         evaluatee_ids: selectedEvaluatees,
       };
-  
+
       console.log('Saving evaluator evaluates:', evaluatorEvaluates);
-  
+
       const result = await EvaluatorService.postEvaluator(evaluatorEvaluates);
       console.log('Save result:', result);
     } catch (error) {
       console.error('Save error details:', error);
-      console.error('Save error response:', error.response ? error.response.data : 'No response data');
-      Alert.alert('Error', `Failed to save evaluator evaluates: ${error.message}`);
+      console.error(
+        'Save error response:',
+        error.response ? error.response.data : 'No response data',
+      );
+      Alert.alert(
+        'Error',
+        `Failed to save evaluator evaluates: ${error.message}`,
+      );
     }
   };
-  
-  
+
   return (
     <>
       <View style={styles.title}>
         <Text style={styles.titleText}>Evaluator</Text>
       </View>
       <View style={styles.container}>
-        <Picker
-          selectedValue={selectedEvaluator}
-          onValueChange={itemValue => handleEvaluatorChange(itemValue)}
-          style={styles.picker}
-          dropdownIconColor="black"
-          mode="dropdown">
-          <Picker.Item label="Select Evaluator" value="" />
-          {employeeList.map(employee => (
-            <Picker.Item
-              key={employee.id}
-              label={employee.name}
-              value={employee.id}
-            />
-          ))}
-        </Picker>
+        <View style={styles.showPerformance}>
+          <Picker
+            selectedValue={selectedEvaluator}
+            onValueChange={itemValue => handleEvaluatorChange(itemValue)}
+            style={styles.picker}
+            dropdownIconColor="black"
+            mode="dropdown">
+            <Picker.Item label="Select Evaluator" value="" />
+            {employeeList.map(employee => (
+              <Picker.Item
+                key={employee.id}
+                label={employee.name}
+                value={employee.id}
+              />
+            ))}
+          </Picker>
+        </View>
+
         <Text style={{color: 'black', fontSize: 15}}>Select Evaluatee</Text>
         <ScrollView style={styles.scrollView}>
           {evaluateeList.length > 0 && (
@@ -145,12 +160,17 @@ const Evaluator = () => {
             />
           ))}
         </ScrollView>
-
-        <Button
+        <TouchableOpacity
+          style={styles.fab}
+          disabled={!selectedEvaluator || selectedEvaluatees.length === 0}
+          onPress={handleSave}>
+          <Text style={styles.fabText}>SAVE</Text>
+        </TouchableOpacity>
+        {/* <Button
           title="Save"
           onPress={handleSave}
           disabled={!selectedEvaluator || selectedEvaluatees.length === 0}
-        />
+        /> */}
       </View>
     </>
   );
@@ -161,6 +181,22 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: '#fff',
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 92,
+    right: 86,
+    backgroundColor: '#6360DC',
+    width: 156,
+    height: 36,
+    borderRadius: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+  },
+  fabText: {
+    fontSize: 20,
+    color: '#FFFFFF',
   },
   picker: {
     marginVertical: 8,
@@ -174,6 +210,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#6360DC',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  picker: {
+    color: 'black',
+    width: '100%',
+  },
+  showPerformance: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    marginTop: 10,
   },
   titleText: {
     fontSize: 24,

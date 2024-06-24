@@ -6,6 +6,7 @@ import {
   StyleSheet,
   useWindowDimensions,
   Alert,
+  ActivityIndicator, // Import ActivityIndicator for the loader
 } from 'react-native';
 import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
 import TaskAdapter from './Adapter/TaskAdapter';
@@ -22,12 +23,16 @@ const Task = () => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [taskList, setTaskList] = useState([]);
+  const [allTasks, setAllTasks] = useState([]);
+  const [pendingTasks, setPendingTasks] = useState([]);
+  const [completedTasks, setCompletedTasks] = useState([]);
   const [employeeList, setEmployeeList] = useState([]);
   const [employeeTypeList, setEmployeeTypeList] = useState([]);
   const [designationList, setDesignationList] = useState([]);
   const [departmentList, setDepartmentList] = useState([]);
   const [dueDate, setDueDate] = useState(new Date());
   const [selectedTask, setSelectedTask] = useState(null);
+  const [loading, setLoading] = useState(true); // Loading state
 
   useEffect(() => {
     fetchTasks();
@@ -35,11 +40,12 @@ const Task = () => {
     fetchEmployeeTypes();
     fetchDesignations();
     fetchDepartments();
-    loadTasksForSelectedTab();
+    loadAllTasks();
   }, []);
 
   const fetchTasks = async () => {
     try {
+      // Logic to fetch tasks, if necessary
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -85,32 +91,43 @@ const Task = () => {
     }
   };
 
+  const loadAllTasks = async () => {
+    try {
+      const all = await TaskService.getTasks();
+      const pending = await TaskService.getPendingTasks();
+      const completed = await TaskService.getCompletedTasks();
+      
+      setAllTasks(all);
+      setPendingTasks(pending);
+      setCompletedTasks(completed);
+
+      setTaskList(all); // Initially load all tasks
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false); // Hide loader once tasks are loaded
+    }
+  };
+
   const handleTabChange = index => {
     setSelectedTabIndex(index);
     loadTasksForSelectedTab(index);
   };
 
-  const loadTasksForSelectedTab = async index => {
-    try {
-      let tasks = [];
-      switch (index) {
-        case 0:
-          tasks = await TaskService.getTasks();
-          break;
-        case 1:
-          tasks = await TaskService.getPendingTasks();
-          break;
-        case 2:
-          tasks = await TaskService.getCompletedTasks();
-          break;
-        default:
-          break;
-      }
-      setTaskList(tasks);
-      console.log('Tasks loaded:', tasks);
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Error', error.message);
+  const loadTasksForSelectedTab = index => {
+    switch (index) {
+      case 0:
+        setTaskList(allTasks);
+        break;
+      case 1:
+        setTaskList(pendingTasks);
+        break;
+      case 2:
+        setTaskList(completedTasks);
+        break;
+      default:
+        break;
     }
   };
 
@@ -120,8 +137,8 @@ const Task = () => {
       await TaskService.putTask(
         task.task,
         updatedTask => {
-          Alert.alert('Success', `score updated successfully!`);
-          loadTasksForSelectedTab(selectedTabIndex);
+          Alert.alert('Success', `Score updated successfully!`);
+          loadAllTasks(); // Reload all tasks to ensure data consistency
         },
         error => {
           console.error(error);
@@ -139,14 +156,15 @@ const Task = () => {
     setSelectedTask(task);
     setEditModalVisible(true);
   };
+
   const handleSaveEdit = async updatedTask => {
     console.log('handleSaveEdit:', updatedTask);
     try {
       await TaskService.putTask(
         updatedTask,
         () => {
-          Alert.alert('Success', `Task  updated successfully!`);
-          loadTasksForSelectedTab(selectedTabIndex);
+          Alert.alert('Success', `Task updated successfully!`);
+          loadAllTasks(); // Reload all tasks to ensure data consistency
           setEditModalVisible(false);
         },
         error => {
@@ -164,7 +182,7 @@ const Task = () => {
     try {
       await TaskService.deleteTask(taskId);
       Alert.alert('Success', 'Task deleted successfully!');
-      loadTasksForSelectedTab(selectedTabIndex);
+      loadAllTasks(); // Reload all tasks to ensure data consistency
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -177,12 +195,16 @@ const Task = () => {
       case 'tab3':
         return (
           <View style={styles.scrollView}>
-            <TaskAdapter
-              tasks={taskList}
-              onOkButtonPress={handleOkButtonPress}
-              onEditButtonPress={handleEditButtonPress}
-              onDeleteButtonPress={handleDeleteButtonPress}
-            />
+            {loading ? ( // Show loader while loading
+              <ActivityIndicator size="large" color="#6360DC" />
+            ) : (
+              <TaskAdapter
+                tasks={taskList}
+                onOkButtonPress={handleOkButtonPress}
+                onEditButtonPress={handleEditButtonPress}
+                onDeleteButtonPress={handleDeleteButtonPress}
+              />
+            )}
           </View>
         );
       default:

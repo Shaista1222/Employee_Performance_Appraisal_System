@@ -1,13 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, ActivityIndicator, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { PieChart } from 'react-native-chart-kit';
 import SessionService from '../Services/SessionService';
 import KpiService from '../Services/KpiService';
+import DepartmentService from '../Services/DepartmentService';
 
 const Kpi = ({ navigation }) => {
   const [sessionList, setSessionList] = useState([]);
   const [selectedSessionId, setSelectedSessionId] = useState(null);
+  const [departmentList, setDepartmentList] = useState([]);
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [kpis, setKpis] = useState([]);
   const [error, setError] = useState(null);
@@ -23,16 +33,27 @@ const Kpi = ({ navigation }) => {
         setIsLoading(false);
       }
     };
+    const fetchDepartments = async () => {
+      try {
+        const departments = await DepartmentService.getDepartments();
+        setDepartmentList(departments);
+        setIsLoading(false);
+      } catch (error) {
+        console.error(error);
+        setIsLoading(false);
+      }
+    };
+    fetchDepartments();
     fetchSessions();
   }, []);
 
   useEffect(() => {
-    if (selectedSessionId !== null) {
-      fetchKPIs(selectedSessionId);
+    if (selectedSessionId !== null && selectedDepartmentId !== null) {
+      fetchKPIs(selectedSessionId, selectedDepartmentId);
     }
-  }, [selectedSessionId]);
+  }, [selectedSessionId, selectedDepartmentId]);
 
-  const fetchKPIs = async (sessionId) => {
+  const fetchKPIs = async (sessionId, departmentId) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -40,9 +61,10 @@ const Kpi = ({ navigation }) => {
       if (!kpiData) {
         throw new Error('No KPI data received');
       }
-      console.log('KPI Data:', kpiData); // Log the fetched data
-      const parsedKpis = parseKpiData(kpiData);
-      console.log('Parsed KPIs:', parsedKpis); // Log the parsed KPIs
+      const filteredKpis = kpiData.filter(
+        kpiGroup => kpiGroup.departmentId === departmentId,
+      );
+      const parsedKpis = parseKpiData(filteredKpis);
       setKpis(parsedKpis);
       setIsLoading(false);
     } catch (error) {
@@ -52,20 +74,23 @@ const Kpi = ({ navigation }) => {
     }
   };
 
-  const parseKpiData = (kpiData) => {
+  const parseKpiData = kpiData => {
     const kpis = [];
-    kpiData.forEach((group) => {
+    kpiData.forEach(group => {
       const groupKpi = group.groupKpi;
-      const kpiList = group.kpiList.map((kpi) => ({
-        name: kpi.name,
-        weightage: kpi.kpiWeightage.weightage,
-        color: getRandomColor(), // Generate color for each KPI
+      const kpiList = group.kpiList.map(kpi => ({
+        ...kpi,
+        color: getRandomColor(),
       }));
-      const totalWeightage = kpiList.reduce((sum, kpi) => sum + kpi.weightage, 0);
+      const totalWeightage = kpiList.reduce(
+        (sum, kpi) => sum + kpi.kpiWeightage.weightage,
+        0,
+      );
       if (totalWeightage < 100) {
         kpiList.push({
+          id: null,
           name: 'Remaining',
-          weightage: 100 - totalWeightage,
+          kpiWeightage: { weightage: 100 - totalWeightage },
           color: '#FFFFFF',
         });
       }
@@ -73,14 +98,22 @@ const Kpi = ({ navigation }) => {
     });
     return kpis;
   };
+  
 
-  const handleSessionSelection = (sessionId) => {
+  const handleSessionSelection = sessionId => {
     setSelectedSessionId(sessionId);
-    console.log('Selected session ID:', sessionId);
+  };
+
+  const handleDepartmentSelection = departmentId => {
+    setSelectedDepartmentId(departmentId);
   };
 
   const handleAddKpi = () => {
-    navigation.navigate('AddKpi')
+    navigation.navigate('AddKpi');
+  };
+
+  const handleKpiClick = kpi => {
+    navigation.navigate('UpdatingKpi', { kpi });
   };
 
   if (isLoading) {
@@ -97,74 +130,109 @@ const Kpi = ({ navigation }) => {
 
   return (
     <>
-    <View style={styles.title}>
-      <Text style={styles.titleText}>KPI</Text>
-    </View>
-    <View style={styles.container}>
-    <TouchableOpacity style={styles.button} onPress={handleAddKpi}>
-        <Text style={styles.buttonText}>Add KPI</Text>
-      </TouchableOpacity>
-      <View style={styles.showPerformance}>
-      <Picker
-        selectedValue={selectedSessionId}
-        dropdownIconColor='black'
-        style={styles.picker}
-        onValueChange={(itemValue) => handleSessionSelection(itemValue)}
-      >
-      <Picker.Item label='--Select Session--'/>
-        {sessionList.map((session) => (
-          <Picker.Item key={session.id} label={session.title} value={session.id} />
-        ))}
-      </Picker>
+      <View style={styles.title}>
+        <Text style={styles.titleText}>KPI</Text>
       </View>
-      <ScrollView>
-        {kpis.map((group, index) => {
-          console.log(`Group ${index} KPI Count:`, group.kpiList.length); 
-          return (
-            <View key={index}>
-              <Text style={styles.groupTitle}>Group: {group.groupKpi ? group.groupKpi.name : 'Ungrouped'}</Text>
-              {group.kpiList.length > 0 && (
-                <ScrollView horizontal>
-                  <View>
-                    <PieChart
-                      data={group.kpiList.map((kpi) => ({
-                        name: kpi.name,
-                        population: kpi.weightage,
-                        color: kpi.color,
-                        legendFontColor: '#7F7F7F',
-                        legendFontSize: 15,
-                      }))}
-                      width={600} // Increased width for horizontal scroll
-                      height={400} // Increased height for vertical scroll
-                      chartConfig={{
-                        backgroundGradientFrom: '#1E2923',
-                        backgroundGradientTo: '#08130D',
-                        color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
-                      }}
-                      accessor="population"
-                      backgroundColor="transparent"
-                      paddingLeft="15"
-                      hasLegend={false} // Disable default legend
-                    />
-                    <View style={styles.legendContainer}>
-                      {group.kpiList.map((kpi, kpiIndex) => (
-                        <View key={kpiIndex} style={styles.legendItem}>
-                          <View style={[styles.legendColorBox, { backgroundColor: kpi.color }]} />
-                          <Text style={styles.legendText}>{kpi.name} ({kpi.weightage}%)</Text>
-                        </View>
-                      ))}
-                    </View>
-                  </View>
-                </ScrollView>
-              )}
+      <View style={styles.container}>
+        <TouchableOpacity style={styles.button} onPress={handleAddKpi}>
+          <Text style={styles.buttonText}>Add KPI</Text>
+        </TouchableOpacity>
+        <View style={styles.showPerformance}>
+          <Picker
+            selectedValue={selectedSessionId}
+            dropdownIconColor="black"
+            style={styles.picker}
+            onValueChange={handleSessionSelection}>
+            <Picker.Item label="--Select Session--" value={null} />
+            {sessionList.map(session => (
+              <Picker.Item
+                key={session.id}
+                label={session.title}
+                value={session.id}
+              />
+            ))}
+          </Picker>
+        </View>
+
+        <View style={styles.showPerformance}>
+          <Picker
+            selectedValue={selectedDepartmentId}
+            dropdownIconColor="black"
+            style={styles.picker}
+            onValueChange={handleDepartmentSelection}>
+            <Picker.Item label="--Select Department--" value={null} />
+            {departmentList.map(department => (
+              <Picker.Item
+                key={department.id}
+                label={department.name}
+                value={department.id}
+              />
+            ))}
+          </Picker>
+        </View>
+
+        <ScrollView>
+  {kpis.map((group, index) => (
+    <View key={index}>
+      <Text style={styles.groupTitle}>
+        Group: {group.groupKpi ? group.groupKpi.name : 'Ungrouped'}
+      </Text>
+      {group.kpiList.length > 0 && (
+        <ScrollView horizontal>
+          <View>
+            <PieChart
+              data={group.kpiList.map(kpi => ({
+                name: kpi.name,
+                population: kpi.kpiWeightage.weightage,
+                color: kpi.color,
+                legendFontColor: '#7F7F7F',
+                legendFontSize: 15,
+              }))}
+              width={600}
+              height={400}
+              chartConfig={{
+                backgroundGradientFrom: '#1E2923',
+                backgroundGradientTo: '#08130D',
+                color: (opacity = 1) =>
+                  `rgba(26, 255, 146, ${opacity})`,
+              }}
+              accessor="population"
+              backgroundColor="transparent"
+              paddingLeft="15"
+              hasLegend={false}
+              onDataPointClick={({ index }) =>
+                handleKpiClick(group.kpiList[index])
+              }
+            />
+            <View style={styles.legendContainer}>
+              {group.kpiList.map((kpi, kpiIndex) => (
+                <TouchableOpacity 
+                  key={kpiIndex} 
+                  style={styles.legendItem} 
+                  onPress={() => handleKpiClick(kpi)}>
+                  <View
+                    style={[
+                      styles.legendColorBox,
+                      { backgroundColor: kpi.color },
+                    ]}
+                  />
+                  <Text style={styles.legendText}>
+                    {kpi.name} ({kpi.kpiWeightage.weightage}%)
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
-          );
-        })}
-      </ScrollView>
+          </View>
+        </ScrollView>
+      )}
     </View>
+  ))}
+</ScrollView>
+
+      </View>
     </>
   );
-}
+};
 
 const getRandomColor = () => {
   const letters = '0123456789ABCDEF';
@@ -236,16 +304,16 @@ const styles = StyleSheet.create({
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    margin: 4,
+    margin: 8,
   },
   legendColorBox: {
-    width: 16,
-    height: 16,
+    width: 20,
+    height: 20,
     marginRight: 8,
   },
   legendText: {
-    fontSize: 14,
-    color: '#7F7F7F',
+    fontSize: 16,
+    color: 'black',
   },
 });
 

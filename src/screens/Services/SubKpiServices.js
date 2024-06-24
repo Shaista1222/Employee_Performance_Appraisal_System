@@ -34,7 +34,8 @@ export const getSubKPIs = async (sessionID) => {
 
 export const getSubKPIsOfKpi = async (kpi_id, sessionID) => {
   try {
-    const response = await fetch(`${IPAddress}/SubKpi/getSubKPIsOfKpi?kpi_id=${kpi_id}&sessionID=${sessionID}`);
+    const response = await fetch(`${IPAddress}/SubKpi/GetSubKPIsOfKpi?kpi_id=${kpi_id}&sessionID=${sessionID}`);
+    console.log(response)
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
