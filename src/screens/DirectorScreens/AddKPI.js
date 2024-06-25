@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,14 +7,14 @@ import {
   Alert,
   FlatList,
 } from 'react-native';
-import {TextInput} from 'react-native-paper';
+import { TextInput } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Picker} from '@react-native-picker/picker';
+import { Picker } from '@react-native-picker/picker';
 import KpiService from '../Services/KpiService';
 import DepartmentService from '../Services/DepartmentService';
-import {getSubKPIs} from '../Services/SubKpiServices';
+import { getSubKPIs } from '../Services/SubKpiServices';
 
-const AddKpi = ({navigation}) => {
+const AddKpi = ({ navigation }) => {
   const [departmentList, setDepartmentList] = useState([]);
   const [sessionId, setSessionId] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
@@ -46,7 +46,7 @@ const AddKpi = ({navigation}) => {
           const parsedSessionData = JSON.parse(sessionData);
           setSessionId(parsedSessionData.id);
         } else {
-          console.log('Data not found in AsyncStorage', {sessionData});
+          console.log('Data not found in AsyncStorage', { sessionData });
           Alert.alert('Error', 'Session not found');
         }
       } catch (error) {
@@ -87,7 +87,7 @@ const AddKpi = ({navigation}) => {
   const updateSelectedSubKpi = itemValue => {
     const subKpi = subKpiList.find(item => item.id === itemValue);
     if (subKpi && !selectedSubKpis.find(item => item.id === subKpi.id)) {
-      setSelectedSubKpis([...selectedSubKpis, {...subKpi, weightage: ''}]);
+      setSelectedSubKpis([...selectedSubKpis, { ...subKpi, weightage: '' }]);
     }
   };
 
@@ -109,7 +109,7 @@ const AddKpi = ({navigation}) => {
 
   const updateWeightage = (id, weightage) => {
     setSelectedSubKpis(prev =>
-      prev.map(item => (item.id === id ? {...item, weightage} : item)),
+      prev.map(item => (item.id === id ? { ...item, weightage } : item)),
     );
   };
 
@@ -124,19 +124,28 @@ const AddKpi = ({navigation}) => {
     );
     const totalWeightage = parseFloat(kpiWeightage || 0) + totalSubWeightage;
 
-    if (totalWeightage + existingWeightage > 100) {
+    //if (totalWeightage + existingWeightage > 100) {
+      const kpiData = {
+        kpi: {
+          name: kpiTitle.trim(),
+          department_id: selectedDepartment,
+        },
+        weightage: {
+          session_id: sessionId,
+          weightage: Number(kpiWeightage),
+        },
+        subKpiWeightages: selectedSubKpis.map((subKpi) => ({
+          sub_kpi_id: subKpi.id, 
+          weightage: Number(subKpi.weightage),
+          session_id: sessionId,
+        })),
+      };
       navigation.navigate('AdjustmentKpi', {
-        kpiName: kpiTitle,
-        kpiWeightage: parseFloat(kpiWeightage),
-        existingKpis,
-        totalWeightage,
-        existingWeightage,
-        selectedSubKpis,
+        kpiData,
+        kpiList: existingKpis,
       });
-    } else {
-      // Code to handle the case when the total weightage does not exceed 100%
-      Alert.alert('Success', 'KPI added successfully');
-    }
+    
+   // }
   };
 
   return (
@@ -210,7 +219,7 @@ const AddKpi = ({navigation}) => {
         <FlatList
           data={selectedSubKpis}
           keyExtractor={item => item.id.toString()}
-          renderItem={({item}) => (
+          renderItem={({ item }) => (
             <View style={styles.subKpiContainer}>
               <Text style={styles.label}>{item.name}</Text>
               <TextInput

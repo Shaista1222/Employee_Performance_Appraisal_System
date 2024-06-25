@@ -86,14 +86,14 @@ const Kpi = ({ navigation }) => {
         (sum, kpi) => sum + kpi.kpiWeightage.weightage,
         0,
       );
-      if (totalWeightage < 100) {
-        kpiList.push({
-          id: null,
-          name: 'Remaining',
-          kpiWeightage: { weightage: 100 - totalWeightage },
-          color: '#FFFFFF',
-        });
-      }
+      // if (totalWeightage < 100) {
+      //   kpiList.push({
+      //     id: null,
+      //     name: 'Remaining',
+      //     kpiWeightage: { weightage: 100 - totalWeightage },
+      //     color: '#FFFFFF',
+      //   });
+      // }
       kpis.push({ groupKpi, kpiList });
     });
     return kpis;
@@ -112,8 +112,8 @@ const Kpi = ({ navigation }) => {
     navigation.navigate('AddKpi');
   };
 
-  const handleKpiClick = kpi => {
-    navigation.navigate('UpdatingKpi', { kpi });
+  const handleKpiClick = (kpiList, kpi) => {
+    navigation.navigate('UpdatingKpi', { kpiList, kpi });
   };
 
   if (isLoading) {
@@ -209,7 +209,7 @@ const Kpi = ({ navigation }) => {
                 <TouchableOpacity 
                   key={kpiIndex} 
                   style={styles.legendItem} 
-                  onPress={() => handleKpiClick(kpi)}>
+                  onPress={() => handleKpiClick(group.kpiList, kpi)}>
                   <View
                     style={[
                       styles.legendColorBox,

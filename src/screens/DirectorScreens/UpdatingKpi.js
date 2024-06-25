@@ -13,9 +13,9 @@ import { getSubKPIs, getSubKPIsOfKpi } from '../Services/SubKpiServices';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TextInput } from 'react-native-paper';
 
-const UpdatingKpi = ({ route }) => {
-  const { kpi } = route.params;
-  console.log("KPI data: ",kpi)
+const UpdatingKpi = ({ route, navigation }) => {
+  const { kpiList, kpi } = route.params;
+  console.log('KPI data: ', kpi);
   const [index, setIndex] = useState(0);
   const [routes] = useState([
     { key: 'old', title: 'Old' },
@@ -23,14 +23,16 @@ const UpdatingKpi = ({ route }) => {
   ]);
 
   const [kpiTitle, setKpiTitle] = useState(kpi?.name || '');
-  const [kpiWeightage, setKpiWeightage] = useState(kpi.kpiWeightage?.weightage.toString() || '');
-  const [selectedSubKpi, setSelectedSubKpi] = useState('');
-  const [subKpiWeightage, setSubKpiWeightage] = useState('');
+  const [kpiWeightage, setKpiWeightage] = useState(
+    kpi.kpiWeightage?.weightage.toString() || '',
+  );
   const [subKpiList, setSubKpiList] = useState([]);
   const [selectedSubKpis, setSelectedSubKpis] = useState([]);
   const [sessionId, setSessionId] = useState('');
   const [subKpiOfKpiList, setSubKpiOfKpiList] = useState([]);
-console.log(kpiTitle)
+  const [subKpiDelList, setSubKpiDelList] = useState([]);
+
+  console.log(kpiTitle);
   useEffect(() => {
     const retrieveSessionData = async () => {
       try {
@@ -68,7 +70,7 @@ console.log(kpiTitle)
       if (sessionId && kpi) {
         try {
           const subKpi = await getSubKPIsOfKpi(kpi.id, sessionId);
-          console.log("xyz Shaista   "+JSON.stringify(subKpi));
+          console.log('data' + JSON.stringify(subKpi));
           setSubKpiOfKpiList(subKpi);
         } catch (error) {
           console.error(error);
@@ -76,21 +78,30 @@ console.log(kpiTitle)
         }
       }
     };
-
     fetchSubKpiOfKpi();
     fetchSubKPIs();
   }, [kpi, sessionId]);
 
-  const updateSelectedSubKpi = (itemValue) => {
-    const subKpi = subKpiList.find((item) => item.id === itemValue);
-    if (subKpi && !selectedSubKpis.find((item) => item.id === subKpi.id)) {
+  const updateSelectedSubKpi = itemValue => {
+    const subKpi = subKpiList.find(item => item.id === itemValue);
+    if (subKpi && !selectedSubKpis.find(item => item.id === subKpi.id)) {
       setSelectedSubKpis([...selectedSubKpis, { ...subKpi, weightage: '' }]);
     }
   };
 
   const updateWeightage = (id, weightage) => {
-    setSelectedSubKpis((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, weightage } : item))
+    setSelectedSubKpis(prev =>
+      prev.map(item => (item.id === id ? { ...item, weightage } : item)),
+    );
+  };
+
+  const updateOldSubKpiWeightage = (id, weightage) => {
+    setSubKpiOfKpiList(prev =>
+      prev.map(item =>
+        item.id === id
+          ? { ...item, subKpiWeightage: { ...item.subKpiWeightage, weightage } }
+          : item,
+      ),
     );
   };
 
@@ -98,62 +109,59 @@ console.log(kpiTitle)
     <FlatList
       style={styles.scene}
       data={subKpiOfKpiList}
-      keyExtractor={(item) => item.id.toString()}
+      keyExtractor={item => item.id.toString()}
       renderItem={({ item }) => (
         <View style={styles.subKpiContainer}>
           <Text style={styles.label}>{item.name}</Text>
-          {/* Ensure you are accessing subKpiWeightage properly */}
           <TextInput
-            value={item.subKpiWeightage?.weightage.toString()} // Access weightage properly
+            placeholder="Enter weightage"
+            placeholderTextColor='black'
+            value={item.subKpiWeightage?.weightage.toString()}
+            onChangeText={text => updateOldSubKpiWeightage(item.id, text)}
             style={styles.listInput}
             keyboardType="numeric"
-            editable={false} // Prevent editing of weightage in OldTab if necessary
           />
           <TouchableOpacity
             style={styles.deleteButton}
-            onPress={() => deleteSubKpi(item.id)}
-          >
+            onPress={() => deleteOldSubKpi(item)}>
             <Text style={styles.buttonText}>Delete</Text>
           </TouchableOpacity>
         </View>
       )}
     />
   );
-  
-  
+
   const NewTab = () => (
     <FlatList
       style={styles.scene}
       data={selectedSubKpis}
-      keyExtractor={(item) => item.id.toString()} // Ensure each item has a unique key
+      keyExtractor={item => item.id.toString()}
       renderItem={({ item }) => (
         <View style={styles.subKpiContainer}>
           <Text style={styles.label}>{item.name}</Text>
           <TextInput
             placeholder="weightage"
             value={item.weightage}
-            onChangeText={(text) => updateWeightage(item.id, text)}
+            onChangeText={text => updateWeightage(item.id, text)}
             style={styles.listInput}
             keyboardType="numeric"
           />
           <TouchableOpacity
             style={styles.deleteButton}
-            onPress={() => deleteSubKpi(item.id)}
-          >
+            onPress={() => deleteSubKpi(item.id)}>
             <Text style={styles.buttonText}>Delete</Text>
           </TouchableOpacity>
         </View>
       )}
     />
   );
-  
 
   const renderScene = SceneMap({
     old: OldTab,
     new: NewTab,
   });
 
-  const renderTabBar = (props) => (
+  const renderTabBar = props => (
     <TabBar
       {...props}
       indicatorStyle={styles.indicator}
@@ -162,16 +170,39 @@ console.log(kpiTitle)
     />
   );
 
-  const deleteSubKpi = (id) => {
-    setSelectedSubKpis((prev) => prev.filter((item) => item.id !== id));
+  const deleteSubKpi = id => {
+    setSelectedSubKpis(prev => prev.filter(item => item.id !== id));
   };
 
-  const handleSave = () => {
-    // Handle save logic here
-    console.log('KPI Title:', kpiTitle);
-    console.log('KPI Weightage:', kpiWeightage);
-    console.log('Selected Sub KPI:', selectedSubKpi);
-    console.log('Sub KPI Weightage:', subKpiWeightage);
+  const deleteOldSubKpi = item => {
+    setSubKpiOfKpiList(prev => prev.filter(kpiItem => kpiItem.id !== item.id));
+    setSubKpiDelList(prev => [...prev, item]);
+    console.log('deleted sub kp name', item.name);
+  };
+
+  const handleNext = () => {
+    const combinedSubKpis = [...subKpiOfKpiList, ...selectedSubKpis];
+
+    const updatedKpi = {
+      id: kpi.id,
+      name: kpiTitle,
+      session_id: sessionId,
+      kpiWeightage: {
+        session_id: sessionId,
+        weightage: kpiWeightage,
+      },
+      subKpiWeightages: combinedSubKpis.map(subKpi => subKpi.subKpiWeightage),
+      deletedSubKpis: subKpiDelList,
+    };
+
+    const updatedKpiList = kpiList.filter(item => item.id !== kpi.id);
+    updatedKpiList.push(updatedKpi);
+
+    console.log('updated :'+JSON.stringify(updatedKpiList));
+
+    navigation.navigate('AdjustmentKpi', {
+      kpiList: updatedKpiList,
+    });
   };
 
   return (
@@ -201,12 +232,11 @@ console.log(kpiTitle)
             />
             <View style={styles.showPerformance}>
               <Picker
-                selectedValue={null} // No initial selection
+                selectedValue={null}
                 onValueChange={itemValue => updateSelectedSubKpi(itemValue)}
                 style={styles.picker}
                 dropdownIconColor="black"
-                mode="dropdown"
-              >
+                mode="dropdown">
                 <Picker.Item label="--Select Sub KPI--" value="" />
                 {subKpiList.length > 0 ? (
                   subKpiList.map((subKpi, index) => (
@@ -221,8 +251,8 @@ console.log(kpiTitle)
                 )}
               </Picker>
             </View>
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.buttonText}>Save</Text>
+            <TouchableOpacity style={styles.saveButton} onPress={handleNext}>
+              <Text style={styles.buttonText}>Next</Text>
             </TouchableOpacity>
             <TabView
               navigationState={{ index, routes }}
@@ -326,7 +356,7 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#6360dc',
     borderRadius: 5,
-    marginTop: 10,
+    marginBottom: 10,
   },
   deleteButton: {
     padding: 5,

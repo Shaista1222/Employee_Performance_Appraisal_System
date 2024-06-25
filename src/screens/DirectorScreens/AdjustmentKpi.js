@@ -2,45 +2,62 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  Button,
   StyleSheet,
   Alert,
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
 import { TextInput } from 'react-native-paper';
+import KpiService from '../Services/KpiService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AdjustmentKpi = ({ route, navigation }) => {
-  const {
-    kpiName,
-    kpiWeightage,
-    existingKpis = [],
-    totalWeightage,
-    existingWeightage,
-    selectedSubKpis = [],
-  } = route.params;
+  const { kpiData, kpiList } = route.params;
   const [adjustedWeightages, setAdjustedWeightages] = useState({});
+  const [session_id, setSession_id] = useState();
+
   const [newKpiWeightage, setNewKpiWeightage] = useState(
-    kpiWeightage.toString(),
+    kpiData?.weightage?.weightage?.toString() || ''
   );
   const [totalWeightageExceeds, setTotalWeightageExceeds] = useState(false);
+  useEffect(() => {
+       const retrieveSessionData = async () => {
+      try {
+        const sessionData = await AsyncStorage.getItem('currentSession');
+        if (sessionData) {
+          const parsedSessionData = JSON.parse(sessionData);
+          setSession_id(parsedSessionData.id);
+        } else {
+          console.log('Data not found in AsyncStorage', { sessionData });
+          Alert.alert('Error', 'Session not found');
+        }
+      } catch (error) {
+        Alert.alert('Error', error.message);
+        console.error('Error retrieving data:', error);
+      }
+    };
+
+    retrieveSessionData();
+  }, []);
 
   useEffect(() => {
-    const initialWeightages = {};
-    existingKpis.forEach((kpi) => {
-      initialWeightages[kpi.id] = kpi.kpiWeightage.weightage.toString();
-    });
-    setAdjustedWeightages(initialWeightages);
-  }, [existingKpis]);
+    if (kpiList) {
+      const initialWeightages = {};
+      kpiList.forEach(kpi => {
+        initialWeightages[kpi.id] = kpi.kpiWeightage.weightage.toString();
+      });
+      setAdjustedWeightages(initialWeightages);
+    }
+  }, [kpiList]);
 
   useEffect(() => {
     const adjustedTotalWeightage = Object.values(adjustedWeightages).reduce(
-      (total, weightage) => total + parseFloat(weightage || 0),
-      existingWeightage - parseFloat(newKpiWeightage),
+      (total, weightage) => total + parseInt(weightage || 0),
+      parseInt(newKpiWeightage)
     );
 
-    setTotalWeightageExceeds(adjustedTotalWeightage + parseFloat(newKpiWeightage) > 100);
-  }, [adjustedWeightages, newKpiWeightage, existingWeightage]);
+    setTotalWeightageExceeds(adjustedTotalWeightage > 100);
+  }, [adjustedWeightages, newKpiWeightage]);
 
   const handleWeightageChange = (kpiId, value) => {
     setAdjustedWeightages({
@@ -49,25 +66,51 @@ const AdjustmentKpi = ({ route, navigation }) => {
     });
   };
 
-  const handleSaveAdjustedKpi = () => {
+  const handleSaveOrUpdateKpi = async () => {
     const adjustedTotalWeightage = Object.values(adjustedWeightages).reduce(
-      (total, weightage) => total + parseFloat(weightage || 0),
-      existingWeightage - parseFloat(newKpiWeightage),
+      (total, weightage) => total + parseInt(weightage || 0),
+      parseInt(newKpiWeightage)
     );
 
-    if (adjustedTotalWeightage + parseFloat(newKpiWeightage) > 100) {
+    if (adjustedTotalWeightage > 100) {
       Alert.alert(
         'Error',
-        'Total weightage exceeds 100%. Please adjust the values.',
+        'Total weightage exceeds 100%. Please adjust the values.'
       );
     } else {
-      console.log(
-        'Adjusted KPI data:',
-        adjustedWeightages,
-        'New KPI weightage:',
-        newKpiWeightage,
-      );
-      Alert.alert('Adjusted KPI saved successfully');
+      try {
+        if (kpiList.length != null)  {
+          // Update existing KPIs
+          const updatedKpiList = kpiList.map(kpi => ({
+            ...kpi,
+            session_id,
+            kpiWeightage: {
+              ...kpi.kpiWeightage,
+              weightage: parseInt(adjustedWeightages[kpi.id]),
+            },
+          }));
+
+          console.log(JSON.stringify(updatedKpiList));
+          await KpiService.putKpi(updatedKpiList);
+          Alert.alert('Success', 'KPI updated successfully!');
+        } 
+        if (kpiData != null) {
+          // Add a new KPI
+          console.log(JSON.stringify(kpiData));
+          const newKpi = await KpiService.postKpi({
+            ...kpiData,
+            kpiWeightage: {
+              weightage: parseInt(newKpiWeightage),
+            }
+          });
+          console.log('New KPI added:', newKpi);
+          Alert.alert('Success', 'New KPI added successfully!');
+        }
+      } catch (error) {
+        console.error('Failed to adjust KPIs:', error);
+        Alert.alert('Error', `Failed to adjust KPIs: ${error.message}`);
+      }
+
       navigation.goBack();
     }
   };
@@ -79,39 +122,46 @@ const AdjustmentKpi = ({ route, navigation }) => {
       </View>
       <View style={styles.container}>
         <ScrollView>
-        {totalWeightageExceeds && (
+          {totalWeightageExceeds && (
             <Text style={styles.errorText}>
               Total weightage exceeds 100%. Please adjust the values.
             </Text>
           )}
-          <Text style={styles.label}>New KPI : {kpiName}</Text>
-          <TextInput
-            style={styles.input}
-            value={newKpiWeightage}
-            onChangeText={setNewKpiWeightage}
-            keyboardType="numeric"
-          />
-          {existingKpis.map((kpi, index) => (
-            <View key={index} style={styles.kpiContainer}>
-              <Text style={styles.label}>{kpi.name}</Text>
+          {kpiData?.kpi?.name && (
+            <>
+              <Text style={styles.label}>KPI: {kpiData.kpi.name}</Text>
               <TextInput
                 style={styles.input}
-                value={
-                  adjustedWeightages[kpi.id] !== undefined
-                    ? adjustedWeightages[kpi.id]
-                    : ''
-                }
-                onChangeText={(value) => handleWeightageChange(kpi.id, value)}
+                value={newKpiWeightage}
+                onChangeText={setNewKpiWeightage}
                 keyboardType="numeric"
               />
+            </>
+          )}
+          {kpiList?.map((kpi, index) => (
+            <View key={index} style={styles.kpiContainer}>
+              <Text style={styles.label}>{kpi.name}</Text>
+              {adjustedWeightages[kpi.id] !== undefined && (
+                <TextInput
+                  style={styles.input}
+                  value={adjustedWeightages[kpi.id]}
+                  onChangeText={value => handleWeightageChange(kpi.id, value)}
+                  keyboardType="numeric"
+                />
+              )}
             </View>
           ))}
           <TouchableOpacity
-            style={[styles.button, totalWeightageExceeds ? styles.buttonError : styles.buttonSuccess]}
-            onPress={handleSaveAdjustedKpi}>
-            <Text style={styles.buttonText}>Save</Text>
+            style={[
+              styles.button,
+              totalWeightageExceeds ? styles.buttonError : styles.buttonSuccess,
+            ]}
+            onPress={handleSaveOrUpdateKpi}
+          >
+            <Text style={styles.buttonText}>
+              {kpiData ? 'Update' : 'Save'}
+            </Text>
           </TouchableOpacity>
-          
         </ScrollView>
       </View>
     </>

@@ -175,7 +175,7 @@ KpiService = {
   },
   async postKpi(kpiWithSubKpis) {
     try {
-      console.log('Sending KPI Data:', JSON.stringify(kpiWithSubKpis, null, 2));
+      console.log('Sending KPI Data:', JSON.stringify(kpiWithSubKpis));
   
       const response = await fetch(`${IPAddress}/KPI/PostKpi`, {
         method: 'POST',

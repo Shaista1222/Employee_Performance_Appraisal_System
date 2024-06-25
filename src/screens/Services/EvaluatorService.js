@@ -16,7 +16,21 @@ const EvaluatorService = {
       throw error; // Ensure the error is propagated
     }
   },
-
+    async getEvaluators(employeeID,evaluationTypeID,sessionID ,courseID) {
+      try {
+        const response = await fetch(
+          `${IPAddress}/Evaluator/GetEvaluatees?employeeID=${employeeID}&evaluationTypeID=${evaluationTypeID}&sessionID=${sessionID}&courseID=${courseID}`
+        );
+        if (!response.ok) {
+          throw new Error('Failed to fetch evaluators');
+        }
+        return await response.json();
+      } catch (error) {
+        Alert.alert('Error', `Something went wrong while fetching evaluators: ${error.message}`);
+        throw error; 
+      }
+    },
+  
   async postEvaluator(evaluatorEvaluatees) {
     try {
       const response = await fetch(`${IPAddress}/Evaluator/PostEvaluator`, {
