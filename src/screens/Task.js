@@ -6,7 +6,6 @@ import {
   StyleSheet,
   useWindowDimensions,
   Alert,
-  ActivityIndicator, // Import ActivityIndicator for the loader
 } from 'react-native';
 import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
 import TaskAdapter from './Adapter/TaskAdapter';
@@ -32,7 +31,6 @@ const Task = () => {
   const [departmentList, setDepartmentList] = useState([]);
   const [dueDate, setDueDate] = useState(new Date());
   const [selectedTask, setSelectedTask] = useState(null);
-  const [loading, setLoading] = useState(true); // Loading state
 
   useEffect(() => {
     fetchTasks();
@@ -105,8 +103,6 @@ const Task = () => {
     } catch (error) {
       console.error(error);
       Alert.alert('Error', error.message);
-    } finally {
-      setLoading(false); // Hide loader once tasks are loaded
     }
   };
 
@@ -195,16 +191,12 @@ const Task = () => {
       case 'tab3':
         return (
           <View style={styles.scrollView}>
-            {loading ? ( // Show loader while loading
-              <ActivityIndicator size="large" color="#6360DC" />
-            ) : (
-              <TaskAdapter
-                tasks={taskList}
-                onOkButtonPress={handleOkButtonPress}
-                onEditButtonPress={handleEditButtonPress}
-                onDeleteButtonPress={handleDeleteButtonPress}
-              />
-            )}
+            <TaskAdapter
+              tasks={taskList}
+              onOkButtonPress={handleOkButtonPress}
+              onEditButtonPress={handleEditButtonPress}
+              onDeleteButtonPress={handleDeleteButtonPress}
+            />
           </View>
         );
       default:

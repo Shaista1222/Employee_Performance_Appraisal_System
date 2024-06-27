@@ -279,6 +279,59 @@ export const EmployeeSubKpiBarChartComponent = ({
     </View>
   );
 };
+export const EmployeeSubBarChartComponent = ({
+  kpiPerformanceData = [],
+  selectedSubKpiId,
+}) => {
+  const filteredKpiPerformanceData = kpiPerformanceData.filter(
+    (kpi) => kpi.subkpi_id === selectedSubKpiId
+  );
+
+  if (!filteredKpiPerformanceData || filteredKpiPerformanceData.length === 0) {
+    return <Text style={{ color: 'black' }}>No data available</Text>;
+  }
+
+  const chartData = {
+    labels: filteredKpiPerformanceData.map((kpi) => kpi.name),
+    datasets: [
+      {
+        data: filteredKpiPerformanceData.map((kpi) => kpi.score),
+      },
+    ],
+  };
+
+  const barColors = filteredKpiPerformanceData.map(() => getRandomColor());
+
+  return (
+    <View style={styles.container}>
+      <BarChart
+        data={chartData}
+        width={screenWidth - 16}
+        height={300}
+        chartConfig={{
+          ...chartConfig,
+          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+        }}
+        verticalLabelRotation={30}
+        fromZero={true}
+        showValuesOnTopOfBars={true}
+        renderBar={({ index, x, y, width, height }) => (
+          <View
+            key={index}
+            style={{
+              position: 'absolute',
+              left: x,
+              top: y,
+              width,
+              height,
+              backgroundColor: barColors[index],
+            }}
+          />
+        )}
+      />
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

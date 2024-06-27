@@ -12,6 +12,17 @@ const EmployeeKPIPerformance={
           return await response.json();
         });
     },
+    compareKpiEmployeePerformanceYearly: async(employeeIDs,year,Kpi_id)=>{
+      return await fetch(`${IPAddress}/EmployeeKpiPerformance/CompareKpiEmployeePerformanceYearly?employeeIDs=${employeeIDs}&year=${year}&Kpi_id=${Kpi_id}`)
+      .then(async response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch Employee Kpi Performance yearly');
+        }
+        // const res =  response.json();
+        // console.log(response.json());
+        return await response.json();
+      });
+  },
     compareEmployeeKpiScore : async (employeeIds, session_id) => {
       try {
         const payload = {

@@ -21,32 +21,46 @@ import {
   MultipleEmployeeCourseBarChartComponent,
   MultipleEmployeeKPIBarChartComponent,
   MultipleEmployeeSubKpiBarChartComponent,
+  MultipleEmployeeSingleSubKpi,
 } from './ComparisonBarChart';
 import EmployeeKPIPerformance from '../Services/EmployeeKPIPerformance';
 import QuestionaireServiceListner from '../Services/QuestionaireServiceListner';
 import {getMultiEmployeeQuestionScore} from '../Services/QuestionsScores';
-import {getSubKpiMultiEmployeePerformance} from '../Services/SubKpiServices';
+import {
+  getSubKPIs,
+  getSubKpiMultiEmployeePerformance,
+} from '../Services/SubKpiServices';
+import KpiService from '../Services/KpiService';
 
 const PerformanceComparison = () => {
   const layout = useWindowDimensions();
   const [index, setIndex] = useState(0);
   const [routes] = useState([
-    {key: 'first', title: 'Course Comparison'},
-    {key: 'second', title: 'KPI Comparison'},
-    {key: 'third', title: 'Question Comparison'},
-    {key: 'fourth', title: 'Sub KPI Comparison'},
+    {key: 'first', title: 'Course '},
+    {key: 'second', title: 'KPI '},
+    {key: 'third', title: 'Question '},
+    {key: 'fourth', title: 'Sub KPI '},
+    {key: 'fifth', title: 'Single Sub KPI '},
+    {key: 'sixth', title: 'Yearly-KPI '},
   ]);
 
   const [courseList, setCourseList] = useState([]);
   const [sessionList, setSessionList] = useState([]);
   const [employeeList, setEmployeeList] = useState([]);
   const [evaluationTypeList, setEvaluationTypeList] = useState([]);
+  const [kpisList, setKpisList] = useState([]);
   const [selectedSession, setSelectedSession] = useState('');
   const [selectedCourse, setSelectedCourse] = useState([]);
   const [selectedEvaluationType, setSelectedEvaluationType] = useState('');
   const [selectedEmployees, setSelectedEmployees] = useState([]);
   const [isEmployeeDropdownVisible, setIsEmployeeDropdownVisible] =
     useState(false);
+  const [subKpiList, setSubKpiList] = useState([]);
+  const [subKpiId, setSubKpiId] = useState('');
+  
+  const [yearsList, setYearsList] = useState([]);
+  const [yearId, setYearId] = useState('');
+  const [kpisId, setKpisId] = useState('');
   const [isCourseDropdownVisible, setIsCourseDropdownVisible] = useState(false);
   const [performanceData, setPerformanceData] = useState([]);
   const [kpiPerformanceData, setKPIPerformanceData] = useState([]);
@@ -76,8 +90,60 @@ const PerformanceComparison = () => {
         Alert.alert('Error', error.message);
       }
     };
+    const fetchSubKpi = async () => {
+      try {
+        const data = await getSubKPIs(selectedSession);
+        // console.log("Data",data);
+        setSubKpiList(data || []);
+        if (data && data.length > 0) {
+          setSubKpiId(data[0].id);
+        }
+      } catch (error) {
+        Alert.alert('Error', error.message);
+      }
+    };
+    const fetchKpis = async () => {
+      try {
+        const data = await KpiService.getKpis();
+        // console.log("Data",data);
+        setKpisList(data || []);
+        if (data && data.length > 0) {
+          setKpisId(data[0].id);
+        }
+      } catch (error) {
+        Alert.alert('Error', error.message);
+      }
+    };
+    const fetchYears = async () => {
+      try {
+        const data = await SessionService.getYears();
+        console.log("Data years",data);
+        setYearsList(data || []);
+        if (data && data.length > 0) {
+          setYearId(data[0].id);
+        }
+      } catch (error) {
+        Alert.alert('Error', error.message);
+      }
+    };
+    const fetchEmployeePerformanceYearly = async () => {
+      try {
+        const data = await SessionService.getYears(selectedEmployees,yearId,kpisId);
+        console.log("Data years",data);
+        setYearsList(data || []);
+        if (data && data.length > 0) {
+          setYearId(data[0].id);
+        }
+      } catch (error) {
+        Alert.alert('Error', error.message);
+      }
+    };
+    fetchEmployeePerformanceYearly(selectedEmployees,yearId,kpisId)
+    fetchYears()
+    fetchKpis();
+    fetchSubKpi(selectedSession);
     fetchEmployees();
-  }, []);
+  }, [selectedSession,selectedEmployees,yearId,kpisId]);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -193,6 +259,10 @@ const PerformanceComparison = () => {
       setSubKPIPerformanceData([]);
     }
   };
+  const filteredSingleSubKpiPerformanceData = subKPIPerformanceData.map(empData => ({
+    ...empData,
+    subKpiPerformances: empData.subKpiPerformances.filter(subKpi => subKpi.subkpi_id === subKpiId)
+  }));
 
   const EmployeeDropdown = () => (
     <View>
@@ -444,6 +514,117 @@ const PerformanceComparison = () => {
       )}
     </View>
   );
+
+  const FifthRoute = () => (
+    <View style={styles.container}>
+      <View style={styles.showPerformance}>
+        <Picker
+          selectedValue={selectedSession}
+          onValueChange={itemValue => setSelectedSession(itemValue)}
+          style={styles.picker}
+          dropdownIconColor="black"
+          mode="dropdown">
+          <Picker.Item label="--Select Session--" />
+          {sessionList.length > 0 ? (
+            sessionList.map((session, index) => (
+              <Picker.Item
+                key={index}
+                label={session.title}
+                value={session.id}
+              />
+            ))
+          ) : (
+            <Picker.Item label="No sessions available" value="" />
+          )}
+        </Picker>
+      </View>
+      <View style={styles.showPerformance}>
+        <Picker
+          selectedValue={subKpiId}
+          onValueChange={itemValue => setSubKpiId(itemValue)}
+          style={styles.picker}
+          dropdownIconColor="black"
+          mode="dropdown">
+          <Picker.Item label="--Select Sub KPI--" />
+          {subKpiList.length > 0 ? (
+            subKpiList.map((subKpi, index) => (
+              <Picker.Item key={index} label={subKpi.name} value={subKpi.id} />
+            ))
+          ) : (
+            <Picker.Item label="No Sub-KPI available" value="" />
+          )}
+        </Picker>
+      </View>
+      <Text style={styles.label}>Employee</Text>
+      <View style={styles.showPerformance}>
+        <EmployeeDropdown />
+      </View>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={fetchSubKpiPerformanceData}>
+        <Text style={styles.buttonText}>Show Performance</Text>
+      </TouchableOpacity>
+      {filteredSingleSubKpiPerformanceData.length > 0 && (
+        <MultipleEmployeeSingleSubKpi subKPIPerformanceData={filteredSingleSubKpiPerformanceData} />
+    
+      )}
+    </View>
+  );
+  const SixthRoute = () => (
+    <View style={styles.container}>
+      <View style={styles.showPerformance}>
+        <Picker
+          selectedValue={kpisId}
+          onValueChange={itemValue => setKpisId(itemValue)}
+          style={styles.picker}
+          dropdownIconColor="black"
+          mode="dropdown">
+          <Picker.Item label="--Select Kpi--" />
+          {kpisList.length > 0 ? (
+            kpisList.map((kpis, index) => (
+              <Picker.Item
+                key={index}
+                label={kpis.name}
+                value={kpis.id}
+              />
+            ))
+          ) : (
+            <Picker.Item label="No Kpi available" value="" />
+          )}
+        </Picker>
+      </View>
+      <View style={styles.showPerformance}>
+        <Picker
+          selectedValue={yearId}
+          onValueChange={itemValue => setYearId(itemValue)}
+          style={styles.picker}
+          dropdownIconColor="black"
+          mode="dropdown">
+          <Picker.Item label="--Select Year--" />
+          {yearsList.length > 0 ? (
+            yearsList.map((yearly, index) => (
+              <Picker.Item key={index} label={yearly} value={yearly.id} />
+            ))
+          ) : (
+            <Picker.Item label="No years available" value="" />
+          )}
+        </Picker>
+      </View>
+      {/* <Text style={styles.label}>Employee</Text> */}
+      <View style={styles.showPerformance}>
+        <EmployeeDropdown />
+      </View>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={fetchSubKpiPerformanceData}>
+        <Text style={styles.buttonText}>Show Performance</Text>
+      </TouchableOpacity>
+      {filteredSingleSubKpiPerformanceData.length > 0 && (
+        <MultipleEmployeeSingleSubKpi subKPIPerformanceData={filteredSingleSubKpiPerformanceData} />
+    
+      )}
+    </View>
+  );
   const renderScene = ({route}) => {
     switch (route.key) {
       case 'first':
@@ -454,6 +635,10 @@ const PerformanceComparison = () => {
         return <ThirdRoute />;
       case 'fourth':
         return <FourthRoute />;
+      case 'fifth':
+        return <FifthRoute />;
+        case 'sixth':
+        return <SixthRoute />;
       default:
         return null;
     }
@@ -518,6 +703,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: '#ccc',
+    marginTop:6
   },
   pickerContainer: {
     padding: 10,

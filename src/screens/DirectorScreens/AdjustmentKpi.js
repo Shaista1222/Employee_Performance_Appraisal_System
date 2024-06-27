@@ -1,168 +1,226 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View,
-  Text,
   StyleSheet,
-  Alert,
-  ScrollView,
+  Text,
   TouchableOpacity,
+  View,
+  ActivityIndicator,
+  FlatList,
+  Alert,
 } from 'react-native';
-import { TextInput } from 'react-native-paper';
-import KpiService from '../Services/KpiService';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Picker } from '@react-native-picker/picker';
+import SessionService from '../Services/SessionService';
+import EmployeeService from '../Services/EmployeeService';
+import QuestionaireServiceListner from '../Services/QuestionaireServiceListner';
+import CourseServiceListener from '../Services/CourseServiceListener';
+import EvaluatorService from '../Services/EvaluatorService';
 
-const AdjustmentKpi = ({ route, navigation }) => {
-  const { kpiData, kpiList } = route.params;
-  const [adjustedWeightages, setAdjustedWeightages] = useState({});
-  const [session_id, setSession_id] = useState();
+const QuestionEvaluationType = ({ navigation }) => {
+  const [sessionList, setSessionList] = useState([]);
+  const [employeeList, setEmployeeList] = useState([]);
+  const [evaluationTypeList, setEvaluationTypeList] = useState([]);
+  const [teacherCoursesList, setTeacherCoursesList] = useState([]);
+  const [evaluatorList, setEvaluatorList] = useState([]);
+  const [selectedSession, setSelectedSession] = useState('');
+  const [selectedEmployee, setSelectedEmployee] = useState('');
+  const [selectedEvaluationType, setSelectedEvaluationType] = useState('');
+  const [selectedTeacherCourse, setSelectedTeacherCourse] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [employeeId, setEmployeeId] = useState('');
+  const [teacherCourseId, setTeacherCourseId] = useState('');
+  const [sessionId, setSessionId] = useState('');
+  const [evaluationTypeId, setEvaluationTypeId] = useState('');
 
-  const [newKpiWeightage, setNewKpiWeightage] = useState(
-    kpiData?.weightage?.weightage?.toString() || ''
-  );
-  const [totalWeightageExceeds, setTotalWeightageExceeds] = useState(false);
   useEffect(() => {
-       const retrieveSessionData = async () => {
+    const fetchSession = async () => {
       try {
-        const sessionData = await AsyncStorage.getItem('currentSession');
-        if (sessionData) {
-          const parsedSessionData = JSON.parse(sessionData);
-          setSession_id(parsedSessionData.id);
-        } else {
-          console.log('Data not found in AsyncStorage', { sessionData });
-          Alert.alert('Error', 'Session not found');
-        }
+        const data = await SessionService.getSessions();
+        setSessionList(data);
+        console.log(data);
       } catch (error) {
         Alert.alert('Error', error.message);
-        console.error('Error retrieving data:', error);
       }
     };
 
-    retrieveSessionData();
+    const fetchEmployee = async () => {
+      try {
+        const data = await EmployeeService.getEmployees();
+        setEmployeeList(data);
+        console.log(data);
+      } catch (error) {
+        Alert.alert('Error', error.message);
+      }
+    };
+
+    const fetchEvaluationType = async () => {
+      try {
+        const data = await QuestionaireServiceListner.getQuestionnaireTypes();
+        setEvaluationTypeList(data);
+        console.log(data);
+      } catch (error) {
+        Alert.alert('Error', error.message);
+      }
+    };
+
+    const fetchTeacherCourses = async () => {
+      try {
+        const data = await CourseServiceListener.getCourses();
+        setTeacherCoursesList(data);
+        console.log('Data ', data);
+        console.log(data);
+      } catch (error) {
+        Alert.alert('Error', error.message);
+      }
+    };
+
+    fetchSession();
+    fetchEmployee();
+    fetchEvaluationType();
+    fetchTeacherCourses();
   }, []);
 
   useEffect(() => {
-    if (kpiList) {
-      const initialWeightages = {};
-      kpiList.forEach(kpi => {
-        initialWeightages[kpi.id] = kpi.kpiWeightage.weightage.toString();
-      });
-      setAdjustedWeightages(initialWeightages);
+    const fetchEvaluators = async () => {
+      try {
+        const data = await EvaluatorService.getEvaluators(
+          employeeId,
+          evaluationTypeId,
+          sessionId,
+          teacherCourseId,
+        );
+        setEvaluatorList(data);
+        console.log('Data of evaluator', data);
+      } catch (error) {
+        Alert.alert('Error', error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (employeeId && evaluationTypeId && sessionId && teacherCourseId) {
+      fetchEvaluators();
     }
-  }, [kpiList]);
+  }, [employeeId, evaluationTypeId, sessionId, teacherCourseId]);
 
   useEffect(() => {
-    const adjustedTotalWeightage = Object.values(adjustedWeightages).reduce(
-      (total, weightage) => total + parseInt(weightage || 0),
-      parseInt(newKpiWeightage)
-    );
-
-    setTotalWeightageExceeds(adjustedTotalWeightage > 100);
-  }, [adjustedWeightages, newKpiWeightage]);
-
-  const handleWeightageChange = (kpiId, value) => {
-    setAdjustedWeightages({
-      ...adjustedWeightages,
-      [kpiId]: value,
-    });
-  };
-
-  const handleSaveOrUpdateKpi = async () => {
-    const adjustedTotalWeightage = Object.values(adjustedWeightages).reduce(
-      (total, weightage) => total + parseInt(weightage || 0),
-      parseInt(newKpiWeightage)
-    );
-
-    if (adjustedTotalWeightage > 100) {
-      Alert.alert(
-        'Error',
-        'Total weightage exceeds 100%. Please adjust the values.'
-      );
-    } else {
-      try {
-        if (kpiList.length != null)  {
-          // Update existing KPIs
-          const updatedKpiList = kpiList.map(kpi => ({
-            ...kpi,
-            session_id,
-            kpiWeightage: {
-              ...kpi.kpiWeightage,
-              weightage: parseInt(adjustedWeightages[kpi.id]),
-            },
-          }));
-
-          console.log(JSON.stringify(updatedKpiList));
-          await KpiService.putKpi(updatedKpiList);
-          Alert.alert('Success', 'KPI updated successfully!');
-        } 
-        if (kpiData != null) {
-          // Add a new KPI
-          console.log(JSON.stringify(kpiData));
-          const newKpi = await KpiService.postKpi({
-            ...kpiData,
-            kpiWeightage: {
-              weightage: parseInt(newKpiWeightage),
-            }
-          });
-          console.log('New KPI added:', newKpi);
-          Alert.alert('Success', 'New KPI added successfully!');
-        }
-      } catch (error) {
-        console.error('Failed to adjust KPIs:', error);
-        Alert.alert('Error', `Failed to adjust KPIs: ${error.message}`);
-      }
-
-      navigation.goBack();
+    if (selectedEmployee) {
+      setEmployeeId(selectedEmployee);
+      console.log('Selected Employee:', selectedEmployee);
     }
+  }, [selectedEmployee]);
+
+  useEffect(() => {
+    if (selectedSession) {
+      setSessionId(selectedSession);
+      console.log('Selected Session:', selectedSession);
+    }
+  }, [selectedSession]);
+
+  useEffect(() => {
+    if (selectedEvaluationType) {
+      setEvaluationTypeId(selectedEvaluationType);
+      console.log('Selected Evaluation Type:', selectedEvaluationType);
+    }
+  }, [selectedEvaluationType]);
+
+  useEffect(() => {
+    if (selectedTeacherCourse) {
+      setTeacherCourseId(selectedTeacherCourse);
+      console.log('Selected Teacher Course:', selectedTeacherCourse);
+    }
+  }, [selectedTeacherCourse]);
+
+  const handleNavigateToScore = employeeId => {
+    navigation.navigate('Scores', { employeeId, sessionId, evaluationTypeId });
   };
 
   return (
     <>
       <View style={styles.title}>
-        <Text style={styles.titleText}>KPI Adjustment</Text>
+        <Text style={styles.titleText}>Scores</Text>
       </View>
       <View style={styles.container}>
-        <ScrollView>
-          {totalWeightageExceeds && (
-            <Text style={styles.errorText}>
-              Total weightage exceeds 100%. Please adjust the values.
-            </Text>
-          )}
-          {kpiData?.kpi?.name && (
-            <>
-              <Text style={styles.label}>KPI: {kpiData.kpi.name}</Text>
-              <TextInput
-                style={styles.input}
-                value={newKpiWeightage}
-                onChangeText={setNewKpiWeightage}
-                keyboardType="numeric"
+        <View style={styles.showPerformance}>
+          <Picker
+            selectedValue={selectedEmployee}
+            onValueChange={itemValue => setSelectedEmployee(itemValue)}
+            style={styles.picker}
+            dropdownIconColor="black"
+            mode="dropdown">
+            <Picker.Item label="--Select Employee--" value="" />
+            {employeeList.map((emp, index) => (
+              <Picker.Item key={index} label={emp.name} value={emp.id} />
+            ))}
+          </Picker>
+        </View>
+        <View style={styles.showPerformance}>
+          <Picker
+            selectedValue={selectedSession}
+            onValueChange={itemValue => setSelectedSession(itemValue)}
+            style={styles.picker}
+            dropdownIconColor="black"
+            mode="dropdown">
+            <Picker.Item label="--Select Session--" value="" />
+            {sessionList.map((session, index) => (
+              <Picker.Item
+                key={index}
+                label={session.title}
+                value={session.id}
               />
-            </>
-          )}
-          {kpiList?.map((kpi, index) => (
-            <View key={index} style={styles.kpiContainer}>
-              <Text style={styles.label}>{kpi.name}</Text>
-              {adjustedWeightages[kpi.id] !== undefined && (
-                <TextInput
-                  style={styles.input}
-                  value={adjustedWeightages[kpi.id]}
-                  onChangeText={value => handleWeightageChange(kpi.id, value)}
-                  keyboardType="numeric"
-                />
-              )}
-            </View>
-          ))}
-          <TouchableOpacity
-            style={[
-              styles.button,
-              totalWeightageExceeds ? styles.buttonError : styles.buttonSuccess,
-            ]}
-            onPress={handleSaveOrUpdateKpi}
-          >
-            <Text style={styles.buttonText}>
-              {kpiData ? 'Update' : 'Save'}
-            </Text>
-          </TouchableOpacity>
-        </ScrollView>
+            ))}
+          </Picker>
+        </View>
+        <View style={styles.showPerformance}>
+          <Picker
+            selectedValue={selectedEvaluationType}
+            onValueChange={itemValue => setSelectedEvaluationType(itemValue)}
+            style={styles.picker}
+            dropdownIconColor="black"
+            mode="dropdown">
+            <Picker.Item label="--Select Evaluation Type--" value="" />
+            {evaluationTypeList.map((evaluationType, index) => (
+              <Picker.Item
+                key={index}
+                label={evaluationType.name}
+                value={evaluationType.id}
+              />
+            ))}
+          </Picker>
+        </View>
+        <View style={styles.showPerformance}>
+          <Picker
+            selectedValue={selectedTeacherCourse}
+            onValueChange={itemValue => setSelectedTeacherCourse(itemValue)}
+            style={styles.picker}
+            dropdownIconColor="black"
+            mode="dropdown">
+            <Picker.Item label="--Select Teacher course--" value="" />
+            {teacherCoursesList.map((teacherCourses, index) => (
+              <Picker.Item
+                key={index}
+                label={teacherCourses.title}
+                value={teacherCourses.id}
+              />
+            ))}
+          </Picker>
+        </View>
+        {loading ? (
+          <ActivityIndicator size="large" color="#0000ff" />
+        ) : (
+          <FlatList
+            data={evaluatorList.employees || evaluatorList.students} // Handle both employees and students
+            renderItem={({ item }) => (
+              <View style={styles.BoxDesign}>
+                <TouchableOpacity
+                  onPress={() => handleNavigateToScore(item.id)}
+                  style={{ fontWeight: 'bold' }}>
+                  <Text>{item.name}</Text> {/* Ensure text is wrapped in a Text component */}
+                </TouchableOpacity>
+              </View>
+            )}
+            keyExtractor={item => item.id.toString()} // Use correct key extractor
+          />
+        )}
       </View>
     </>
   );
@@ -171,8 +229,31 @@ const AdjustmentKpi = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 8,
+    padding: 12,
     backgroundColor: '#f5f5f5',
+  },
+  showPerformance: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  label: {
+    fontSize: 16,
+    color: 'black',
+    marginVertical: 10,
+  },
+  BoxDesign: {
+    color: '#708090',
+    fontSize: 18,
+    borderColor: 'red',
+    margin: 10,
+    backgroundColor: '#d2b48c',
+    padding: 10,
+    borderRadius: 10,
+  },
+  picker: {
+    color: 'black',
+    width: '100%',
   },
   title: {
     paddingTop: 10,
@@ -185,43 +266,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 10,
   },
-  button: {
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-    alignItems: 'center',
-  },
-  buttonSuccess: {
-    backgroundColor: '#6360dc',
-  },
-  buttonError: {
-    backgroundColor: '#dc6360',
-  },
-  buttonText: {
-    textAlign: 'center',
-    color: '#fff',
-    fontSize: 16,
-  },
-  errorText: {
-    color: '#dc6360',
-    marginTop: 10,
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 6,
-    color: 'black',
-  },
-  kpiContainer: {
-    marginBottom: 6,
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 10,
-    padding: 4,
-    color: 'black',
-  },
 });
 
-export default AdjustmentKpi;
+export default QuestionEvaluationType;

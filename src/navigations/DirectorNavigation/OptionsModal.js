@@ -51,6 +51,13 @@ const OptionsModal = ({visible, onClose}) => {
           <TouchableOpacity
             style={styles.button}
             onPress={() => {
+              navigation.navigate('QuestionEvaluationType');
+            }}>
+            <Text style={styles.buttonText}>Scores</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
               navigation.navigate('Session');
             }}>
             <Text style={styles.buttonText}>Session</Text>

@@ -89,18 +89,18 @@ KpiService = {
     }
   },
 
-  async getKpis() {
-    try {
-      const response = await fetch(`${IPAddress}/KPI/getKpis`);
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      throw error;
-    }
-  },
+  // async getKpis() {
+  //   try {
+  //     const response = await fetch(`${IPAddress}/KPI/getKpis`);
+  //     if (!response.ok) {
+  //       throw new Error('Network response was not ok');
+  //     }
+  //     const data = await response.json();
+  //     return data;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // },
 
   async getGroupKpi(groupID, sessionID) {
     try {

@@ -9,12 +9,13 @@ import {
   SessionBarChartComponent,
   QuestionScoreBarChartComponent,
   EmployeeSubKpiBarChartComponent,
+  EmployeeSubBarChartComponent,
 } from './ShowPerformance';
 import EmployeeKPIPerformance from '../Services/EmployeeKPIPerformance';
 import EmployeeCoursePerformanceService from '../Services/EmployeeCoursePerformanceService';
 import {getQuestionsScores} from '../Services/QuestionsScores';
 import QuestionaireServiceListner from '../Services/QuestionaireServiceListner';
-import {getSubKpiEmployeePerformance} from '../Services/SubKpiServices';
+import {getSubKPIs, getSubKpiEmployeePerformance} from '../Services/SubKpiServices';
 
 const Performance = ({route}) => {
   const {employee} = route.params;
@@ -26,6 +27,8 @@ const Performance = ({route}) => {
     {key: 'second', title: 'Sub KPI'},
     {key: 'third', title: 'Course'},
     {key: 'fourth', title: 'Question'},
+    // {key: 'fifth', title: 'Sub'},
+
   ]);
 
   const [courseList, setCourseList] = useState([]);
@@ -37,7 +40,9 @@ const Performance = ({route}) => {
   );
   const [evaluationQuestionScore, setEvaluationQuestionScore] = useState([]);
   const [employeeKpiPerformance, setEmployeeKpiPerformance] = useState([]);
+  const [subKpiList, setSubKpiList] = useState([]);
   const [evaluationTypeId, setEvaluationTypeId] = useState('');
+  const [subKpiId, setSubKpiId] = useState('');
   const [selectedEvaluationType, setSelectedEvaluationType] = useState('');
   const [evaluationTypeList, setEvaluationTypeList] = useState([]);
   const [employeeSubKpiPerformance, setEmployeeSubKpiPerformance] = useState(
@@ -56,7 +61,18 @@ const Performance = ({route}) => {
         Alert.alert('Error', error.message);
       }
     };
-
+    const fetchSubKpi = async () => {
+      try {
+        const data = await getSubKPIs(selectedSession);
+        setSubKpiList(data || []);
+        if (data && data.length > 0) {
+          setSubKpiId(data[0].id);
+        }
+      } catch (error) {
+        Alert.alert('Error', error.message);
+      }
+    };
+    fetchSubKpi(selectedSession)
     fetchSessions();
   }, []);
   useEffect(() => {
@@ -69,7 +85,6 @@ const Performance = ({route}) => {
               sessionID,
             );
           setCourseList(courses || []);
-          // console.log('courses', courses);
         } catch (error) {
           Alert.alert('Error', error.message);
         }
@@ -324,6 +339,58 @@ const Performance = ({route}) => {
       <QuestionScoreBarChartComponent data={evaluationQuestionScore} />
     </View>
   );
+  // const FifthRoute = () => (
+  //   <View>
+  //     <View style={{ backgroundColor: 'brown', padding: 6 }}>
+  //       <Text style={{ fontSize: 20, color: 'white', fontWeight: 'bold' }}>
+  //         {employee.name}
+  //       </Text>
+  //     </View>
+  //     <View style={styles.showPerformance}>
+  //       <Picker
+  //         selectedValue={selectedSession}
+  //         onValueChange={(itemValue) => setSelectedSession(itemValue)}
+  //         style={styles.picker}
+  //         dropdownIconColor="black"
+  //         mode="dropdown"
+  //       >
+  //         <Picker.Item label="--Select Session--" />
+  //         {sessionList.length > 0 ? (
+  //           sessionList.map((session, index) => (
+  //             <Picker.Item key={index} label={session.title} value={session.id} />
+  //           ))
+  //         ) : (
+  //           <Picker.Item label="No sessions available" value="" />
+  //         )}
+  //       </Picker>
+  //     </View>
+  //     <View style={styles.showPerformance}>
+  //       <Picker
+  //         selectedValue={subKpiId}
+  //         onValueChange={(itemValue) => setSubKpiId(itemValue)}
+  //         style={styles.picker}
+  //         dropdownIconColor="black"
+  //         mode="dropdown"
+  //       >
+  //         <Picker.Item label="--Select Sub KPI--" />
+  //         {subKpiList.length > 0 ? (
+  //           subKpiList.map((subKpi, index) => (
+  //             <Picker.Item key={index} label={subKpi.name} value={subKpi.id} />
+  //           ))
+  //         ) : (
+  //           <Picker.Item label="No Sub-KPI available" value="" />
+  //         )}
+  //       </Picker>
+  //     </View>
+  //     {selectedSession && (
+  //       <EmployeeSubBarChartComponent
+  //         kpiPerformanceData={filteredSubKpiPerformance}
+  //         selectedSubKpiId={subKpiId}
+  //       />
+  //     )}
+  //   </View>
+  // );
+  
   const renderScene = ({route}) => {
     switch (route.key) {
       case 'first':
@@ -334,6 +401,8 @@ const Performance = ({route}) => {
         return <ThirdRoute />;
       case 'fourth':
         return <FourthRoute />;
+        // case 'fifth':
+        //   return <FifthRoute />;
       default:
         return null;
     }

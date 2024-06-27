@@ -28,6 +28,7 @@ import AddKpi from './src/screens/DirectorScreens/AddKpi';
 import Session from './src/screens/DirectorScreens/Session';
 import AdjustmentKpi from './src/screens/DirectorScreens/AdjustmentKpi';
 import UpdatingKpi from './src/screens/DirectorScreens/UpdatingKpi';
+import QuestionEvaluationType from './src/screens/DirectorScreens/QuestionEvaluationType';
 const Stack = createStackNavigator();
 const MainApp = () => {
   return (
@@ -61,6 +62,8 @@ const MainApp = () => {
         <Stack.Screen name="AddKpi" component={AddKpi} />
         <Stack.Screen name="AdjustmentKpi" component={AdjustmentKpi} />
         <Stack.Screen name="UpdatingKpi" component={UpdatingKpi} />
+        
+        {/* <Stack.Screen name="Scores" component={Scores} /> */}
         <Stack.Screen
           name="EvaluationQuestionnaire"
           component={EvaluationQuestionnaireFragment}
@@ -71,6 +74,7 @@ const MainApp = () => {
           name="DirectorEvaluation"
           component={DirectorEvaluation}
         />
+        <Stack.Screen name="QuestionEvaluationType" component={QuestionEvaluationType} />
         <Stack.Screen name="Session" component={Session} />
         <Stack.Screen
           name="QuestionnaireFragment"

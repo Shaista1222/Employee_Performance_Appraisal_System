@@ -1,32 +1,36 @@
+import React, {useState, useEffect} from 'react';
 import {
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
   ActivityIndicator,
+  FlatList,
+  Alert,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import {Picker} from '@react-native-picker/picker';
 import SessionService from '../Services/SessionService';
 import EmployeeService from '../Services/EmployeeService';
 import QuestionaireServiceListner from '../Services/QuestionaireServiceListner';
 import CourseServiceListener from '../Services/CourseServiceListener';
 import EvaluatorService from '../Services/EvaluatorService';
-import {Picker} from '@react-native-picker/picker';
-const QuestionEvaluationType = ({Navigation}) => {
+
+const QuestionEvaluationType = ({navigation}) => {
   const [sessionList, setSessionList] = useState([]);
   const [employeeList, setEmployeeList] = useState([]);
   const [evaluationTypeList, setEvaluationTypeList] = useState([]);
   const [teacherCoursesList, setTeacherCoursesList] = useState([]);
-  const [evaluatorList, setEvaluatorList] = useState([]);
+  const [evaluatorList, setEvaluatorList] = useState({});
   const [selectedSession, setSelectedSession] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [selectedEvaluationType, setSelectedEvaluationType] = useState('');
+  const [selectedTeacherCourse, setSelectedTeacherCourse] = useState('');
   const [loading, setLoading] = useState(true);
   const [employeeId, setEmployeeId] = useState('');
-  const [teacherCourseId, setTeacherCourseId] = useState('');
-  const [sessionId, setSessionId] = useState('');
-  const [evaluationTypeId, setEvaluationTypeId] = useState('');
-  const [selectedTeacherCourse, setSelectedTeacherCourse] = useState('');
+  const [courseID , setCourseId] = useState('');
+  const [sessionID , setSessionId] = useState('');
+  const [evaluationTypeID, setEvaluationTypeId] = useState('');
+
   useEffect(() => {
     const fetchSession = async () => {
       try {
@@ -57,6 +61,7 @@ const QuestionEvaluationType = ({Navigation}) => {
         Alert.alert('Error', error.message);
       }
     };
+
     const fetchTeacherCourses = async () => {
       try {
         const data = await CourseServiceListener.getCourses();
@@ -67,35 +72,36 @@ const QuestionEvaluationType = ({Navigation}) => {
         Alert.alert('Error', error.message);
       }
     };
-    //   const fetchQuestionsScore= async () => {
-    //     try {
-    //       const data = await EvaluatonScores.getQuestionsScoresByEvaluationId(4,sessionId,evaluationTypeId);
-    //       setTeacherCoursesList(data);
-    //       console.log(data);
-    //     } catch (error) {
-    //       Alert.alert('Error', error.message);
-    //     }
-    //   };
+
+    fetchSession();
+    fetchEmployee();
+    fetchEvaluationType();
+    fetchTeacherCourses();
+  }, []);
+
+  useEffect(() => {
     const fetchEvaluators = async () => {
       try {
         const data = await EvaluatorService.getEvaluators(
           employeeId,
-          evaluationTypeId,
-          sessionId,
-          teacherCourseId,
+          evaluationTypeID,
+          sessionID ,
+          courseID ,
         );
         setEvaluatorList(data);
-        console.log("ataof evaluator",data);
+        console.log('Data of evaluator', data);
       } catch (error) {
         Alert.alert('Error', error.message);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchEvaluators();
-    fetchTeacherCourses();
-    fetchSession();
-    fetchEmployee();
-    fetchEvaluationType();
-  }, []);
+
+    if (employeeId && evaluationTypeID && sessionID  && courseID ) {
+      fetchEvaluators();
+    }
+  }, [employeeId, evaluationTypeID, sessionID , courseID ]);
+
   useEffect(() => {
     if (selectedEmployee) {
       setEmployeeId(selectedEmployee);
@@ -116,15 +122,17 @@ const QuestionEvaluationType = ({Navigation}) => {
       console.log('Selected Evaluation Type:', selectedEvaluationType);
     }
   }, [selectedEvaluationType]);
+
   useEffect(() => {
     if (selectedTeacherCourse) {
-      setTeacherCourseId(selectedTeacherCourse);
-      console.log('Selected Evaluation Type:', selectedTeacherCourse);
+      setCourseId(selectedTeacherCourse);
+      console.log('Selected Teacher Course:', selectedTeacherCourse);
     }
   }, [selectedTeacherCourse]);
-  console.log('Teacher Courses', teacherCourseId);
-  const handleNavigateToScore = (id) => {
-    Navigation.navigate('Scores',id);
+
+  const handleNavigateToScore = (employeeID1, employeeID2) => {
+    console.log(employeeID1, employeeID2, sessionID , evaluationTypeID, courseID );
+    navigation.navigate('Scores', {employeeID1, employeeID2, sessionID , evaluationTypeID,courseID });
   };
 
   return (
@@ -140,7 +148,7 @@ const QuestionEvaluationType = ({Navigation}) => {
             style={styles.picker}
             dropdownIconColor="black"
             mode="dropdown">
-            <Picker.Item label="--Select Employee--" />
+            <Picker.Item label="--Select Employee--" value="" />
             {employeeList.map((emp, index) => (
               <Picker.Item key={index} label={emp.name} value={emp.id} />
             ))}
@@ -153,8 +161,7 @@ const QuestionEvaluationType = ({Navigation}) => {
             style={styles.picker}
             dropdownIconColor="black"
             mode="dropdown">
-            <Picker.Item label="--Select Session--" />
-
+            <Picker.Item label="--Select Session--" value="" />
             {sessionList.map((session, index) => (
               <Picker.Item
                 key={index}
@@ -171,8 +178,7 @@ const QuestionEvaluationType = ({Navigation}) => {
             style={styles.picker}
             dropdownIconColor="black"
             mode="dropdown">
-            <Picker.Item label="--Select Evaluation Type--" />
-
+            <Picker.Item label="--Select Evaluation Type--" value="" />
             {evaluationTypeList.map((evaluationType, index) => (
               <Picker.Item
                 key={index}
@@ -189,8 +195,7 @@ const QuestionEvaluationType = ({Navigation}) => {
             style={styles.picker}
             dropdownIconColor="black"
             mode="dropdown">
-            <Picker.Item label="--Select Teacher course--" />
-
+            <Picker.Item label="--Select Teacher course--" value="" />
             {teacherCoursesList.map((teacherCourses, index) => (
               <Picker.Item
                 key={index}
@@ -204,25 +209,43 @@ const QuestionEvaluationType = ({Navigation}) => {
           <ActivityIndicator size="large" color="#0000ff" />
         ) : (
           <>
-            <FlatList
-              data={evaluatorList}
-              renderItem={({item}) => (
-                <View style={styles.BoxDesign}>
-                  <TouchableOpacity
-                    onPress={handleNavigateToScore(item.id)}
-                    style={{fontWeight: 'bold'}}>
-                    {item.name}
-                  </TouchableOpacity>
-                </View>
-              )}
-              keyExtractor={item => item.question.id.toString()}
-            />
+            {evaluatorList.employees && evaluatorList.employees.length > 0 && (
+              <FlatList
+                data={evaluatorList.employees}
+                renderItem={({item}) => (
+                  <View style={styles.BoxDesign}>
+                    <TouchableOpacity
+                      onPress={() => handleNavigateToScore(item.id, employeeId)}
+                      style={{fontWeight: 'bold'}}>
+                      <Text>{item.name}</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                keyExtractor={item => item.id.toString()}
+              />
+            )}
+            {evaluatorList.students && evaluatorList.students.length > 0 && (
+              <FlatList
+                data={evaluatorList.students}
+                renderItem={({item}) => (
+                  <View style={styles.BoxDesign}>
+                    <TouchableOpacity
+                      onPress={() => handleNavigateToScore(item.id, employeeId)}
+                      style={{fontWeight: 'bold'}}>
+                      <Text>{item.name}</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                keyExtractor={item => item.id.toString()}
+              />
+            )}
           </>
         )}
       </View>
     </>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

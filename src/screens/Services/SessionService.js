@@ -17,9 +17,20 @@ const SessionService = {
       throw new Error('Failed to fetch session');
     }
   },
+  getYears: async () => {
+    try {
+      const response = await fetch(`${IPAddress}/Session/GetYears`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch Years');
+      }
+      return await response.json();
+    } catch (error) {
+      throw new Error('Something went wrong while fetching years');
+    }
+  },
   getSessions: async () => {
     try {
-      const response = await fetch(`${IPAddress}/Session//GetSessions`);
+      const response = await fetch(`${IPAddress}/Session/GetSessions`);
       if (!response.ok) {
         throw new Error('Failed to fetch sessions');
       }

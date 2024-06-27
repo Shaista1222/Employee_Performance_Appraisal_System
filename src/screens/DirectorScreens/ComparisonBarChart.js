@@ -54,7 +54,7 @@ export const MultipleEmployeeSubKpiBarChartComponent = ({ subKPIPerformanceData 
     scores.map((_, index) => kpiColors[kpis[index]])
   );
 
-  const labels = employeeNames;
+  const labels = employeeNames.map(name => name + '\n\n'); // Add new lines for spacing
 
   const { width: screenWidth } = useWindowDimensions();
 
@@ -74,7 +74,7 @@ export const MultipleEmployeeSubKpiBarChartComponent = ({ subKPIPerformanceData 
         height={345}
         chartConfig={{
           ...chartConfig,
-          barPercentage: 0.5, 
+          barPercentage: 0.3,
           fillShadowGradient: '#000000',
         }}
         verticalLabelRotation={15}
@@ -94,7 +94,6 @@ export const MultipleEmployeeSubKpiBarChartComponent = ({ subKPIPerformanceData 
     </View>
   );
 };
-
 export const MultipleEmployeeKPIBarChartComponent = ({ kpiPerformanceData }) => {
   if (!Array.isArray(kpiPerformanceData) || kpiPerformanceData.length === 0) {
     return <Text>No data available</Text>;
@@ -331,7 +330,98 @@ export const MultipleEmployeeQuestionPerformanceChart = ({ data }) => {
     </ScrollView>
   );
 };
+export const MultipleEmployeeSingleSubKpi = ({ subKPIPerformanceData }) => {
+  if (!Array.isArray(subKPIPerformanceData) || subKPIPerformanceData.length === 0) {
+    return <Text>No data available</Text>;
+  }
 
+  const employeeNames = subKPIPerformanceData.map(empData => empData.employee.name);
+  const scores = subKPIPerformanceData.map(empData =>
+    empData.subKpiPerformances.length > 0 ? empData.subKpiPerformances[0].score : 0
+  );
+
+  const { width: screenWidth } = useWindowDimensions();
+
+  return (
+    <View style={styles.container}>
+      <BarChart
+        data={{
+          labels: employeeNames,
+          datasets: [
+            {
+              data: scores,
+              colors: scores.map(() => (opacity = 1) => '#007BFF'),
+            },
+          ],
+        }}
+        width={screenWidth}
+        height={345}
+        chartConfig={{
+          backgroundColor: '#C5C6C7',
+          backgroundGradientFrom: '#C5C6C7',
+          backgroundGradientTo: '#C5C6C7',
+          decimalPlaces: 2,
+          color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+          style: {
+            borderRadius: 16,
+          },
+          barPercentage: 0.5,
+        }}
+        verticalLabelRotation={15}
+        fromZero={true}
+        showValuesOnTopOfBars={true}
+        withCustomBarColorFromData={true}
+        flatColor={true}
+      />
+    </View>
+  );
+};
+export const MultipleEmployeeYearlyKpi = ({ subKPIPerformanceData }) => {
+  if (!Array.isArray(subKPIPerformanceData) || subKPIPerformanceData.length === 0) {
+    return <Text>No data available</Text>;
+  }
+
+  const employeeNames = subKPIPerformanceData.map(empData => empData.employee.name);
+  const scores = subKPIPerformanceData.map(empData =>
+    empData.subKpiPerformances.length > 0 ? empData.subKpiPerformances[0].score : 0
+  );
+
+  const { width: screenWidth } = useWindowDimensions();
+
+  return (
+    <View style={styles.container}>
+      <BarChart
+        data={{
+          labels: employeeNames,
+          datasets: [
+            {
+              data: scores,
+              colors: scores.map(() => (opacity = 1) => '#007BFF'),
+            },
+          ],
+        }}
+        width={screenWidth}
+        height={345}
+        chartConfig={{
+          backgroundColor: '#C5C6C7',
+          backgroundGradientFrom: '#C5C6C7',
+          backgroundGradientTo: '#C5C6C7',
+          decimalPlaces: 2,
+          color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+          style: {
+            borderRadius: 16,
+          },
+          barPercentage: 0.5,
+        }}
+        verticalLabelRotation={15}
+        fromZero={true}
+        showValuesOnTopOfBars={true}
+        withCustomBarColorFromData={true}
+        flatColor={true}
+      />
+    </View>
+  );
+};
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'column',
