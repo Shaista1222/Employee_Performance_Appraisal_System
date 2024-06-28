@@ -5,10 +5,10 @@ import {
   StyleSheet,
   Dimensions,
   Text,
-  useWindowDimensions,
+  useWindowDimensions,TouchableOpacity
 } from 'react-native';
 import { BarChart } from 'react-native-chart-kit';
-
+import { useNavigation } from '@react-navigation/native';
 const screenWidth = Dimensions.get('window').width;
 
 const chartConfig = {
@@ -30,6 +30,9 @@ const getRandomColor = () => {
   }
   return color;
 };
+
+
+
 export const MultipleEmployeeSubKpiBarChartComponent = ({ subKPIPerformanceData }) => {
   if (!Array.isArray(subKPIPerformanceData) || subKPIPerformanceData.length === 0) {
     return <Text>No data available</Text>;
@@ -95,6 +98,7 @@ export const MultipleEmployeeSubKpiBarChartComponent = ({ subKPIPerformanceData 
   );
 };
 export const MultipleEmployeeKPIBarChartComponent = ({ kpiPerformanceData }) => {
+  console.log("jui"+kpiPerformanceData);
   if (!Array.isArray(kpiPerformanceData) || kpiPerformanceData.length === 0) {
     return <Text>No data available</Text>;
   }
@@ -376,15 +380,100 @@ export const MultipleEmployeeSingleSubKpi = ({ subKPIPerformanceData }) => {
     </View>
   );
 };
-export const MultipleEmployeeYearlyKpi = ({ subKPIPerformanceData }) => {
-  if (!Array.isArray(subKPIPerformanceData) || subKPIPerformanceData.length === 0) {
+
+export const MultipleEmployeeYearlyPerformance = ({ performanceYearlyList }) => {
+  if (!Array.isArray(performanceYearlyList) || performanceYearlyList.length === 0) {
     return <Text>No data available</Text>;
   }
 
-  const employeeNames = subKPIPerformanceData.map(empData => empData.employee.name);
-  const scores = subKPIPerformanceData.map(empData =>
-    empData.subKpiPerformances.length > 0 ? empData.subKpiPerformances[0].score : 0
+  // Extract unique session titles
+  const sessions = Array.from(
+    new Set(performanceYearlyList.flatMap(emp => emp.kpiScores.map(kpi => kpi.session_title)))
   );
+
+  // Create a color map for sessions
+  const sessionColors = sessions.reduce((acc, session) => {
+    acc[session] = getRandomColor();
+    return acc;
+  }, {});
+
+  // Flatten the KPI scores and map them to sessions
+  const flattenedBarData = performanceYearlyList.flatMap(emp =>
+    emp.kpiScores.map(kpi => kpi.score)
+  );
+
+  // Generate colors based on sessions
+  const barColors = performanceYearlyList.flatMap(emp =>
+    emp.kpiScores.map(kpi => sessionColors[kpi.session_title])
+  );
+
+  const { width: screenWidth } = useWindowDimensions();
+
+  return (
+    <View style={styles.container}>
+      <ScrollView horizontal>
+        <BarChart
+          data={{
+            labels: sessions,
+            datasets: [
+              {
+                data: flattenedBarData,
+                colors: barColors.map(color => (opacity = 1) => color),
+              },
+            ],
+          }}
+          width={Math.max(screenWidth, sessions.length * 60)} // Adjust the width based on the number of sessions
+          height={345}
+          chartConfig={{
+            ...chartConfig,
+            barPercentage: 0.4,
+            fillShadowGradient: '#000000',
+          }}
+          verticalLabelRotation={15}
+          fromZero={true}
+          showValuesOnTopOfBars={true}
+          withCustomBarColorFromData={true}
+          flatColor={true}
+        />
+      </ScrollView>
+      <View style={styles.legendContainer}>
+        {sessions.map((session, index) => (
+          <View key={index} style={styles.legendItem}>
+            <View style={[styles.legendColor, { backgroundColor: sessionColors[session] }]} />
+            <Text style={styles.legendText}>{session}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+};
+//////////////////////////
+export const SingleEmployeeKpiPerformance = ({ singleEmployeePerformanceList }) => {
+  console.log("jui"+singleEmployeePerformanceList);
+  if (!Array.isArray(singleEmployeePerformanceList) || singleEmployeePerformanceList.length == 0) {
+    return <Text>No data available</Text>;
+  }
+  
+  const kpis = Array.from(
+    new Set(singleEmployeePerformanceList.flatMap(emp => emp.kpiScores.map(kpi => kpi.kpi_title)))
+  );
+
+  const kpiColors = kpis.reduce((acc, kpi) => {
+    acc[kpi] = getRandomColor();
+    return acc;
+  }, {});
+
+  const employeeNames = singleEmployeePerformanceList.map(empData => empData.employee.name);
+  const kpiScores = singleEmployeePerformanceList.map(empData =>
+    kpis.map(kpi => empData.kpiScores.find(data => data.kpi_title === kpi)?.score || 0)
+  );
+
+  const flattenedBarData = kpiScores.flat();
+  const barColors = kpiScores.flatMap(scores =>
+    scores.map((_, index) => kpiColors[kpis[index]])
+  );
+
+  const labels = employeeNames;
 
   const { width: screenWidth } = useWindowDimensions();
 
@@ -392,26 +481,20 @@ export const MultipleEmployeeYearlyKpi = ({ subKPIPerformanceData }) => {
     <View style={styles.container}>
       <BarChart
         data={{
-          labels: employeeNames,
+          labels: labels,
           datasets: [
             {
-              data: scores,
-              colors: scores.map(() => (opacity = 1) => '#007BFF'),
+              data: flattenedBarData,
+              colors: barColors.map(color => (opacity = 1) => color),
             },
           ],
         }}
         width={screenWidth}
         height={345}
         chartConfig={{
-          backgroundColor: '#C5C6C7',
-          backgroundGradientFrom: '#C5C6C7',
-          backgroundGradientTo: '#C5C6C7',
-          decimalPlaces: 2,
-          color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-          style: {
-            borderRadius: 16,
-          },
-          barPercentage: 0.5,
+          ...chartConfig,
+          barPercentage: 0.4, // Adjust the width of the bars
+          fillShadowGradient: '#000000', // Color of the bars
         }}
         verticalLabelRotation={15}
         fromZero={true}
@@ -419,9 +502,128 @@ export const MultipleEmployeeYearlyKpi = ({ subKPIPerformanceData }) => {
         withCustomBarColorFromData={true}
         flatColor={true}
       />
+      <View style={styles.legendContainer}>
+        {kpis.map((kpi, index) => (
+          <View key={index} style={styles.legendItem}>
+            <View style={[styles.legendColor, { backgroundColor: kpiColors[kpi] }]} />
+            <Text style={styles.legendText}>{kpi}</Text>
+          </View>
+        ))}
+      </View>
     </View>
   );
 };
+export const BarChartComponent = ({multiSessionEmployeePerformanceList = []}) => {
+  console.log("Bar Chart",multiSessionEmployeePerformanceList);
+
+  const chartData = {
+    labels: multiSessionEmployeePerformanceList.length > 0 ? multiSessionEmployeePerformanceList.map(item => item.session_title) : [],
+    datasets: [
+      {
+        data: multiSessionEmployeePerformanceList.length > 0 ? multiSessionEmployeePerformanceList.map(item => item.score) : [],
+      },
+    ],
+  };
+
+  const barColors = multiSessionEmployeePerformanceList.map(() => getRandomColor());
+
+  return (
+    <View style={styles.container}>
+      
+        <BarChart
+          data={chartData}
+          width={screenWidth}
+          height={390}
+          yAxisLabel=""
+          chartConfig={{
+            ...chartConfig,
+            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+          }}
+          verticalLabelRotation={30}
+          fromZero={true}
+          showValuesOnTopOfBars={true}
+          renderBar={({index, x, y, width, height, ...rest}) => (
+            <View
+              key={index}
+              style={{
+                position: 'absolute',
+                left: x,
+                top: y,
+                width,
+                height,
+                backgroundColor: barColors[index],
+              }}
+            />
+          )}
+        />
+     
+    </View>
+  );
+};
+export const MultipleSessionEmployeeKPI = ({ multiSessionEmployeeKpiPerformanceList }) => {
+  console.log("jui"+multiSessionEmployeeKpiPerformanceList);
+  if (!Array.isArray(multiSessionEmployeeKpiPerformanceList) || multiSessionEmployeeKpiPerformanceList.length === 0) {
+    return <Text>No data available</Text>;
+  }
+
+  const kpis = Array.from(
+    new Set(multiSessionEmployeeKpiPerformanceList.flatMap(emp => emp.kpiScores.map(kpi => kpi.kpi_title)))
+  );
+
+  const kpiColors = kpis.reduce((acc, kpi) => {
+    acc[kpi] = getRandomColor();
+    return acc;
+  }, {});
+
+  const employeeNames = multiSessionEmployeeKpiPerformanceList.map(empData => empData.kpi_title);
+  const kpiScores = multiSessionEmployeeKpiPerformanceList.map(empData=> empData.score || 0)
+
+  const flattenedBarData = kpiScores.flat();
+  const barColors = kpiScores.flatMap(scores =>
+    scores.map((_, index) => kpiColors[kpis[index]])
+  );
+
+  const labels = employeeNames;
+
+  const { width: screenWidth } = useWindowDimensions();
+
+  return (
+    <View style={styles.container}>
+      <BarChart
+        data={{
+          labels: labels,
+          datasets: [
+            {
+              data: flattenedBarData,
+              colors: barColors.map(color => (opacity = 1) => color),
+            },
+          ],
+        }}
+        width={screenWidth}
+        height={345}
+        chartConfig={{
+          ...chartConfig,
+          barPercentage: 0.4, // Adjust the width of the bars
+          fillShadowGradient: '#000000', // Color of the bars
+        }}
+        verticalLabelRotation={15}
+        fromZero={true}
+        showValuesOnTopOfBars={true}
+        withCustomBarColorFromData={true}
+        flatColor={true}
+      />
+      <View style={styles.legendContainer}>
+        {kpis.map((kpi, index) => (
+          <View key={index} style={styles.legendItem}>
+            <View style={[styles.legendColor, { backgroundColor: kpiColors[kpi] }]} />
+            <Text style={styles.legendText}>{kpi}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'column',

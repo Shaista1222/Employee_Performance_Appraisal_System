@@ -1,7 +1,7 @@
 // src/screens/Performance.js
 import React, {useState, useEffect} from 'react';
 import {Picker} from '@react-native-picker/picker';
-import {View, Text, StyleSheet, Alert, useWindowDimensions} from 'react-native';
+import {View, Text, StyleSheet, Alert, useWindowDimensions, TouchableOpacity} from 'react-native';
 import {TabView, TabBar} from 'react-native-tab-view';
 import SessionService from '../Services/SessionService';
 import {
@@ -48,7 +48,6 @@ const Performance = ({route}) => {
   const [employeeSubKpiPerformance, setEmployeeSubKpiPerformance] = useState(
     [],
   );
-
   useEffect(() => {
     const fetchSessions = async () => {
       try {
@@ -187,6 +186,48 @@ const Performance = ({route}) => {
     fetchQuestionScores();
   }, [employee.id, selectedSession, evaluationTypeId]);
 
+  // const toggleSessionSelection = id => {
+  //   if (selectedSessions.includes(id)) {
+  //     setSelectedSessions(
+  //       selectedEmployees.filter(sessionId => sessionId !== id),
+  //     );
+  //   } else {
+  //     setSelectedSessions([...selectedSessions, id]);
+  //   }
+  // };
+  // const SessionDropdown = () => (
+  //   <View>
+  //     <TouchableOpacity
+  //       style={styles.pickerContainer}
+  //       onPress={() =>
+  //         setIsSessionDropdownVisible(!isSessionDropdownVisible)
+  //       }>
+  //       <Text style={styles.pickerText}>Select Employees</Text>
+  //       <Ionicons
+  //         name={isSessionDropdownVisible ? 'chevron-up' : 'chevron-down'}
+  //         size={20}
+  //         color="#000"
+  //       />
+  //     </TouchableOpacity>
+  //     {isEmployeeDropdownVisible && (
+  //       <View style={styles.dropdown}>
+  //         <FlatList
+  //           data={sessionList}
+  //           keyExtractor={item => item.id.toString()}
+  //           renderItem={({item}) => (
+  //             <View style={styles.checkboxContainer}>
+  //               <CheckBox
+  //                 value={selectedSession.includes(item.id)}
+  //                 onValueChange={() => toggleSessionSelection(item.id)}
+  //               />
+  //               <Text style={styles.label}>{item.name}</Text>
+  //             </View>
+  //           )}
+  //         />
+  //       </View>
+  //     )}
+  //   </View>
+  // );
   const FirstRoute = () => (
     <View>
       <View style={{backgroundColor: 'brown', padding: 6}}>
@@ -339,57 +380,57 @@ const Performance = ({route}) => {
       <QuestionScoreBarChartComponent data={evaluationQuestionScore} />
     </View>
   );
-  // const FifthRoute = () => (
-  //   <View>
-  //     <View style={{ backgroundColor: 'brown', padding: 6 }}>
-  //       <Text style={{ fontSize: 20, color: 'white', fontWeight: 'bold' }}>
-  //         {employee.name}
-  //       </Text>
-  //     </View>
-  //     <View style={styles.showPerformance}>
-  //       <Picker
-  //         selectedValue={selectedSession}
-  //         onValueChange={(itemValue) => setSelectedSession(itemValue)}
-  //         style={styles.picker}
-  //         dropdownIconColor="black"
-  //         mode="dropdown"
-  //       >
-  //         <Picker.Item label="--Select Session--" />
-  //         {sessionList.length > 0 ? (
-  //           sessionList.map((session, index) => (
-  //             <Picker.Item key={index} label={session.title} value={session.id} />
-  //           ))
-  //         ) : (
-  //           <Picker.Item label="No sessions available" value="" />
-  //         )}
-  //       </Picker>
-  //     </View>
-  //     <View style={styles.showPerformance}>
-  //       <Picker
-  //         selectedValue={subKpiId}
-  //         onValueChange={(itemValue) => setSubKpiId(itemValue)}
-  //         style={styles.picker}
-  //         dropdownIconColor="black"
-  //         mode="dropdown"
-  //       >
-  //         <Picker.Item label="--Select Sub KPI--" />
-  //         {subKpiList.length > 0 ? (
-  //           subKpiList.map((subKpi, index) => (
-  //             <Picker.Item key={index} label={subKpi.name} value={subKpi.id} />
-  //           ))
-  //         ) : (
-  //           <Picker.Item label="No Sub-KPI available" value="" />
-  //         )}
-  //       </Picker>
-  //     </View>
-  //     {selectedSession && (
-  //       <EmployeeSubBarChartComponent
-  //         kpiPerformanceData={filteredSubKpiPerformance}
-  //         selectedSubKpiId={subKpiId}
-  //       />
-  //     )}
-  //   </View>
-  // );
+  const FifthRoute = () => (
+    <View>
+      <View style={{ backgroundColor: 'brown', padding: 6 }}>
+        <Text style={{ fontSize: 20, color: 'white', fontWeight: 'bold' }}>
+          {employee.name}
+        </Text>
+      </View>
+      <View style={styles.showPerformance}>
+        <Picker
+          selectedValue={selectedSession}
+          onValueChange={(itemValue) => setSelectedSession(itemValue)}
+          style={styles.picker}
+          dropdownIconColor="black"
+          mode="dropdown"
+        >
+          <Picker.Item label="--Select Session--" />
+          {sessionList.length > 0 ? (
+            sessionList.map((session, index) => (
+              <Picker.Item key={index} label={session.title} value={session.id} />
+            ))
+          ) : (
+            <Picker.Item label="No sessions available" value="" />
+          )}
+        </Picker>
+      </View>
+      <View style={styles.showPerformance}>
+        <Picker
+          selectedValue={subKpiId}
+          onValueChange={(itemValue) => setSubKpiId(itemValue)}
+          style={styles.picker}
+          dropdownIconColor="black"
+          mode="dropdown"
+        >
+          <Picker.Item label="--Select Sub KPI--" />
+          {subKpiList.length > 0 ? (
+            subKpiList.map((subKpi, index) => (
+              <Picker.Item key={index} label={subKpi.name} value={subKpi.id} />
+            ))
+          ) : (
+            <Picker.Item label="No Sub-KPI available" value="" />
+          )}
+        </Picker>
+      </View>
+      {selectedSession && (
+        <EmployeeSubBarChartComponent
+          kpiPerformanceData={filteredSubKpiPerformance}
+          selectedSubKpiId={subKpiId}
+        />
+      )}
+    </View>
+  );
   
   const renderScene = ({route}) => {
     switch (route.key) {
